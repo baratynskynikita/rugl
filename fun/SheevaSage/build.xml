@@ -1,0 +1,39 @@
+<project name="SheevaSage" default="jar" basedir=".">
+
+	<!-- set global properties for this build -->
+
+	<target name="compile" description="compiles source">
+		<mkdir dir="build" />
+
+		<javac destdir="build" target="1.6" debug="on" debuglevel="lines,vars,source">
+			<src>
+				<pathelement location="src" />
+			</src>
+			<classpath>
+				<pathelement location="smack_3_1_0/smack.jar" />
+				<pathelement location="smack_3_1_0/smackx.jar" />
+			</classpath>
+
+			<compilerarg value="-Xlint:unchecked" />
+		</javac>
+
+		<tstamp />
+		<touch file="build/built${DSTAMP}.txt" />
+	</target>
+
+	<target name="jar" description="generate jar" depends="compile">
+		<unjar src="smack_3_1_0/smack.jar" dest="build"/>
+		<unjar src="smack_3_1_0/smackx.jar" dest="build"/>
+	
+		<jar destfile="SheevaSage.jar" basedir = "build">
+			<manifest>
+				<attribute name="Main-Class" value="com.ryanm.sage.Persist"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="clean" description="deletes build directory">
+		<delete dir="build" />
+	</target>
+
+</project>
