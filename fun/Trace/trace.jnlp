@@ -1,0 +1,20 @@
+<jnlp 
+	spec="1.0+" 
+	codebase="http://homepages.inf.ed.ac.uk/rmcnally/trace" 
+	href="trace.jnlp"> 
+	<information> 
+		<title>Trace</title> 
+		<vendor>Ryan McNally</vendor>
+		<offline-allowed/> 
+	</information> 
+	<security>
+		<all-permissions/>
+	</security>
+	<resources> 
+		<j2se version="1.4+"/> 
+		<jar href="Trace.jar"/>
+		<extension name="lwjgl" href="http://lwjgl.org/jnlp/extension.php" />
+	</resources>
+	<application-desc main-class="com.ryanm.trace.TraceGame">
+	</application-desc>
+</jnlp>
