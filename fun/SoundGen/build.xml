@@ -1,0 +1,41 @@
+<project name="SoundGen" default="jar" basedir=".">
+
+	<taskdef resource="genjar.properties" classpath="../lib/GenJar.jar"/>
+
+	<description>
+		Builds the SoundGenApp jar
+	</description>
+	<!-- set global properties for this build -->
+
+	<target name="jar" description="generate all jars">
+		
+		<mkdir dir="build"/>
+		
+		<javac destdir="build" target="1.5" debug="on" debuglevel="lines,vars,source">
+			<src>
+				<pathelement location="src"/>
+			</src>
+		</javac>
+		
+		<tstamp/>
+		<touch file="build/${DSTAMP}.txt"/>
+		
+		<genjar jarfile="SoundGenApp.jar">
+			<class name="com.ryanm.soundgen.SoundGenApp"/>
+
+			<classpath>
+				<pathelement location="build"/>
+			</classpath>
+
+			<resource file="build/${DSTAMP}.txt"/>
+
+			<manifest>
+				<attribute name="Main-Class" value="com.ryanm.soundgen.SoundGenApp"/>
+			</manifest>
+		</genjar>
+
+		<delete dir="build"/>
+
+	</target>
+
+</project>
