@@ -1,0 +1,19 @@
+<jnlp 
+	spec="1.0+" 
+	codebase="http://homepages.inf.ed.ac.uk/rmcnally/dispmode" 
+	href="dispmode.jnlp"> 
+	<information> 
+		<title>DisplayMode test</title> 
+		<vendor>Ryan McNally</vendor>
+		<offline-allowed/> 
+	</information>
+	<security>
+ 		<all-permissions/>
+ 	</security>
+	<resources> 
+		<j2se version="1.4+"/> 
+		<jar href="DisplayModeTest.jar"/>
+	</resources>
+	<application-desc main-class="com.ryanm.util.DisplayModeTest">
+	</application-desc>
+</jnlp>
