@@ -1,0 +1,179 @@
+<project name="RUGL" default="alljar" basedir=".">
+
+	<taskdef resource="genjar.properties" classpath="../lib/GenJar.jar" />
+
+	<description>
+		Builds the RUGL jar, and associated utilities
+	</description>
+	<!-- set global properties for this build -->
+	<property name="lib" location="../lib" />
+	<property name="RUGL" location="." />
+	<property name="Configuration" location="../Configuration" />
+	<property name="SoundGen" location="../SoundGen" />
+	<property name="Util" location="../Util" />
+	<property name="lwjgljardir" location="${lib}/lwjgl/jar" />
+
+	
+	<target name="alljar" description="Generates all jars" depends="packerjar,soundgenjar,fontjar,imagejar"/>
+
+
+
+	<target name="compile" description="compiles source">
+		<mkdir dir="build" />
+
+		<javac destdir="build" target="1.5" debug="on" debuglevel="lines,vars,source">
+			<src>
+				<pathelement location="${RUGL}/src" />
+				<pathelement location="${Configuration}/src" />
+				<pathelement location="${SoundGen}/src" />
+				<pathelement location="${Util}/src" />
+				<pathelement location="${lib}/src" />
+			</src>
+			<classpath>
+				<pathelement location="${lwjgljardir}/lwjgl.jar" />
+				<pathelement location="${lwjgljardir}//lwjgl_util.jar" />
+			</classpath>
+
+			<compilerarg value="-Xlint:unchecked" />
+		</javac>
+
+		<copy todir="build/res">
+			<fileset dir="res"/>
+		</copy>
+		
+		<tstamp />
+		<touch file="build/${DSTAMP}.txt" />
+	</target>
+
+
+	<target name="packerjar" description="generate PackerTest jar" depends="compile">
+		<genjar jarfile="../PackerTest.jar">
+			<class name="com.rugl.util.PackerTest" />
+
+			<classpath>
+				<pathelement location="build" />
+			</classpath>
+
+			<resource file="build/${DSTAMP}.txt" />
+
+			<manifest>
+				<attribute name="Main-Class" value="com.rugl.util.PackerTest" />
+			</manifest>
+		</genjar>
+	</target>
+
+
+	<target name="soundgenjar" description="generate SoundGen jar" depends="compile">
+		<genjar jarfile="../SoundGenApp.jar">
+			<class name="com.ryanm.soundgen.SoundGenApp" />
+
+			<classpath>
+				<pathelement location="build" />
+			</classpath>
+
+			<resource file="build/${DSTAMP}.txt" />
+
+			<manifest>
+				<attribute name="Main-Class" value="com.ryanm.soundgen.SoundGenApp" />
+			</manifest>
+		</genjar>
+	</target>
+
+	<target name="fontjar" description="generate FontFactory jar" depends="compile">
+		<genjar jarfile="../FontFactory.jar">
+			<class name="com.rugl.util.FontFactory" />
+
+			<library jar="${lwjgljardir}/lwjgl.jar" />
+			<library jar="${lwjgljardir}/lwjgl_util.jar" />
+
+			<!-- exclude useless stuff that is referenced by lwjgl.jar-->
+			<classfilter>
+				<exclude name="com.apple." />
+				<exclude name="net.java.games." />
+			</classfilter>
+
+			<classpath>
+				<pathelement location="build" />
+			</classpath>
+
+			<resource file="build/${DSTAMP}.txt" />
+
+			<manifest>
+				<attribute name="Main-Class" value="com.rugl.util.FontFactory" />
+			</manifest>
+		</genjar>
+	</target>
+
+	<target name="imagejar" description="generate ImageFactory jar" depends="compile">
+		<genjar jarfile="../ImageFactory.jar">
+			<class name="com.rugl.util.ImageFactory" />
+
+			<library jar="${lwjgljardir}/lwjgl.jar" />
+			<library jar="$${lwjgljardir}/lwjgl_util.jar" />
+
+			<!-- exclude useless stuff that is referenced by lwjgl.jar-->
+			<classfilter>
+				<exclude name="com.apple." />
+				<exclude name="net.java.games." />
+			</classfilter>
+
+			<classpath>
+				<pathelement location="build" />
+			</classpath>
+
+			<resource file="build/${DSTAMP}.txt" />
+
+			<manifest>
+				<attribute name="Main-Class" value="com.rugl.util.ImageFactory" />
+			</manifest>
+		</genjar>
+	</target>
+
+	<target name="statejar" description="generate GL state managment jar" depends="compile">
+		<genjar jarfile="../GLState.jar">
+			<class name="com.rugl.gl.State" />
+
+			<classfilter>
+				<exclude name="org.lwjgl." />
+			</classfilter>
+
+			<classpath>
+				<pathelement location="build" />
+			</classpath>
+
+			<resource file="build/${DSTAMP}.txt" />
+		</genjar>
+	</target>
+	
+	<target name="fonttest" description="generate font test jar" depends="compile">
+		<genjar jarfile="../FontTest.jar">
+			<class name="com.rugl.test.FontTest" />
+
+			<!-- exclude useless stuff that is referenced by lwjgl.jar-->
+			<classfilter>
+				<include name="com.ryanm."/>
+				<exclude name="org."/>
+			</classfilter>
+
+			<classpath>
+				<pathelement location="build" />
+			</classpath>
+
+			<resource file="build/${DSTAMP}.txt" />
+			<resource>
+				<fileset dir="build/res/" />
+			</resource>
+
+			<manifest>
+				<attribute name="Main-Class" value="com.rugl.test.FontTest" />
+			</manifest>
+		</genjar>
+		
+		<signjar jar="../FontTest.jar" alias="ryanm" keystore="/home/ryanm/bin/myKeyStore" storepass="flooble"/>
+	</target>
+
+	<target name="clean" description="deletes build directory">
+		<delete dir="build" />
+	</target>
+
+</project>
