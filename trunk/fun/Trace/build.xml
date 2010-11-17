@@ -1,0 +1,103 @@
+<project name="Trace" default="jar" basedir=".">
+
+	<taskdef resource="genjar.properties" classpath="../lib/GenJar.jar" />
+
+	<!-- set global properties for this build -->
+	<property name="lib" location="../lib" />
+	<property name="Trace" location="." />
+	<property name="RUGL" location="../RUGL" />
+	<property name="Configuration" location="../Configuration" />
+	<property name="SoundGen" location="../SoundGen" />
+	<property name="Util" location="../Util" />
+
+	<target name="compile" description="compiles source" >
+		
+		<mkdir dir="build" />
+
+		<javac destdir="build" target="1.5" debug="on" debuglevel="lines,vars,source">
+			<src>
+				<pathelement location="${Trace}/src" />
+				<pathelement location="${RUGL}/src" />
+				<pathelement location="${Configuration}/src" />
+				<pathelement location="${SoundGen}/src" />
+				<pathelement location="${Util}/src" />
+				<pathelement location="${lib}/src" />
+			</src>
+			<classpath>
+				<pathelement location="${lib}/lwjgl/jar/lwjgl.jar" />
+				<pathelement location="${lib}/lwjgl/jar/lwjgl_util.jar" />
+			</classpath>
+
+			<compilerarg value="-Xlint:unchecked" />
+		</javac>
+
+		<copy todir="build/res">
+			<fileset dir="res" />
+			<fileset dir="${RUGL}/res" />
+		</copy>
+
+		<tstamp />
+		<touch file="build/${DSTAMP}.txt" />
+	</target>
+
+	<target name="fatjar" description="generate Trace jar" depends="compile">
+		<genjar jarfile="Trace.jar">
+			<class name="com.ryanm.trace.TraceGame" />
+
+			<library jar="${lib}/lwjgl/jar/lwjgl.jar" />
+			<library jar="${lib}/lwjgl/jar/lwjgl_util.jar" />
+
+			<!-- exclude useless stuff that is referenced by lwjgl.jar-->
+			<classfilter>
+				<exclude name="com.apple." />
+				<exclude name="net.java.games." />
+			</classfilter>
+
+			<classpath>
+				<pathelement location="build" />
+			</classpath>
+
+			<resource file="build/${DSTAMP}.txt" />
+			<resource>
+				<fileset dir="build/res/" />
+			</resource>
+
+			<manifest>
+				<attribute name="Main-Class" value="com.ryanm.trace.TraceGame" />
+			</manifest>
+		</genjar>
+	</target>
+
+	<target name="jar" description="generate Trace webstart jar" depends="compile">
+		<genjar jarfile="Trace.jar">
+			<class name="com.ryanm.trace.TraceGame" />
+
+			<!-- exclude useless stuff that is referenced by lwjgl.jar-->
+			<classfilter>
+				<include name="com.ryanm."/>
+				<exclude name="org."/>
+			</classfilter>
+
+			<classpath>
+				<pathelement location="build" />
+			</classpath>
+
+			<resource file="build/${DSTAMP}.txt" />
+			<resource>
+				<fileset dir="build/res/" />
+			</resource>
+
+			<manifest>
+				<attribute name="Main-Class" value="com.ryanm.trace.TraceGame" />
+			</manifest>
+		</genjar>
+		
+		<signjar jar="Trace.jar" alias="ryanm" keystore="/home/ryanm/bin/myKeyStore" storepass="flooble"/>
+	</target>
+
+
+	<target name="clean" description="deletes build directory">
+		<delete dir="build" />
+	</target>
+
+</project>
