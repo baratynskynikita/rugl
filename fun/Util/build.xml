@@ -1,0 +1,70 @@
+<project name="Util" default="displaytest" basedir=".">
+
+	<taskdef resource="genjar.properties" classpath="../lib/GenJar.jar" />
+
+	<!-- set global properties for this build -->
+	<property name="lib" location="../lib" />
+	<property name="lwjgljardir" location="${lib}/lwjgl/jar" />
+	
+	<target name="compile" description="compiles source">
+		<mkdir dir="build" />
+
+		<javac destdir="build" target="1.5" debug="on" debuglevel="lines,vars,source" >
+			<src>
+				<pathelement location="src" />
+				<pathelement location="${lib}/src" />
+			</src>
+			
+			<classpath>
+				<pathelement location="${lwjgljardir}/lwjgl.jar" />
+				<pathelement location="${lwjgljardir}//lwjgl_util.jar" />
+			</classpath>
+
+			<compilerarg value="-Xlint:unchecked" />
+		</javac>
+
+		<tstamp />
+		<touch file="build/${DSTAMP}.txt" />
+	</target>
+
+	<target name="displaytest" description="generate DisplayModeTest jar" depends="compile">
+		<genjar jarfile="DisplayModeTest.jar">
+			<class name="com.ryanm.util.DisplayModeTest" />
+
+			<classpath>
+				<pathelement location="build" />
+			</classpath>
+
+			<resource file="build/${DSTAMP}.txt" />
+
+			<manifest>
+				<attribute name="Main-Class" value="com.ryanm.util.DisplayModeTest" />
+			</manifest>
+		</genjar>
+		
+		<signjar jar="DisplayModeTest.jar" alias="ryanm" keystore="/home/ryanm/bin/myKeyStore" storepass="flooble"/>
+	</target>
+
+	<target name="nettest" description="nettest jar" depends="compile">
+		<genjar jarfile="NetTest.jar">
+			<class name="com.ryanm.util.net.NetUtils" />
+
+			<classpath>
+				<pathelement location="build" />
+			</classpath>
+
+			<resource file="build/${DSTAMP}.txt" />
+
+			<manifest>
+				<attribute name="Main-Class" value="com.ryanm.util.net.NetUtils" />
+			</manifest>
+		</genjar>
+	</target>
+
+	<target name="clean" description="deletes build directory">
+		<delete dir="build" />
+		<delete file="DisplayModeTest.jar" />
+		<delete file="NetTest.jar" />
+	</target>
+
+</project>
