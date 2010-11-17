@@ -155,7 +155,8 @@ public class Discovery
 	 * @throws IOException
 	 *            if some IOException occurs during discovering
 	 */
-	public static RootDevice[] discover( int timeOut, String searchTarget ) throws IOException
+	public static RootDevice[] discover( int timeOut, String searchTarget )
+			throws IOException
 	{
 		return discover( timeOut, DEFAULT_TTL, DEFAULT_MX, searchTarget );
 	}
@@ -213,14 +214,14 @@ public class Discovery
 	 * @throws IOException
 	 *            if some IOException occurs during discovering
 	 */
-	public static RootDevice[] discover( int timeOut, int ttl, int mx, String searchTarget,
-			NetworkInterface ni ) throws IOException
+	public static RootDevice[] discover( int timeOut, int ttl, int mx,
+			String searchTarget, NetworkInterface ni ) throws IOException
 	{
 		return discoverDevices( timeOut, ttl, mx, searchTarget, ni );
 	}
 
-	private static RootDevice[] discoverDevices( int timeOut, int ttl, int mx, String searchTarget,
-			NetworkInterface ni ) throws IOException
+	private static RootDevice[] discoverDevices( int timeOut, int ttl, int mx,
+			String searchTarget, NetworkInterface ni ) throws IOException
 	{
 		if( searchTarget == null || searchTarget.trim().length() == 0 )
 		{
@@ -231,6 +232,7 @@ public class Discovery
 
 		DiscoveryResultsHandler handler = new DiscoveryResultsHandler() {
 
+			@Override
 			public void discoveredDevice( String usn, String udn, String nt, String maxAge,
 					URL location, String firmware )
 			{
@@ -240,7 +242,8 @@ public class Discovery
 					{
 						try
 						{
-							RootDevice device = RootDevice.build( location, maxAge, firmware, usn, udn );
+							RootDevice device =
+									RootDevice.build( location, maxAge, firmware, usn, udn );
 							devices.put( usn, device );
 						}
 						catch( Exception ex )
@@ -258,7 +261,8 @@ public class Discovery
 		DiscoveryListener.getInstance().registerResultsHandler( handler, searchTarget );
 		if( ni == null )
 		{
-			for( Enumeration e = NetworkInterface.getNetworkInterfaces(); e.hasMoreElements(); )
+			for( Enumeration e = NetworkInterface.getNetworkInterfaces(); e
+					.hasMoreElements(); )
 			{
 				NetworkInterface intf = ( NetworkInterface ) e.nextElement();
 				for( Enumeration adrs = intf.getInetAddresses(); adrs.hasMoreElements(); )
@@ -322,8 +326,8 @@ public class Discovery
 	 * @throws IOException
 	 *            if some IO errors occurs during search
 	 */
-	public static void sendSearchMessage( InetAddress src, int ttl, int mx, String searchTarget )
-			throws IOException
+	public static void sendSearchMessage( InetAddress src, int ttl, int mx,
+			String searchTarget ) throws IOException
 	{
 
 		int bindPort = DEFAULT_SSDP_SEARCH_PORT;
@@ -333,7 +337,8 @@ public class Discovery
 			bindPort = Integer.parseInt( port );
 		}
 		InetSocketAddress adr =
-				new InetSocketAddress( InetAddress.getByName( Discovery.SSDP_IP ), Discovery.SSDP_PORT );
+				new InetSocketAddress( InetAddress.getByName( Discovery.SSDP_IP ),
+						Discovery.SSDP_PORT );
 
 		java.net.MulticastSocket skt = new java.net.MulticastSocket( null );
 		skt.bind( new InetSocketAddress( src, bindPort ) );

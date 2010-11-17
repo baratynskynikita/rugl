@@ -124,8 +124,8 @@ public class DiscoveryListener implements Runnable
 	 *            if some errors occurs during SSDP search response
 	 *            messages listener thread startup
 	 */
-	public void registerResultsHandler( DiscoveryResultsHandler resultsHandler, String searchTarget )
-			throws IOException
+	public void registerResultsHandler( DiscoveryResultsHandler resultsHandler,
+			String searchTarget ) throws IOException
 	{
 		synchronized( REGISTRATION_PROCESS )
 		{
@@ -151,7 +151,8 @@ public class DiscoveryListener implements Runnable
 	 * @param searchTarget
 	 *           the search target
 	 */
-	public void unRegisterResultsHandler( DiscoveryResultsHandler resultsHandler, String searchTarget )
+	public void unRegisterResultsHandler( DiscoveryResultsHandler resultsHandler,
+			String searchTarget )
 	{
 		synchronized( REGISTRATION_PROCESS )
 		{
@@ -227,6 +228,7 @@ public class DiscoveryListener implements Runnable
 
 	}
 
+	@Override
 	public void run()
 	{
 		if( !Thread.currentThread().getName().equals( "DiscoveryListener daemon" ) )
@@ -271,7 +273,8 @@ public class DiscoveryListener implements Runnable
 
 		skt.receive( input );
 		InetAddress from = input.getAddress();
-		String received = new String( input.getData(), input.getOffset(), input.getLength() );
+		String received =
+				new String( input.getData(), input.getOffset(), input.getLength() );
 		HttpResponse msg = null;
 		try
 		{
