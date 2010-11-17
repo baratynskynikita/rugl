@@ -1,0 +1,30 @@
+<project name="MetaServer" default="jar" basedir=".">
+
+	<taskdef resource="genjar.properties" classpath="../lib/GenJar.jar" />
+
+	<target name="compile" description="compiles source">
+		<mkdir dir="./build" />
+		<javac destdir="build" target="1.5" debug="on" debuglevel="lines,vars,source" 
+				srcdir="src" includes="com/ryanm/google/server/GameRecord.java">
+			<compilerarg value="-Xlint:unchecked" />
+		</javac>
+		<tstamp />
+		<touch file="build/${DSTAMP}.txt" />
+	</target>
+
+	<target name="jar" description="generate MetaServer client jar" depends="compile">
+		<genjar jarfile="MetaServerClient.jar">
+			<class name="com.ryanm.google.server.GameRecord" />
+
+			<classpath>
+				<pathelement location="./build" />
+			</classpath>
+		</genjar>
+	</target>
+
+	<target name="clean" description="deletes build directory">
+		<delete dir="build" />
+		<delete file="MetaServerClient.jar" />
+	</target>
+
+</project>
