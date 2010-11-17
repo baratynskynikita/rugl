@@ -1,0 +1,61 @@
+<project name="Ubiety" default="jar" basedir=".">
+
+	<taskdef resource="genjar.properties" classpath="../lib/GenJar.jar" />
+
+	<!-- set global properties for this build -->
+	
+	<target name="compile" description="compiles source">
+		<mkdir dir="build" />
+
+		<javac destdir="build" target="1.5" debug="on" debuglevel="lines,vars,source" >
+			<src>
+				<pathelement location="src" />
+			</src>
+			<classpath>
+				<pathelement location="smack.jar" />
+			</classpath>
+
+			<compilerarg value="-Xlint:unchecked" />
+		</javac>
+
+		<tstamp />
+		<touch file="build/${DSTAMP}.txt" />
+	</target>
+
+	<target name="jar" description="generate Ubiety jar" depends="compile">
+		<genjar jarfile="Ubiety.jar">
+			<class name="com.ryanm.ubiety.Test" />
+
+			<classpath>
+				<pathelement location="build" />
+			</classpath>
+
+			<resource file="build/${DSTAMP}.txt" />
+
+			<library jar="smack.jar" />
+
+			<manifest>
+				<attribute name="Main-Class" value="com.ryanm.ubiety.Test" />
+			</manifest>
+		</genjar>
+	</target>
+	
+	<target name="javadoc">
+		
+ 		<mkdir dir="doc"/>
+ 		
+ 		<javadoc destdir="doc"> 
+			<sourcepath>
+				<pathelement location="src" />
+			</sourcepath>
+ 		</javadoc>
+ 	
+ 		<zip destfile="doc.zip" basedir="doc"/>
+	</target>
+
+	<target name="clean" description="deletes build directory">
+		<delete dir="build" />
+		<delete dir="doc" />
+	</target>
+
+</project>
