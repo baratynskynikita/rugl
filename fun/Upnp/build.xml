@@ -1,0 +1,59 @@
+<project name="Upnp" default="jar" basedir=".">
+
+	<taskdef resource="genjar.properties" classpath="../lib/GenJar.jar" />
+	
+	<target name="compile" description="compiles source">
+		<mkdir dir="build" />
+
+		<javac destdir="build" target="1.5" debug="on" debuglevel="lines,vars,source" >
+			<src>
+				<pathelement location="src" />
+			</src>
+
+			<compilerarg value="-Xlint:unchecked" />
+		</javac>
+
+		<tstamp />
+		<touch file="build/${DSTAMP}.txt" />
+	</target>
+
+	<target name="jar" description="generate Upnp jar" depends="compile">
+		<genjar jarfile="upnp.jar">
+			<class name="net.sbbi.upnp.impls.InternetGatewayDevice" />
+
+			<classpath>
+				<pathelement location="build" />
+			</classpath>
+			
+			<classfilter>
+			  <exclude name="org.w3c.dom." />
+			  <exclude name="org.xml.sax." />
+			</classfilter>
+
+			<resource file="build/${DSTAMP}.txt" />
+
+			<manifest>
+				<attribute name="Main-Class" value="net.sbbi.upnp.impls.InternetGatewayDevice" />
+			</manifest>
+		</genjar>
+	</target>
+	
+	<target name="javadoc">
+		
+ 		<mkdir dir="doc"/>
+ 		
+ 		<javadoc destdir="doc"> 
+			<sourcepath>
+				<pathelement location="src" />
+			</sourcepath>
+ 		</javadoc>
+ 	
+ 		<zip destfile="doc.zip" basedir="doc"/>
+	</target>
+
+	<target name="clean" description="deletes build directory">
+		<delete dir="build" />
+		<delete dir="doc" />
+	</target>
+
+</project>
