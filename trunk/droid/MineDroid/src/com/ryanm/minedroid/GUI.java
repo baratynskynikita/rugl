@@ -23,17 +23,13 @@ import com.ryanm.droid.rugl.util.Colour;
  */
 public class GUI
 {
-	private static final float radius = 50;
-
-	private static final float padSize = 150;
+	private static final float radius = 100;
 
 	/***/
-	public final AbstractTouchStick left = new TouchStickArea( 10, 10, padSize, padSize,
-			radius );
+	public final AbstractTouchStick left = new TouchStickArea( 0, 0, 400, 480, radius );
 
 	/***/
-	public final AbstractTouchStick right = new TouchStickArea( 800 - padSize - 10, 10,
-			padSize, padSize, radius );
+	public final AbstractTouchStick right = new TouchStickArea( 400, 0, 400, 480, radius );
 
 	private StackedRenderer r = new StackedRenderer();
 
@@ -56,6 +52,8 @@ public class GUI
 				font = resource;
 			}
 		} );
+
+		Touch.setScreenSize( 800, 480, Game.width, Game.height );
 	}
 
 	/**
@@ -79,21 +77,17 @@ public class GUI
 	 */
 	public void draw()
 	{
-		GLUtil.scaledOrtho( 800, 480, Game.width, Game.height );
-		Touch.setScreenSize( 800, 480, Game.width, Game.height );
-
-		glClear( GL_DEPTH_BUFFER_BIT );
-
-		left.draw( r );
-		right.draw( r );
-
 		if( notification != null )
 		{
-			notification.render( r );
-		}
+			GLUtil.scaledOrtho( 800, 480, Game.width, Game.height );
 
-		r.render();
-		r.clear();
+			glClear( GL_DEPTH_BUFFER_BIT );
+
+			notification.render( r );
+
+			r.render();
+			r.clear();
+		}
 	}
 
 	/**
