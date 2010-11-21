@@ -4,10 +4,9 @@ package com.ryanm.minedroid;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.ryanm.droid.rugl.geom.CompiledShape;
 import com.ryanm.droid.rugl.geom.ShapeBuilder;
 import com.ryanm.droid.rugl.geom.TexturedShape;
-import com.ryanm.droid.rugl.gl.Renderer;
+import com.ryanm.droid.rugl.gl.VBOShape;
 import com.ryanm.droid.rugl.util.Colour;
 import com.ryanm.droid.rugl.util.geom.Frustum;
 import com.ryanm.droid.rugl.util.geom.Frustum.Result;
@@ -54,14 +53,14 @@ public class Chunklet
 	private boolean geomDirty = true;
 
 	/**
-	 * in n, s, e, w, t, b order
+	 * Solid geometry
 	 */
-	private final CompiledShape[] solids = new CompiledShape[ 6 ];
+	public VBOShape solidVBO;
 
 	/**
-	 * in n, s, e, w, t, b order
+	 * Transparent geometry
 	 */
-	private final CompiledShape[] transparents = new CompiledShape[ 6 ];
+	public VBOShape transparentVBO;
 
 	/**
 	 * <code>true</code> if we're waiting on being processed by the
@@ -111,29 +110,16 @@ public class Chunklet
 	 */
 	public int drawFlag = 0;
 
-	/**
-	 * Used to generate the solid geometry
-	 */
-	private static ShapeBuilder[] opaque = new ShapeBuilder[ 6 ];
+	private static ShapeBuilder opaqueVBOBuilder = new ShapeBuilder();
 
-	/**
-	 * Used to generate the transparent geometry
-	 */
-	private static ShapeBuilder[] transparent = new ShapeBuilder[ 6 ];
-	static
-	{
-		for( int i = 0; i < 6; i++ )
-		{
-			opaque[ i ] = new ShapeBuilder();
-			transparent[ i ] = new ShapeBuilder();
-		}
-	}
+	private static ShapeBuilder transVBOBuilder = new ShapeBuilder();
 
 	/**
 	 * The service where we generate geometry. Note that there's only
 	 * one worker thread: if you want more, you're going to have to use
 	 * separate {@link ShapeBuilder}s for each rather than the static
-	 * ones above in {@link #opaque} and {@link #transparent}
+	 * ones above in {@link #opaqueVBOBuilder} and
+	 * {@link #transVBOBuilder}
 	 */
 	private static ExecutorService geomGenService = Executors.newSingleThreadExecutor();
 
@@ -203,7 +189,10 @@ public class Chunklet
 		geomDirty = true;
 	}
 
-	private void generateGeometry()
+	/**
+	 * 
+	 */
+	public void generateGeometry()
 	{
 		if( geomDirty && !geomPending )
 		{
@@ -229,52 +218,42 @@ public class Chunklet
 
 								if( b == null || !b.opaque )
 								{
-									addFace( b, x - 1, y, z, Face.South, colour, opaque[ 0 ],
-											transparent[ 0 ] );
-									addFace( b, x + 1, y, z, Face.North, colour, opaque[ 1 ],
-											transparent[ 1 ] );
-									addFace( b, x, y, z - 1, Face.West, colour, opaque[ 2 ],
-											transparent[ 2 ] );
-									addFace( b, x, y, z + 1, Face.East, colour, opaque[ 3 ],
-											transparent[ 3 ] );
-									addFace( b, x, y + 1, z, Face.Bottom, colour, opaque[ 4 ],
-											transparent[ 4 ] );
-									addFace( b, x, y - 1, z, Face.Top, colour, opaque[ 5 ],
-											transparent[ 5 ] );
+									addFace( b, x - 1, y, z, Face.South, colour, opaqueVBOBuilder,
+											transVBOBuilder );
+									addFace( b, x + 1, y, z, Face.North, colour, opaqueVBOBuilder,
+											transVBOBuilder );
+									addFace( b, x, y, z - 1, Face.West, colour, opaqueVBOBuilder,
+											transVBOBuilder );
+									addFace( b, x, y, z + 1, Face.East, colour, opaqueVBOBuilder,
+											transVBOBuilder );
+									addFace( b, x, y + 1, z, Face.Bottom, colour,
+											opaqueVBOBuilder, transVBOBuilder );
+									addFace( b, x, y - 1, z, Face.Top, colour, opaqueVBOBuilder,
+											transVBOBuilder );
 								}
 							}
 						}
 					}
 
-					for( int i = 0; i < opaque.length; i++ )
+					TexturedShape ts = opaqueVBOBuilder.compile();
+
+					if( ts != null )
 					{
-						TexturedShape pts = opaque[ i ].compile();
+						ts.state = BlockFactory.state;
+						ts.scale( SIXTEENTH, SIXTEENTH, SIXTEENTH );
+						ts.translate( parent.x, 0, parent.z );
 
-						if( pts != null )
-						{
-							pts.scale( SIXTEENTH, SIXTEENTH, SIXTEENTH );
-							pts.translate( parent.x, 0, parent.z );
-							solids[ i ] = new CompiledShape( pts );
-							solids[ i ].state = BlockFactory.state;
-						}
-						else
-						{
-							solids[ i ] = null;
-						}
+						solidVBO = new VBOShape( ts );
+					}
 
-						pts = transparent[ i ].compile();
+					ts = transVBOBuilder.compile();
+					if( ts != null )
+					{
+						ts.state = BlockFactory.state;
+						ts.scale( SIXTEENTH, SIXTEENTH, SIXTEENTH );
+						ts.translate( parent.x, 0, parent.z );
 
-						if( pts != null )
-						{
-							pts.scale( SIXTEENTH, SIXTEENTH, SIXTEENTH );
-							pts.translate( parent.x, 0, parent.z );
-							transparents[ i ] = new CompiledShape( pts );
-							transparents[ i ].state = BlockFactory.state;
-						}
-						else
-						{
-							transparents[ i ] = null;
-						}
+						transparentVBO = new VBOShape( ts );
 					}
 
 					geomDirty = false;
@@ -307,55 +286,27 @@ public class Chunklet
 		return frustum.cuboidIntersects( x, y, z, x + 1, y + 1, z + 1 );
 	}
 
-	/**
-	 * @param eyeX
-	 * @param eyeY
-	 * @param eyeZ
-	 * @param solids
-	 *           <code>true</code> to render the solids,
-	 *           <code>false</code> for the transparent stuff
-	 * @param r
-	 */
-	public void render( double eyeX, double eyeY, double eyeZ, boolean solids, Renderer r )
-	{
-		generateGeometry();
-
-		CompiledShape[] toDraw = solids ? this.solids : transparents;
-
-		if( toDraw != null )
-		{
-			if( toDraw[ 0 ] != null && eyeX > x )
-			{
-				toDraw[ 0 ].render( r );
-			}
-			if( toDraw[ 1 ] != null && eyeX < x + 1 )
-			{
-				toDraw[ 1 ].render( r );
-			}
-			if( toDraw[ 2 ] != null && eyeZ > z )
-			{
-				toDraw[ 2 ].render( r );
-			}
-			if( toDraw[ 3 ] != null && eyeZ < z + 1 )
-			{
-				toDraw[ 3 ].render( r );
-			}
-			if( toDraw[ 4 ] != null && eyeY < y + 1 )
-			{
-				toDraw[ 4 ].render( r );
-			}
-			if( toDraw[ 5 ] != null && eyeY > y )
-			{
-				toDraw[ 5 ].render( r );
-			}
-		}
-	}
-
 	@Override
 	public String toString()
 	{
 		return "Chunklet @ " + x + ", " + y + ", " + z + "\nsheets n " + northSheet + " s "
 				+ southSheet + "\n e " + eastSheet + " w " + westSheet + "\n t " + topSheet
 				+ " b " + bottomSheet;
+	}
+
+	/**
+	 * Deletes VBOs
+	 */
+	public void unload()
+	{
+		if( solidVBO != null )
+		{
+			solidVBO.delete();
+		}
+
+		if( transparentVBO != null )
+		{
+			transparentVBO.delete();
+		}
 	}
 }
