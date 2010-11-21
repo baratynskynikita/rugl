@@ -7,7 +7,9 @@ import static android.opengl.GLES10.glClear;
 import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.gl.GLUtil;
 import com.ryanm.droid.rugl.gl.StackedRenderer;
-import com.ryanm.droid.rugl.input.TouchStick;
+import com.ryanm.droid.rugl.input.AbstractTouchStick;
+import com.ryanm.droid.rugl.input.Touch;
+import com.ryanm.droid.rugl.input.TouchStickArea;
 import com.ryanm.droid.rugl.res.FontLoader;
 import com.ryanm.droid.rugl.res.ResourceLoader;
 import com.ryanm.droid.rugl.text.Font;
@@ -23,12 +25,15 @@ public class GUI
 {
 	private static final float radius = 50;
 
-	/***/
-	public final TouchStick left = new TouchStick( radius + 50, radius + 20, radius );
+	private static final float padSize = 150;
 
 	/***/
-	public final TouchStick right = new TouchStick( Game.width - radius - 50, radius + 20,
+	public final AbstractTouchStick left = new TouchStickArea( 10, 10, padSize, padSize,
 			radius );
+
+	/***/
+	public final AbstractTouchStick right = new TouchStickArea( 800 - padSize - 10, 10,
+			padSize, padSize, radius );
 
 	private StackedRenderer r = new StackedRenderer();
 
@@ -41,6 +46,9 @@ public class GUI
 	/***/
 	public GUI()
 	{
+		Touch.addListener( left );
+		Touch.addListener( right );
+
 		ResourceLoader.load( new FontLoader( com.ryanm.droid.rugl.R.raw.font, false ) {
 			@Override
 			public void fontLoaded()
@@ -72,6 +80,8 @@ public class GUI
 	public void draw()
 	{
 		GLUtil.scaledOrtho( 800, 480, Game.width, Game.height );
+		Touch.setScreenSize( 800, 480, Game.width, Game.height );
+
 		glClear( GL_DEPTH_BUFFER_BIT );
 
 		left.draw( r );

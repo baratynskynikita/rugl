@@ -8,7 +8,7 @@ import android.opengl.GLES10;
 import android.view.KeyEvent;
 
 import com.ryanm.droid.rugl.Phase;
-import com.ryanm.droid.rugl.input.TouchStick.ClickListener;
+import com.ryanm.droid.rugl.input.AbstractTouchStick.ClickListener;
 import com.ryanm.droid.rugl.util.FPSCamera;
 import com.ryanm.droid.rugl.util.geom.Frustum;
 import com.ryanm.droid.rugl.util.geom.Vector3f;
@@ -42,7 +42,7 @@ public class BlockView extends Phase
 	@Override
 	public void init()
 	{
-		cam.far = 2.5f;
+		cam.far = 2.0f;
 
 		if( gui == null )
 		{
@@ -76,8 +76,8 @@ public class BlockView extends Phase
 		GLES10.glClearColor( 0.9f, 0.9f, 0.9f, 1 );
 		GLES10.glEnable( GLES10.GL_FOG );
 		GLES10.glFogx( GLES10.GL_FOG_MODE, GLES10.GL_LINEAR );
-		GLES10.glFogf( GLES10.GL_FOG_START, 1.4f );
-		GLES10.glFogf( GLES10.GL_FOG_END, 2.0f );
+		GLES10.glFogf( GLES10.GL_FOG_START, 1.8f );
+		GLES10.glFogf( GLES10.GL_FOG_END, 2f );
 		GLES10.glFogfv( GLES10.GL_FOG_COLOR, new float[] { 1, 1, 1, 1 }, 0 );
 	}
 
