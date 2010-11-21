@@ -30,10 +30,23 @@ public class TexturedShape extends ColouredShape
 	 */
 	public boolean texCoordsDirty = true;
 
-	private boolean sanity()
+	private void sanity() throws IllegalArgumentException, IllegalStateException
 	{
-		assert texCoords.length == vertexCount() * 2;
-		return true;
+		if( texCoords.length != vertexCount() * 2 )
+		{
+			throw new IllegalArgumentException( "Texture coordinate count mismatch\n"
+					+ toString() );
+		}
+
+		if( texCoords.length != correctedTexCoords.length )
+		{
+			throw new IllegalStateException( "wat" );
+		}
+
+		if( texCoords == correctedTexCoords )
+		{
+			throw new IllegalStateException( "this is a poor idea" );
+		}
 	}
 
 	/**
@@ -53,7 +66,7 @@ public class TexturedShape extends ColouredShape
 			state = texture.applyTo( state );
 		}
 
-		assert sanity();
+		sanity();
 	}
 
 	/**
@@ -72,8 +85,6 @@ public class TexturedShape extends ColouredShape
 		{
 			state = texture.applyTo( state );
 		}
-
-		assert sanity();
 	}
 
 	/**
@@ -87,9 +98,14 @@ public class TexturedShape extends ColouredShape
 		if( texCoordsDirty )
 		{
 			System.arraycopy( texCoords, 0, correctedTexCoords, 0, texCoords.length );
-			texture.correctTexCoords( correctedTexCoords );
+
+			if( texture != null )
+			{
+				texture.correctTexCoords( correctedTexCoords );
+			}
 			texCoordsDirty = false;
 		}
+
 		return correctedTexCoords;
 	}
 

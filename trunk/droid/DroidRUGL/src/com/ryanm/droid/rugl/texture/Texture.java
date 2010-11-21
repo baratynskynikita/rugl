@@ -27,13 +27,13 @@
 
 package com.ryanm.droid.rugl.texture;
 
+import android.graphics.Point;
+
 import com.ryanm.droid.rugl.gl.State;
 import com.ryanm.droid.rugl.gl.enums.MinFilter;
 import com.ryanm.droid.rugl.gl.facets.TextureState.Filters;
 import com.ryanm.droid.rugl.texture.TextureFactory.GLTexture;
 import com.ryanm.droid.rugl.util.geom.Vector2f;
-
-import android.graphics.Point;
 
 /**
  * It's a texture, residing inside a larger texture
