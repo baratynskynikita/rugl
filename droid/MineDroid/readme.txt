@@ -5,6 +5,8 @@ Installation:
 
 	1) Install the apk as usual with
 			"adb -d install MineDroid.apk"
+	or download it from your phone's browser and tap it in the download list to
+	install.
 	2) Copy your ".minecraft" installation directory over to 
 	the root of your phone's storage. Only the saves/World1 directory is actually 
 	needed, so you can save some space by not copying the bin, resources and other 
@@ -17,19 +19,18 @@ Installation:
 
 Controls:
 
-	Touch sticks in the bottom left and right of the screen. Left for movement, 
-	right for looking around. Look mode is inverted, because who doesn't enjoy 
-	pretending that their head is an aeroplane?
+	Touch anywhere on the screen to create a touchstick - on the left half of 
+	the screen to control position, on the right half to control direction.
+	Look mode is inverted, because who doesn't enjoy pretending that their head 
+	is an aeroplane?
 	
 	Tapping on the right stick will cause the view frustum to freeze in position.
 	You can still move the camera around, but only the chunklets that are visible 
 	from where you tapped will be rendered. Tap again to unfreeze the frustum.
 	
 Getting the source:
-	You'll need the two eclipse projects at
-	http://code.google.com/p/rugl/source/browse#svn/trunk/MineDroid
-	and
-	http://code.google.com/p/rugl/source/browse#svn/trunk/DroidRUGL
+	You'll need the eclipse projects at
+	http://code.google.com/p/rugl/source/browse/#svn/trunk/droid
 	
 	For those with an eclipse compiler setup as prissy as mine, the missing 
 	javadoc warnings are Google's fault.
@@ -50,7 +51,6 @@ Stuff that should be done that I can't do
 
 Stuff that should be done that I'm not in a huge rush to do:
 
-	* Switch rendering to VBOs
 	* More block types
 	* Odd-shaped blocks - half block, steps, liquids
 	* Play around with render distance and fog parameters - need to see as far as 
