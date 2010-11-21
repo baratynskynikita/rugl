@@ -62,6 +62,8 @@ public abstract class Codec<P>
 		registerCodec( new StringCodec() );
 		registerCodec( new EnumCodec() );
 		registerCodec( new RangeCodec() );
+		registerCodec( new Vector2fCodec() );
+		registerCodec( new Vector3fCodec() );
 	}
 
 	/**
