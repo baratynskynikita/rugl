@@ -1,8 +1,6 @@
 
 package com.ryanm.droid.rugl;
 
-import com.ryanm.droid.rugl.res.ResourceLoader;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -11,6 +9,8 @@ import android.os.Build;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Toast;
+
+import com.ryanm.droid.rugl.res.ResourceLoader;
 
 /**
  * Handy activity that can be simply subclassed. Just remember to call
@@ -99,8 +99,6 @@ public class GameActivity extends Activity
 	{
 		if( event.getRepeatCount() == 0 )
 		{
-			Log.i( Game.RUGL_TAG, "keydown " + keyCode );
-
 			gameView.game.currentPhase().onKeyDown( keyCode, event );
 		}
 
@@ -110,8 +108,6 @@ public class GameActivity extends Activity
 	@Override
 	public boolean onKeyUp( int keyCode, KeyEvent event )
 	{
-		Log.i( Game.RUGL_TAG, "keyup " + keyCode );
-
 		gameView.game.currentPhase().onKeyUp( keyCode, event );
 		return true;
 	}

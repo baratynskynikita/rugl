@@ -1,9 +1,6 @@
 
 package com.ryanm.droid.rugl.input;
 
-import android.util.Log;
-
-import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.geom.ColouredShape;
 import com.ryanm.droid.rugl.geom.ShapeUtil;
 import com.ryanm.droid.rugl.gl.GLUtil;
@@ -61,11 +58,8 @@ public class TouchStickArea extends AbstractTouchStick
 	@Override
 	public void pointerAdded( Pointer p )
 	{
-		Log.i( Game.RUGL_TAG, "pointeradded " + p + " pad = " + pad );
 		if( pad.contains( p.x, p.y ) )
 		{
-			Log.i( Game.RUGL_TAG, "hit" );
-
 			touch = p;
 
 			stick.setPosition( p.x, p.y );

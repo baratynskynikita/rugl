@@ -6,9 +6,7 @@ import java.nio.ShortBuffer;
 
 import android.opengl.GLES10;
 import android.opengl.GLES11;
-import android.util.Log;
 
-import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.geom.ColouredShape;
 import com.ryanm.droid.rugl.geom.TexturedShape;
 import com.ryanm.droid.rugl.util.FastFloatBuffer;
@@ -96,8 +94,6 @@ public class VBOShape
 	{
 		if( vertBufferID == -1 )
 		{
-			Log.i( Game.RUGL_TAG, "Building VBO" );
-
 			IntBuffer ib = GLUtil.intScratch( 4 );
 			GLES11.glGenBuffers( 4, ib );
 			vertBufferID = ib.get( 0 );
@@ -122,8 +118,6 @@ public class VBOShape
 					indexBuffer, GLES11.GL_STATIC_DRAW );
 
 			GLUtil.checkGLError();
-
-			Log.i( Game.RUGL_TAG, toString() );
 		}
 
 		state.apply();
