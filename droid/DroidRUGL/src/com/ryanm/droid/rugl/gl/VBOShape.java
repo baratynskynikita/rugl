@@ -172,13 +172,6 @@ public class VBOShape
 						+ vertBufferID + " c=" + colourBufferID + " tx=" + texCoordBufferID
 						+ " i=" + indexBufferID + "\n" + state );
 
-		buff.append( "\ntxc = [" );
-		for( int i = 0; i < texCoordBuffer.limit(); i++ )
-		{
-			buff.append( texCoordBuffer.floats.get( i ) );
-			buff.append( ", " );
-		}
-
 		return buff.toString();
 	}
 }
