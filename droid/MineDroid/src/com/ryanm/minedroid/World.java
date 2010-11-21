@@ -36,7 +36,7 @@ public class World
 	 * The size of the square of chunks around the player that we try
 	 * to load
 	 */
-	private int width = 7, depth = 7;
+	private int width = 9, depth = 9;
 
 	private List<Chunk> chunks = new ArrayList<Chunk>();
 
@@ -45,8 +45,6 @@ public class World
 	private Queue<Chunklet> floodQueue = new ArrayBlockingQueue<Chunklet>( 50 );
 
 	private ArrayList<Chunklet> renderList = new ArrayList<Chunklet>();
-
-	private ArrayList<Chunklet> savedRenderList = new ArrayList<Chunklet>();
 
 	private int drawFlag = Integer.MIN_VALUE;
 
@@ -141,7 +139,8 @@ public class World
 				}
 			}
 
-			chunks.remove( furthest );
+			Chunk chunk = chunks.remove( furthest );
+			chunk.unload();
 		}
 	}
 
@@ -152,10 +151,11 @@ public class World
 	public void draw( Vector3f eye, Frustum frustum )
 	{
 		Chunklet c = getChunklet( eye.x, eye.y, eye.z );
-		float distlimit = 10f;
+		float distlimit = 25;
 
 		if( c != null )
 		{
+			Chunklet origin = c;
 			c.drawFlag = drawFlag;
 			floodQueue.offer( c );
 
@@ -166,8 +166,9 @@ public class World
 				renderList.add( c );
 
 				// floodfill - for each neighbouring chunklet...
-				if( !c.northSheet )
-				// we can see through that face of this chunk
+				if( c.x <= origin.x && !c.northSheet )
+				// we are not reversing flood direction and we can see
+				// through that face of this chunk
 				{
 					Chunklet north = getChunklet( c.x - 1, c.y, c.z );
 					if( north != null
@@ -185,7 +186,7 @@ public class World
 						floodQueue.offer( north );
 					}
 				}
-				if( !c.southSheet )
+				if( c.x >= origin.x && !c.southSheet )
 				{
 					Chunklet south = getChunklet( c.x + 1, c.y, c.z );
 					if( south != null && !south.northSheet && south.drawFlag != drawFlag
@@ -196,7 +197,7 @@ public class World
 						floodQueue.offer( south );
 					}
 				}
-				if( !c.eastSheet )
+				if( c.z <= origin.z && !c.eastSheet )
 				{
 					Chunklet east = getChunklet( c.x, c.y, c.z - 1 );
 					if( east != null && !east.westSheet && east.drawFlag != drawFlag
@@ -207,7 +208,7 @@ public class World
 						floodQueue.offer( east );
 					}
 				}
-				if( !c.westSheet )
+				if( c.z >= origin.z && !c.westSheet )
 				{
 					Chunklet west = getChunklet( c.x, c.y, c.z + 1 );
 					if( west != null && !west.eastSheet && west.drawFlag != drawFlag
@@ -218,7 +219,7 @@ public class World
 						floodQueue.offer( west );
 					}
 				}
-				if( !c.bottomSheet )
+				if( c.y <= origin.y && !c.bottomSheet )
 				{
 					Chunklet bottom = getChunklet( c.x, c.y - 1, c.z );
 					if( bottom != null && !bottom.topSheet && bottom.drawFlag != drawFlag
@@ -229,7 +230,7 @@ public class World
 						floodQueue.offer( bottom );
 					}
 				}
-				if( !c.topSheet )
+				if( c.y >= origin.y && !c.topSheet )
 				{
 					Chunklet top = getChunklet( c.x, c.y + 1, c.z );
 					if( top != null && !top.bottomSheet && top.drawFlag != drawFlag
@@ -247,40 +248,30 @@ public class World
 		cs.eye.set( eye );
 		Collections.sort( renderList, cs );
 
-		// has the drawable chunk set changed?
-		boolean changed = renderList.size() != savedRenderList.size();
-		for( int i = 0; i < renderList.size() && !changed; i++ )
+		// vbo
+		// solid stuff from near to far
+		for( int i = 0; i < renderList.size(); i++ )
 		{
-			changed &= renderList.get( i ) != savedRenderList.get( i );
+			c = renderList.get( i );
+			c.generateGeometry();
+
+			if( c.solidVBO != null )
+			{
+				c.solidVBO.draw();
+			}
 		}
 
-		if( changed )
+		// translucent stuff from far to near
+		for( int i = renderList.size() - 1; i >= 0; i-- )
 		{
-			// submit geometry to the renderer...
-			renderer.clear();
-
-			// solid stuff from near to far
-			for( int i = 0; i < renderList.size(); i++ )
+			c = renderList.get( i );
+			if( c.transparentVBO != null )
 			{
-				renderList.get( i ).render( eye.x, eye.y, eye.z, true, renderer );
+				c.transparentVBO.draw();
 			}
-
-			// translucent stuff from far to near
-			for( int i = renderList.size() - 1; i >= 0; i-- )
-			{
-				renderList.get( i ).render( eye.x, eye.y, eye.z, false, renderer );
-			}
-
-			// save chunk list
-			ArrayList<Chunklet> t = savedRenderList;
-			savedRenderList = renderList;
-			renderList = t;
 		}
 
 		renderList.clear();
-
-		renderer.render();
-
 		drawFlag++;
 	}
 
