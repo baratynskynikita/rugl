@@ -1,77 +1,37 @@
 
 package com.ryanm.droid.rugl.input;
 
-import java.util.ArrayList;
-
 import com.ryanm.droid.rugl.geom.ColouredShape;
 import com.ryanm.droid.rugl.geom.ShapeUtil;
 import com.ryanm.droid.rugl.gl.StackedRenderer;
 import com.ryanm.droid.rugl.input.Touch.Pointer;
-import com.ryanm.droid.rugl.input.Touch.TouchListener;
 import com.ryanm.droid.rugl.util.Colour;
 import com.ryanm.droid.rugl.util.Trig;
 import com.ryanm.droid.rugl.util.math.Range;
-
 
 /**
  * Simulates a thumbstick
  * 
  * @author ryanm
  */
-public class TouchStick
+public class TouchStick extends AbstractTouchStick
 {
 	private ColouredShape limit;
 
 	private ColouredShape stick;
 
-	private float xPos, yPos, radius;
+	private float radius;
 
-	/**
-	 * Current x value, in range -1 (left) to 1 (right)
-	 */
-	public float x;
+	private float xPos;
 
-	/**
-	 * Current y value, in range -1 (bottom) to 1 (top)
-	 */
-	public float y;
-
-	/**
-	 * The maximum touch time for a click to be registered
-	 */
-	public long tapTime = 150;
-
-	private boolean touchLeft = false;
+	private float yPos;
 
 	/**
 	 * Indicates that the touch has been lifted
 	 */
-	private Touch.Pointer touch = null;
+	boolean touchLeft = false;
 
-	private long touchTime = -1;
-
-	private ArrayList<ClickListener> listeners = new ArrayList<ClickListener>();
-
-	private TouchListener l = new TouchListener() {
-		@Override
-		public void pointerRemoved( Pointer p )
-		{
-			if( p == touch )
-			{
-				touchLeft = true;
-			}
-		}
-
-		@Override
-		public void pointerAdded( Pointer p )
-		{
-			if( touch == null && Math.hypot( p.x - xPos, p.y - yPos ) < radius )
-			{
-				touch = p;
-				touchTime = System.currentTimeMillis();
-			}
-		}
-	};
+	long touchTime = -1;
 
 	/**
 	 * @param x
@@ -83,27 +43,28 @@ public class TouchStick
 	 */
 	public TouchStick( float x, float y, float limitRadius )
 	{
-		xPos = x;
-		yPos = y;
+		setPosition( x, y );
 		radius = limitRadius;
 
+		buildShape();
+	}
+
+	private void buildShape()
+	{
 		limit =
-				new ColouredShape( ShapeUtil.innerCircle( 0, 0, limitRadius, 10, 30, 0 ),
+				new ColouredShape( ShapeUtil.innerCircle( 0, 0, radius, 10, 30, 0 ),
 						Colour.white, null );
 
 		stick = new ColouredShape( limit.clone(), Colour.white, null );
 		stick.scale( 0.5f, 0.5f, 1 );
 		Colour.withAlphai( stick.colours, 128 );
-
-		limit.translate( x, y, 0 );
-		stick.translate( x, y, 0 );
-
 		for( int i = 0; i < limit.colours.length; i += 2 )
 		{
 			limit.colours[ i ] = Colour.withAlphai( limit.colours[ i ], 0 );
 		}
 
-		Touch.addListener( l );
+		limit.translate( xPos, yPos, 0 );
+		stick.translate( xPos, yPos, 0 );
 	}
 
 	/**
@@ -112,16 +73,17 @@ public class TouchStick
 	 */
 	public void setPosition( float x, float y )
 	{
-		limit.translate( x - xPos, y - yPos, 0 );
-		stick.translate( x - xPos, y - yPos, 0 );
+		if( limit != null )
+		{
+			limit.translate( x - xPos, y - yPos, 0 );
+			stick.translate( x - xPos, y - yPos, 0 );
+		}
 
 		xPos = x;
 		yPos = y;
 	}
 
-	/**
-	 * Updates the {@link #x} and {@link #y} values
-	 */
+	@Override
 	public void advance()
 	{
 		if( touchLeft )
@@ -133,10 +95,7 @@ public class TouchStick
 
 			if( tapDuration < tapTime )
 			{
-				for( int i = 0; i < listeners.size(); i++ )
-				{
-					listeners.get( i ).onClick();
-				}
+				notifyClick();
 			}
 		}
 
@@ -160,11 +119,36 @@ public class TouchStick
 		}
 	}
 
+	@Override
+	public void pointerRemoved( Pointer p )
+	{
+		if( p == touch )
+		{
+			touchLeft = true;
+		}
+	}
+
+	@Override
+	public void pointerAdded( Pointer p )
+	{
+		if( touch == null && Math.hypot( p.x - xPos, p.y - yPos ) < radius )
+		{
+			touch = p;
+			touchTime = System.currentTimeMillis();
+		}
+	}
+
 	/**
 	 * @param r
 	 */
+	@Override
 	public void draw( StackedRenderer r )
 	{
+		if( limit == null )
+		{
+			buildShape();
+		}
+
 		limit.render( r );
 
 		r.pushMatrix();
@@ -173,32 +157,5 @@ public class TouchStick
 			stick.render( r );
 		}
 		r.popMatrix();
-	}
-
-	/**
-	 * @param l
-	 */
-	public void addListener( ClickListener l )
-	{
-		listeners.add( l );
-	}
-
-	/**
-	 * @param l
-	 */
-	public void removeLIstener( ClickListener l )
-	{
-		listeners.remove( l );
-	}
-
-	/**
-	 * @author ryanm
-	 */
-	public static abstract class ClickListener
-	{
-		/**
-		 * The stick has been tapped
-		 */
-		public abstract void onClick();
 	}
 }

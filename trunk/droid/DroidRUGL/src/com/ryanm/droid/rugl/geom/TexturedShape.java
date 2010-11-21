@@ -76,8 +76,13 @@ public class TexturedShape extends ColouredShape
 		assert sanity();
 	}
 
-	@Override
-	public void render( Renderer r )
+	/**
+	 * Gets the texture coordinates, corrected with respect to the
+	 * texture's range
+	 * 
+	 * @return corrected texture coordinates
+	 */
+	public float[] getTextureCoords()
 	{
 		if( texCoordsDirty )
 		{
@@ -85,9 +90,21 @@ public class TexturedShape extends ColouredShape
 			texture.correctTexCoords( correctedTexCoords );
 			texCoordsDirty = false;
 		}
+		return correctedTexCoords;
+	}
+
+	@Override
+	public void render( Renderer r )
+	{
 		state = texture.applyTo( state );
 
-		r.addTriangles( vertices, correctedTexCoords, colours, triangles, state );
+		r.addTriangles( vertices, getTextureCoords(), colours, triangles, state );
+	}
+
+	@Override
+	public int bytes()
+	{
+		return super.bytes() + texCoords.length * 4;
 	}
 
 	@Override

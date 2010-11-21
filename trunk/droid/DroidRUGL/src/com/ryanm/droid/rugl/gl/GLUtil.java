@@ -37,16 +37,16 @@ import java.util.Iterator;
 import javax.microedition.khronos.opengles.GL10;
 import javax.microedition.khronos.opengles.GL11;
 
+import android.opengl.GLES10;
+import android.opengl.GLES11;
+import android.opengl.GLException;
+
 import com.ryanm.droid.rugl.gl.enums.ComparisonFunction;
 import com.ryanm.droid.rugl.gl.enums.DestinationFactor;
 import com.ryanm.droid.rugl.gl.enums.SourceFactor;
 import com.ryanm.droid.rugl.gl.facets.AlphaTest;
 import com.ryanm.droid.rugl.gl.facets.Blend;
 import com.ryanm.droid.rugl.gl.facets.DepthTest;
-
-import android.opengl.GLES10;
-import android.opengl.GLES11;
-import android.opengl.GLException;
 
 /**
  * @author foo
