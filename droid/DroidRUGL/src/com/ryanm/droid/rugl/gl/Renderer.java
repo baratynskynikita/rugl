@@ -33,14 +33,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import android.opengl.GLES10;
+import android.opengl.Matrix;
+
 import com.ryanm.droid.rugl.geom.ColouredShape;
 import com.ryanm.droid.rugl.geom.CompiledShape;
 import com.ryanm.droid.rugl.geom.TexturedShape;
 import com.ryanm.droid.rugl.util.FastFloatBuffer;
 import com.ryanm.droid.rugl.util.geom.MatrixUtils;
-
-import android.opengl.GLES10;
-import android.opengl.Matrix;
 
 /**
  * Batches up triangles so as to avoid expensive state changes
@@ -49,6 +49,9 @@ import android.opengl.Matrix;
  */
 public class Renderer
 {
+	/**
+	 * Holds vertices
+	 */
 	private FastFloatBuffer vertices;
 
 	/**
@@ -62,16 +65,16 @@ public class Renderer
 	public IntBuffer colours;
 
 	/**
+	 * Holds triangle indices, before rendering
+	 */
+	private ShortBuffer tris;
+
+	/**
 	 * Used to transform vertices before being rendered
 	 */
 	protected final float[] transform = new float[ 16 ];
 
 	private float[] t = new float[] { 0, 0, 0, 1 };
-
-	/**
-	 * Holds triangle indices, before rendering
-	 */
-	private ShortBuffer tris;
 
 	/**
 	 * Array of triangle lists, indexed by compiled
@@ -100,12 +103,6 @@ public class Renderer
 	public boolean automaticallyClear = true;
 
 	/**
-	 * Pushes a processor onto the top of the stack
-	 * 
-	 * @param p
-	 */
-
-	/**
 	 * Builds a new Renderer that can handle 1000 vertices at the
 	 * outset. The buffers will grow as needed to accommodate more
 	 * vertices.
@@ -125,7 +122,6 @@ public class Renderer
 	{
 		vertices = new FastFloatBuffer( verts * 3 );
 		texCoords = new FastFloatBuffer( verts * 2 );
-
 		colours = BufferUtils.createIntBuffer( verts );
 
 		Matrix.setIdentityM( transform, 0 );
@@ -134,7 +130,7 @@ public class Renderer
 	/**
 	 * Compares this state to the internal pool, and returns an
 	 * equivalent state if one exists, or else adds it to the pool.
-	 * It's good practise to do this for all new states. This is done
+	 * It's good practice to do this for all new states. This is done
 	 * for you in {@link ColouredShape#render(Renderer)},
 	 * {@link TexturedShape#render(Renderer)} and
 	 * {@link CompiledShape#render(Renderer)}
@@ -375,8 +371,8 @@ public class Renderer
 		triangleCount = 0;
 
 		GLES10.glVertexPointer( 3, GLES10.GL_FLOAT, 0, vertices.bytes );
-		GLES10.glTexCoordPointer( 2, GLES10.GL_FLOAT, 0, texCoords.bytes );
 		GLES10.glColorPointer( 4, GLES10.GL_UNSIGNED_BYTE, 0, colours );
+		GLES10.glTexCoordPointer( 2, GLES10.GL_FLOAT, 0, texCoords.bytes );
 
 		// render
 		for( int i = 0; i < triangles.length; i++ )

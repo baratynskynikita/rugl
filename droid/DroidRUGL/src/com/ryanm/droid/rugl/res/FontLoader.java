@@ -4,11 +4,11 @@ package com.ryanm.droid.rugl.res;
 import java.io.IOException;
 import java.io.InputStream;
 
+import android.util.Log;
+
 import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.res.ResourceLoader.Loader;
 import com.ryanm.droid.rugl.text.Font;
-
-import android.util.Log;
 
 /**
  * Loads a font
@@ -58,4 +58,10 @@ public abstract class FontLoader extends Loader<Font>
 	 * loaded into opengl
 	 */
 	public abstract void fontLoaded();
+
+	@Override
+	public String toString()
+	{
+		return "Font loader " + resourceID + " mimap = " + mipmap;
+	}
 }
