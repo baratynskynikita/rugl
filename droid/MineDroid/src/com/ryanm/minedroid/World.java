@@ -36,7 +36,7 @@ public class World
 	 * The size of the square of chunks around the player that we try
 	 * to load
 	 */
-	private int width = 5, depth = 5;
+	private int width = 7, depth = 7;
 
 	private List<Chunk> chunks = new ArrayList<Chunk>();
 
@@ -152,7 +152,7 @@ public class World
 	public void draw( Vector3f eye, Frustum frustum )
 	{
 		Chunklet c = getChunklet( eye.x, eye.y, eye.z );
-		float distlimit = 5f;
+		float distlimit = 10f;
 
 		if( c != null )
 		{
