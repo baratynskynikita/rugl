@@ -7,10 +7,10 @@ Installation:
 			"adb -d install MineDroid.apk"
 	or download it from your phone's browser and tap it in the download list to
 	install.
-	2) Copy your ".minecraft" installation directory over to 
-	the root of your phone's storage. Only the saves/World1 directory is actually 
-	needed, so you can save some space by not copying the bin, resources and other 
-	world directories
+	2) Copy your ".minecraft" installation directory over to the top level 
+	directory of your phone's storage. Only the saves/World1 directory is 
+	actually needed, so you can save some space by not copying the bin, resources
+	and other world directories
 	3) That's it. If there's some problem with loading the level.dat in the save 
 	directory you'll get a notification when you try to start the app.
 	The starting position of the camera is taken from the level.dat file and 
@@ -23,10 +23,6 @@ Controls:
 	the screen to control position, on the right half to control direction.
 	Look mode is inverted, because who doesn't enjoy pretending that their head 
 	is an aeroplane?
-	
-	Tapping on the right stick will cause the view frustum to freeze in position.
-	You can still move the camera around, but only the chunklets that are visible 
-	from where you tapped will be rendered. Tap again to unfreeze the frustum.
 	
 Getting the source:
 	You'll need the eclipse projects at
