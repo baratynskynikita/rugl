@@ -35,17 +35,18 @@ import java.util.List;
 
 import javax.microedition.khronos.opengles.GL10;
 
-import com.ryanm.droid.rugl.Game;
-import com.ryanm.droid.rugl.gl.BufferUtils;
-import com.ryanm.droid.rugl.gl.GLUtil;
-import com.ryanm.droid.rugl.texture.Image.Format;
-import com.ryanm.droid.rugl.util.RectanglePacker;
-import com.ryanm.droid.rugl.util.geom.Vector2f;
-
 import android.opengl.GLES10;
 import android.opengl.GLES11;
 import android.opengl.GLException;
 import android.util.Log;
+
+import com.ryanm.droid.rugl.Game;
+import com.ryanm.droid.rugl.gl.BufferUtils;
+import com.ryanm.droid.rugl.gl.GLUtil;
+import com.ryanm.droid.rugl.gl.State;
+import com.ryanm.droid.rugl.texture.Image.Format;
+import com.ryanm.droid.rugl.util.RectanglePacker;
+import com.ryanm.droid.rugl.util.geom.Vector2f;
 
 /**
  * Builds and manages {@link Texture}s.
@@ -310,7 +311,7 @@ public class TextureFactory
 			GLES10.glGenTextures( 1, ib, 0 );
 			id = ib[ 0 ];
 
-			GLES10.glBindTexture( GL10.GL_TEXTURE_2D, id );
+			State.getCurrentState().withTexture( id ).apply();
 
 			ByteBuffer data = BufferUtils.createByteBuffer( width * height * format.bytes );
 
@@ -437,7 +438,7 @@ public class TextureFactory
 
 		private void writeToTexture( RectanglePacker.Rectangle r, Image image )
 		{
-			GLES10.glBindTexture( GLES10.GL_TEXTURE_2D, id );
+			State.getCurrentState().withTexture( id ).apply();
 
 			image.writeToTexture( r.x, r.y );
 
