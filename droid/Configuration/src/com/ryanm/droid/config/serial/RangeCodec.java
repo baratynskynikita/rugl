@@ -11,13 +11,13 @@ public class RangeCodec extends Codec<Range>
 	@Override
 	public String encode( Range value )
 	{
-		return value.getMin() + "-" + value.getMax();
+		return value.getMin() + ", " + value.getMax();
 	}
 
 	@Override
 	public Range decode( String encoded, Class runtimeType ) throws ParseException
 	{
-		String[] s = encoded.split( "-" );
+		String[] s = encoded.split( "," );
 		if( s.length < 2 )
 		{
 			throw new ParseException( "Only found " + s.length + " elements in " + encoded );

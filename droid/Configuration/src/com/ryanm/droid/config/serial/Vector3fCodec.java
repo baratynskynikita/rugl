@@ -11,7 +11,7 @@ public class Vector3fCodec extends Codec<Vector3f>
 	@Override
 	public String encode( Vector3f value )
 	{
-		return value.x + "," + value.y + "," + value.z;
+		return value.x + ", " + value.y + ", " + value.z;
 	}
 
 	@Override

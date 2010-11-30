@@ -9,18 +9,19 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for marking types and fields that are configurable
+ * Annotation for ordering {@link Variable}s
  * 
  * @author ryanm
  */
 @Documented
-@Target( { ElementType.FIELD, ElementType.METHOD, ElementType.TYPE } )
+@Target( { ElementType.FIELD, ElementType.METHOD } )
 @Retention( RetentionPolicy.RUNTIME )
 @Inherited
-public @interface Variable
+public @interface Order
 {
 	/**
-	 * The name of the resulting type or field
+	 * The order of the variable. Lower numbers appear at the top of
+	 * the list
 	 */
-	String value() default "";
+	int value();
 }

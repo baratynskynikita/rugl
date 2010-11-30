@@ -1,5 +1,5 @@
 
-package com.ryanm.droid.config;
+package com.ryanm.droid.config.view;
 
 import android.app.ListActivity;
 import android.os.Bundle;

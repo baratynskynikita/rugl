@@ -11,7 +11,7 @@ public class Vector2fCodec extends Codec<Vector2f>
 	@Override
 	public String encode( Vector2f value )
 	{
-		return value.x + "," + value.y;
+		return value.x + ", " + value.y;
 	}
 
 	@Override
