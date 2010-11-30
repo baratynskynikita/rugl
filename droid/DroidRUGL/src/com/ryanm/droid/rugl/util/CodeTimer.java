@@ -168,7 +168,7 @@ public class CodeTimer
 	 * 
 	 * @param print
 	 *           <code>true</code> to print results, <code>false</code>
-	 *           no to
+	 *           not to
 	 */
 	public void lastTick( boolean print )
 	{
