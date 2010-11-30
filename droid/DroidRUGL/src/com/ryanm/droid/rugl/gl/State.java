@@ -32,6 +32,7 @@ import com.ryanm.droid.rugl.gl.enums.MinFilter;
 import com.ryanm.droid.rugl.gl.facets.AlphaTest;
 import com.ryanm.droid.rugl.gl.facets.Blend;
 import com.ryanm.droid.rugl.gl.facets.DepthTest;
+import com.ryanm.droid.rugl.gl.facets.Fog;
 import com.ryanm.droid.rugl.gl.facets.PolygonOffset;
 import com.ryanm.droid.rugl.gl.facets.TextureState;
 import com.ryanm.droid.rugl.gl.facets.TextureState.Filters;
@@ -47,6 +48,14 @@ public class State implements Comparable<State>
 	 * The current state of openGL
 	 */
 	private static State currentState = new State();
+
+	/**
+	 * @return the current state of openGL
+	 */
+	public static State getCurrentState()
+	{
+		return currentState;
+	}
 
 	/**
 	 * The {@link State} class mirrors the OpenGL state as much as
@@ -85,6 +94,11 @@ public class State implements Comparable<State>
 	public final PolygonOffset polyOffset;
 
 	/**
+	 * Fog parameters
+	 */
+	public final Fog fog;
+
+	/**
 	 * A list of state facets, in descending order of
 	 * <ol>
 	 * <li>change cost</li>
@@ -109,13 +123,8 @@ public class State implements Comparable<State>
 	 */
 	public State()
 	{
-		texture = TextureState.disabled;
-		alphaTest = AlphaTest.disabled;
-		blend = Blend.disabled;
-		depthTest = DepthTest.disabled;
-		polyOffset = PolygonOffset.disabled;
-
-		facets = new Facet[] { texture, alphaTest, blend, depthTest, polyOffset };
+		this( TextureState.disabled, AlphaTest.disabled, Blend.disabled,
+				DepthTest.disabled, PolygonOffset.disabled, Fog.disabled );
 	}
 
 	/**
@@ -124,17 +133,19 @@ public class State implements Comparable<State>
 	 * @param blend
 	 * @param depthTest
 	 * @param polyOffset
+	 * @param fog
 	 */
 	public State( TextureState texture, AlphaTest alphaTest, Blend blend,
-			DepthTest depthTest, PolygonOffset polyOffset )
+			DepthTest depthTest, PolygonOffset polyOffset, Fog fog )
 	{
 		this.texture = texture;
 		this.alphaTest = alphaTest;
 		this.blend = blend;
 		this.depthTest = depthTest;
 		this.polyOffset = polyOffset;
+		this.fog = fog;
 
-		facets = new Facet[] { texture, alphaTest, blend, depthTest, polyOffset };
+		facets = new Facet[] { texture, alphaTest, blend, depthTest, polyOffset, fog };
 	}
 
 	/**
@@ -143,7 +154,7 @@ public class State implements Comparable<State>
 	 */
 	public State with( TextureState texture )
 	{
-		return new State( texture, alphaTest, blend, depthTest, polyOffset );
+		return new State( texture, alphaTest, blend, depthTest, polyOffset, fog );
 	}
 
 	/**
@@ -152,7 +163,7 @@ public class State implements Comparable<State>
 	 */
 	public State with( AlphaTest alphaTest )
 	{
-		return new State( texture, alphaTest, blend, depthTest, polyOffset );
+		return new State( texture, alphaTest, blend, depthTest, polyOffset, fog );
 	}
 
 	/**
@@ -161,7 +172,7 @@ public class State implements Comparable<State>
 	 */
 	public State with( Blend blend )
 	{
-		return new State( texture, alphaTest, blend, depthTest, polyOffset );
+		return new State( texture, alphaTest, blend, depthTest, polyOffset, fog );
 	}
 
 	/**
@@ -170,7 +181,7 @@ public class State implements Comparable<State>
 	 */
 	public State with( DepthTest depthTest )
 	{
-		return new State( texture, alphaTest, blend, depthTest, polyOffset );
+		return new State( texture, alphaTest, blend, depthTest, polyOffset, fog );
 	}
 
 	/**
@@ -179,7 +190,16 @@ public class State implements Comparable<State>
 	 */
 	public State with( PolygonOffset polyOffset )
 	{
-		return new State( texture, alphaTest, blend, depthTest, polyOffset );
+		return new State( texture, alphaTest, blend, depthTest, polyOffset, fog );
+	}
+
+	/**
+	 * @param fog
+	 * @return An altered clone
+	 */
+	public State with( Fog fog )
+	{
+		return new State( texture, alphaTest, blend, depthTest, polyOffset, fog );
 	}
 
 	/**
@@ -190,7 +210,21 @@ public class State implements Comparable<State>
 	public State with( MinFilter min, MagFilter mag )
 	{
 		return new State( texture.with( new Filters( min, mag ) ), alphaTest, blend,
-				depthTest, polyOffset );
+				depthTest, polyOffset, fog );
+	}
+
+	/**
+	 * @param id
+	 * @return An altered clone
+	 */
+	public State withTexture( int id )
+	{
+		if( id != texture.id )
+		{
+			return new State( texture.with( id ), alphaTest, blend, depthTest, polyOffset,
+					fog );
+		}
+		return this;
 	}
 
 	/**
@@ -199,15 +233,18 @@ public class State implements Comparable<State>
 	@SuppressWarnings( "unchecked" )
 	public void apply()
 	{
-		for( int i = 0; i < facets.length; i++ )
+		if( currentState != this )
 		{
-			if( facets[ i ] != null )
+			for( int i = 0; i < facets.length; i++ )
 			{
-				facets[ i ].transitionFrom( currentState.facets[ i ] );
+				if( facets[ i ] != null )
+				{
+					facets[ i ].transitionFrom( currentState.facets[ i ] );
+				}
 			}
-		}
 
-		currentState = this;
+			currentState = this;
+		}
 	}
 
 	/**
