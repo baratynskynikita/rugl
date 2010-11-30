@@ -1,10 +1,10 @@
 
 package com.ryanm.droid.configtest;
 
-import org.json.JSONObject;
-
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -15,6 +15,10 @@ import com.ryanm.droid.config.Configuration;
  */
 public class ConfigTestActivity extends Activity
 {
+	private ConfTest testy = new ConfTest();
+
+	private TextView tv;
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate( Bundle savedInstanceState )
@@ -22,23 +26,32 @@ public class ConfigTestActivity extends Activity
 		super.onCreate( savedInstanceState );
 
 		ScrollView sc = new ScrollView( this );
-		TextView tv = new TextView( this );
-
-		try
-		{
-			ConfTest ct = new ConfTest();
-
-			JSONObject json = Configuration.extract( ct );
-
-			tv.setText( json.toString( 3 ) );
-		}
-		catch( Exception e )
-		{
-			tv.setText( e.getMessage() );
-		}
-
+		tv = new TextView( this );
 		sc.addView( tv );
 
+		tv.setText( testy.toString() );
+
 		setContentView( sc );
+	}
+
+	@Override
+	protected void onActivityResult( int requestCode, int resultCode, Intent data )
+	{
+		Configuration.onActivityResult( requestCode, resultCode, data, testy );
+
+		tv.setText( testy.toString() );
+	}
+
+	@Override
+	public boolean onKeyDown( int keyCode, KeyEvent event )
+	{
+		if( keyCode == KeyEvent.KEYCODE_MENU )
+		{
+			Configuration.launchConfig( this, testy );
+
+			return true;
+		}
+
+		return super.onKeyDown( keyCode, event );
 	}
 }
