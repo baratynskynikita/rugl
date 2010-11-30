@@ -105,6 +105,29 @@ public class Colour
 	}
 
 	/**
+	 * @param rgba
+	 *           packed colour int
+	 * @param array
+	 *           destination array, or <code>null</code> to allocate a
+	 *           new array
+	 * @return a float[]{ r, g, b, a } array, in ranges 0-1
+	 */
+	public static float[] toArray( int rgba, float[] array )
+	{
+		if( array == null )
+		{
+			array = new float[ 4 ];
+		}
+
+		array[ 0 ] = redf( rgba );
+		array[ 1 ] = bluef( rgba );
+		array[ 2 ] = greenf( rgba );
+		array[ 3 ] = alphaf( rgba );
+
+		return array;
+	}
+
+	/**
 	 * Packs colour components into an integer
 	 * 
 	 * @param r
