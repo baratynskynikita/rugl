@@ -17,7 +17,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.ryanm.droid.config.annote.Category;
-import com.ryanm.droid.config.annote.Description;
+import com.ryanm.droid.config.annote.Summary;
 import com.ryanm.droid.config.annote.Order;
 import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.config.annote.WidgetHint;
@@ -240,11 +240,47 @@ public class Configuration
 											e );
 								}
 							}
+							else
+							{ // subconfigurable
+								// need to get the object, apply the config to
+								// that, then set
+
+								Method getter = findGetter( o.getClass(), name );
+								if( getter != null )
+								{
+									try
+									{
+										Object gotten = getter.invoke( o );
+										apply( gotten, mc );
+										m.invoke( o, gotten );
+									}
+									catch( Exception e )
+									{
+										Log.e(
+												LOG_TAG,
+												"Problem invoking getter method " + o.getClass()
+														+ "." + getter.getName() + " or setter "
+														+ m.getName(), e );
+									}
+								}
+							}
 						}
 					}
 				}
 			}
 		}
+	}
+
+	private static final Method findGetter( Class c, String name )
+	{
+		for( Method m : c.getMethods() )
+		{
+			if( name.equals( getName( m ) ) )
+			{
+				return m;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -349,33 +385,22 @@ public class Configuration
 
 			if( value != null )
 			{
+				JSONObject conf = null;
 				Codec codec = Codec.getCodec( f.getType() );
 				if( codec != null )
 				{
-					JSONObject conf = new JSONObject();
-
-					// type
+					conf = new JSONObject();
 					conf.put( "type", f.getType().getName() );
-
-					// value
 					conf.put( "value", codec.encode( value ) );
-
-					getOptional( conf, f );
-
-					return conf;
 				}
 				else
 				{ // subconfigurable?
-					JSONObject conf = extractConfig( value );
-
-					if( conf != null )
-					{
-						// override the description
-						conf.putOpt( "desc", getDescription( f ) );
-
-						return conf;
-					}
+					conf = extractConfig( value );
 				}
+
+				// get description, order, widget hint etc
+				getOptional( conf, f );
+				return conf;
 			}
 		}
 		catch( Exception e )
@@ -506,19 +531,23 @@ public class Configuration
 	private static void getOptional( JSONObject conf, AccessibleObject ao )
 			throws JSONException
 	{
-		conf.putOpt( "desc", getDescription( ao ) );
-		conf.putOpt( "cat", getCategory( ao ) );
-
-		Order o = ao.getAnnotation( Order.class );
-		if( o != null )
+		if( conf != null )
 		{
-			conf.put( "order", o.value() );
-		}
+			conf.putOpt( "desc", getDescription( ao ) );
+			conf.putOpt( "cat", getCategory( ao ) );
 
-		WidgetHint th = ao.getAnnotation( WidgetHint.class );
-		if( th != null )
-		{
-			conf.put( "type", th.value().getName() );
+			Order o = ao.getAnnotation( Order.class );
+			if( o != null )
+			{
+				Log.i( Configuration.LOG_TAG, "Order = " + o.value() );
+				conf.put( "order", o.value() );
+			}
+
+			WidgetHint th = ao.getAnnotation( WidgetHint.class );
+			if( th != null )
+			{
+				conf.put( "type", th.value().getName() );
+			}
 		}
 	}
 
@@ -614,7 +643,7 @@ public class Configuration
 	 */
 	public static String getDescription( Object o )
 	{
-		Description d = o.getClass().getAnnotation( Description.class );
+		Summary d = o.getClass().getAnnotation( Summary.class );
 		if( d != null )
 		{
 			return d.value();
@@ -629,7 +658,7 @@ public class Configuration
 	 */
 	public static String getDescription( AccessibleObject f )
 	{
-		Description d = f.getAnnotation( Description.class );
+		Summary d = f.getAnnotation( Summary.class );
 		if( d != null )
 		{
 			return d.value();

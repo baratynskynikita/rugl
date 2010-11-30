@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 @Documented
 @Target({ ElementType.METHOD, ElementType.FIELD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Description {
+public @interface Summary {
 	/**
 	 * The description for the variable
 	 */

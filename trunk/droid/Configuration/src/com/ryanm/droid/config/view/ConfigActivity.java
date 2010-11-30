@@ -160,6 +160,11 @@ public class ConfigActivity extends PreferenceActivity
 		public final Class type;
 
 		/**
+		 * Preference order
+		 */
+		public final int order;
+
+		/**
 		 * Variable description json
 		 */
 		public final JSONObject json;
@@ -183,6 +188,8 @@ public class ConfigActivity extends PreferenceActivity
 			{ // variable
 				type = Configuration.getType( t );
 			}
+
+			order = json.optInt( "order", Preference.DEFAULT_ORDER );
 		}
 
 		@Override

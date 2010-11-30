@@ -1,6 +1,8 @@
 
 package com.ryanm.droid.configtest;
 
+import org.json.JSONException;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -29,7 +31,14 @@ public class ConfigTestActivity extends Activity
 		tv = new TextView( this );
 		sc.addView( tv );
 
-		tv.setText( testy.toString() );
+		try
+		{
+			tv.setText( Configuration.extract( testy ).toString( 3 ) );
+		}
+		catch( JSONException e )
+		{
+			e.printStackTrace();
+		}
 
 		setContentView( sc );
 	}
