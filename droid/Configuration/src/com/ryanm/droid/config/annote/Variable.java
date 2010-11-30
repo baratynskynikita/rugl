@@ -9,7 +9,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for marking types and fields that are configurable
+ * Annotation for marking types, fields and methods that are
+ * configurable
  * 
  * @author ryanm
  */
@@ -20,7 +21,8 @@ import java.lang.annotation.Target;
 public @interface Variable
 {
 	/**
-	 * The name of the resulting type or field
+	 * The name of the resulting type or field. Leave blank to just use
+	 * the field or method name
 	 */
 	String value() default "";
 }

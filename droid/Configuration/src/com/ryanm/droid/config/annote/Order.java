@@ -9,7 +9,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for ordering {@link Variable}s
+ * Annotation for ordering {@link Variable}s. Variables without
+ * {@link Order}s are sorted alphabetically after those with
+ * {@link Order}s
  * 
  * @author ryanm
  */

@@ -51,7 +51,7 @@ public abstract class PreferenceFactory
 		Preference p = buildPreference( context, var );
 		p.setTitle( var.name );
 		p.setSummary( var.description );
-		p.setOrder( var.json.optInt( "order", Preference.DEFAULT_ORDER ) );
+		p.setOrder( var.order );
 
 		p.setOnPreferenceChangeListener( new OnPreferenceChangeListener() {
 			@Override
