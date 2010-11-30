@@ -4,10 +4,6 @@ package com.ryanm.droid.config.serial;
 import java.util.HashMap;
 import java.util.Map;
 
-import android.util.Log;
-
-import com.ryanm.droid.config.Configuration;
-
 /**
  * Defines an object that can encode and decode variables of a given
  * type
@@ -99,8 +95,6 @@ public abstract class Codec<P>
 	 */
 	public static Codec getCodec( Class type )
 	{
-		Log.i( Configuration.LOG_TAG, "looking for type " + type );
-
 		Codec codec = codecs.get( type );
 
 		while( codec == null && type != null )
@@ -109,8 +103,6 @@ public abstract class Codec<P>
 
 			codec = codecs.get( type );
 		}
-
-		Log.i( Configuration.LOG_TAG, "found " + codec + " for type " + type );
 
 		return codec;
 	}
