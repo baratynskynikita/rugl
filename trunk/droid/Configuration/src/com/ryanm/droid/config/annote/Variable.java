@@ -10,7 +10,9 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation for marking types, fields and methods that are
- * configurable.
+ * configurable. You'd better be sure that you form a tree structure
+ * with your variables, because I'm not going to check for cycles when
+ * I walk the graph. You have been warned.
  * <p>
  * Types:
  * <ul>
