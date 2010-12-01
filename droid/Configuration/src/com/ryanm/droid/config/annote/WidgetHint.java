@@ -8,14 +8,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.ryanm.droid.config.view.PreferenceFactory;
-import com.ryanm.droid.rugl.util.Colour;
+import com.ryanm.droid.config.VariableType;
 
 /**
  * Annotation for overriding the type of {@link Variable}s when
- * selecting appropriate{@link PreferenceFactory} s. For instance,
- * {@link Colour}s are just ints, but it's not useful to edit them as
- * such
+ * selecting an appropriate {@link VariableType} to create a widget.
+ * For instance, colours might be stored as ints, but it's not useful
+ * to edit them as such
  * 
  * @author ryanm
  */
