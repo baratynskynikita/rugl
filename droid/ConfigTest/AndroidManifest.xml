@@ -12,7 +12,7 @@
             </intent-filter>
         </activity>
 
-		<activity android:name="com.ryanm.droid.config.view.ConfigActivity"
+		<activity android:name="com.ryanm.droid.config.ConfigActivity"
 			android:screenOrientation="portrait"/>		
 		
     </application>

@@ -5,19 +5,15 @@ import android.util.Log;
 
 import com.ryanm.droid.config.Configuration;
 import com.ryanm.droid.config.annote.Category;
+import com.ryanm.droid.config.annote.Order;
 import com.ryanm.droid.config.annote.Summary;
 import com.ryanm.droid.config.annote.Variable;
-import com.ryanm.droid.config.annote.WidgetHint;
-import com.ryanm.droid.rugl.util.Colour;
-import com.ryanm.droid.rugl.util.geom.Vector2f;
-import com.ryanm.droid.rugl.util.geom.Vector3f;
-import com.ryanm.droid.rugl.util.math.Range;
 
 /**
  * @author ryanm
  */
 @Variable( "Testy" )
-@Summary( "Cold shriveled testsicles" )
+@Summary( "Icy shriveled testsicles" )
 public class ConfTest
 {
 	/***/
@@ -29,17 +25,7 @@ public class ConfTest
 		Bar,
 		/***/
 		Baz,
-		/***/
-		Blah,
-		/***/
-		Flooble
 	};
-
-	/***/
-	@Variable( "A colour" )
-	@Summary( "It'd be nice if google would release more widgets" )
-	@WidgetHint( Colour.class )
-	public int colour = Colour.raspberry;
 
 	/***/
 	@Variable( "An enumeration" )
@@ -53,7 +39,7 @@ public class ConfTest
 
 	/***/
 	@Variable( "A float" )
-	@Summary( "floaty light" )
+	@Summary( "it's floaty light" )
 	@Category( "Numbers" )
 	public float aFloat = 1;
 
@@ -62,32 +48,32 @@ public class ConfTest
 	@Summary( "The story of one man's downfall, and another's redemption\nDo linebreaks work?" )
 	public String aString = "hello";
 
-	/***/
-	@Variable( "A range" )
-	@Summary( "So these turn out to be really useful" )
-	public Range range = new Range( 20, 40 );
-
-	/***/
-	@Variable( "A 2D Vector" )
-	@Summary( "X and Y" )
-	@Category( "Vectors" )
-	public Vector2f vector2 = new Vector2f( 1, 2 );
-
-	/***/
-	@Variable( "A 3D Vector" )
-	@Summary( "X, Y and Z" )
-	@Category( "Vectors" )
-	public Vector3f vector3 = new Vector3f( 1, 2, 3 );
-
 	private int encap = 4;
 
 	/***/
-	@Variable
-	public SubTest sub = new SubTest();
+	private SubTest sub = new SubTest();
+
+	/**
+	 * @return the sub
+	 */
+	@Variable( "Encapsulated sub-configurable" )
+	public SubTest getSub()
+	{
+		return sub;
+	}
+
+	/**
+	 * @param sub
+	 */
+	@Variable( "Encapsulated sub-configurable" )
+	public void setSub( SubTest sub )
+	{
+		this.sub = sub;
+	}
 
 	/***/
-	@Variable( "Named Subconf" )
-	@Summary( "I've overridden the description!" )
+	@Variable( "Named sub-configurable" )
+	@Summary( "I've overridden the name and description!" )
 	public SubTest namedSub = new SubTest();
 
 	/**
@@ -96,6 +82,7 @@ public class ConfTest
 	@Variable( "An encapsulated integer" )
 	@Summary( "whole numbers only" )
 	@Category( "Numbers" )
+	@Order( 0 )
 	public int getEncap()
 	{
 		return encap;
@@ -124,11 +111,17 @@ public class ConfTest
 		/***/
 		@Variable
 		public String subString = "boo!";
+
+		@Override
+		public String toString()
+		{
+			return subnum + " " + subString;
+		}
 	}
 
 	/***/
-	@Variable( )
-	@Summary( "A method that will be called on applying the configuration" )
+	@Variable( "An action" )
+	@Summary( "Tick the box and the method will be called on application" )
 	public void action()
 	{
 		Log.i( Configuration.LOG_TAG, "Action!" );
@@ -143,12 +136,8 @@ public class ConfTest
 		buff.append( "\n\tfloat = " + aFloat );
 		buff.append( "\n\tencapInt = " + encap );
 		buff.append( "\n\tString = " + aString );
-		buff.append( "\n\tColour = " + Colour.toString( colour ) );
-		buff.append( "\n\trange = " + range );
-		buff.append( "\n\tvec2 = " + vector2 );
-		buff.append( "\n\tvec3 = " + vector3 );
-		buff.append( "\n\t\tsub = " + sub.subnum + " " + sub.subString );
-		buff.append( "\n\t\tnsub = " + namedSub.subnum + " " + namedSub.subString );
+		buff.append( "\n\t\tsub = " + sub );
+		buff.append( "\n\t\tnsub = " + namedSub );
 		return buff.toString();
 	}
 }
