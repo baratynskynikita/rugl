@@ -13,8 +13,8 @@ import com.ryanm.droid.config.VariableType;
 /**
  * Annotation for overriding the type of {@link Variable}s when
  * selecting an appropriate {@link VariableType} to create a widget.
- * For instance, colours might be stored as ints, but it's not useful
- * to edit them as such
+ * For instance, colours might be stored as packed integers, but it's
+ * not useful to edit them as such
  * 
  * @author ryanm
  */
@@ -25,7 +25,7 @@ import com.ryanm.droid.config.VariableType;
 public @interface WidgetHint
 {
 	/**
-	 * The desired variable type.
+	 * The variable type, for the purposes of building widgets.
 	 */
 	Class value();
 }

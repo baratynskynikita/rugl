@@ -25,10 +25,12 @@ import com.ryanm.droid.config.imp.VoidType;
  * Extend this to define new variable types. You'll need code to
  * encode an decode a value to and from strings, construct an
  * appropriate {@link Preference}, and optionally to validate/format
- * user input
+ * user input. Remember to {@link #register(VariableType)} your new
+ * variable type or it won't be used
  * 
  * @author ryanm
  * @param <T>
+ *           Type of variable to handle
  */
 public abstract class VariableType<T>
 {
