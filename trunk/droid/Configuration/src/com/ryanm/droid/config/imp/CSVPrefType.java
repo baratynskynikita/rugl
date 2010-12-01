@@ -1,7 +1,5 @@
 
-package com.ryanm.droid.config.view;
-
-import org.json.JSONException;
+package com.ryanm.droid.config.imp;
 
 import android.content.Context;
 import android.preference.EditTextPreference;
@@ -9,14 +7,15 @@ import android.preference.Preference;
 import android.text.InputType;
 import android.text.method.NumberKeyListener;
 
-import com.ryanm.droid.config.view.ConfigActivity.Variable;
+import com.ryanm.droid.config.VariableType;
 
 /**
  * For inputting comma-separated number lists
  * 
  * @author ryanm
+ * @param <T>
  */
-public class CSVPrefFactory extends PreferenceFactory
+public abstract class CSVPrefType<T> extends VariableType<T>
 {
 	private final char[] accepted;
 
@@ -34,11 +33,13 @@ public class CSVPrefFactory extends PreferenceFactory
 	/**
 	 * @param type
 	 * @param negative
+	 *           <code>true</code> to allow negative numbers
 	 * @param fractions
+	 *           <code>true</code> to allow fractional numbers
 	 * @param format
-	 *           expected input format
+	 *           expected input format e.g.: "x,y,z"
 	 */
-	protected CSVPrefFactory( Class type, boolean negative, boolean fractions,
+	protected CSVPrefType( Class<? extends T> type, boolean negative, boolean fractions,
 			String format )
 	{
 		super( type );
@@ -70,10 +71,10 @@ public class CSVPrefFactory extends PreferenceFactory
 	}
 
 	@Override
-	public Preference buildPreference( final Context context, final Variable var )
+	public Preference buildPreference( Context context, Class type, String value )
 	{
 		EditTextPreference pref = new EditTextPreference( context );
-		pref.setText( var.json.optString( "value" ) );
+		pref.setText( value );
 
 		NumberKeyListener dkl = new NumberKeyListener() {
 			@Override
@@ -96,12 +97,11 @@ public class CSVPrefFactory extends PreferenceFactory
 	}
 
 	@Override
-	protected void setValue( Variable var, Object value ) throws NumberFormatException,
-			JSONException
+	protected String formatInput( Object input )
 	{
-		String sv = ( String ) value;
+		String sv = ( String ) input;
 
-		String[] va = sv.split( "," );
+		String[] va = sv.trim().split( "," );
 
 		if( va.length != valueCount )
 		{
@@ -136,6 +136,6 @@ public class CSVPrefFactory extends PreferenceFactory
 									.toString( ( int ) fa[ i ] ) );
 		}
 
-		var.json.put( "value", buff.toString() );
+		return buff.toString();
 	}
 }

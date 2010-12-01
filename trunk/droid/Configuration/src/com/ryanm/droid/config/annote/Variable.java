@@ -21,8 +21,8 @@ import java.lang.annotation.Target;
 public @interface Variable
 {
 	/**
-	 * The name of the resulting type or field. Leave blank to just use
-	 * the field or method name
+	 * The name of the resulting type or variable. Leave blank to just
+	 * use the type, field or method name
 	 */
 	String value() default "";
 }

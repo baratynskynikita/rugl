@@ -11,7 +11,8 @@ import java.lang.annotation.Target;
 /**
  * Annotation for ordering {@link Variable}s. Variables without
  * {@link Order}s are sorted alphabetically after those with
- * {@link Order}s
+ * {@link Order}s. The order of a category is given by the minimum
+ * order of its variables
  * 
  * @author ryanm
  */
