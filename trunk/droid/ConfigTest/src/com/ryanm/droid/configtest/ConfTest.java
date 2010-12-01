@@ -27,7 +27,7 @@ public class ConfTest
 		Baz,
 	};
 
-	// @Variable( "I am very stupid" )
+	// @Variable( "Don't do this" )
 	// @Summary(
 	// "This will cause an infinite loop, tree structure only please" )
 	// public ConfTest graphLoop = this;
@@ -39,18 +39,18 @@ public class ConfTest
 
 	/***/
 	@Variable( "A boolean" )
-	@Summary( "true or false" )
+	@Summary( "Only true or false, there is no \"meh\"" )
 	public boolean aBoolean = true;
 
 	/***/
 	@Variable( "A float" )
-	@Summary( "it's floaty light" )
+	@Summary( "It's floaty light" )
 	@Category( "Numbers" )
 	public float aFloat = 1;
 
 	/***/
 	@Variable( "A string" )
-	@Summary( "The story of one man's downfall, and another's redemption\nDo linebreaks work?" )
+	@Summary( "NewLines work\nbut you only get two of them" )
 	public String aString = "hello";
 
 	private int encap = 4;
@@ -77,15 +77,15 @@ public class ConfTest
 	}
 
 	/***/
-	@Variable( "Named sub-configurable" )
-	@Summary( "I've overridden the name and description!" )
+	@Variable( )
+	@Summary( "I've overridden the summary!" )
 	public SubTest namedSub = new SubTest();
 
 	/**
 	 * @return a number
 	 */
 	@Variable( "An encapsulated integer" )
-	@Summary( "whole numbers only" )
+	@Summary( "Whole numbers only" )
 	@Category( "Numbers" )
 	@Order( 0 )
 	public int getEncap()
