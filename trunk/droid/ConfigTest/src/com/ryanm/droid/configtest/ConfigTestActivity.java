@@ -1,8 +1,6 @@
 
 package com.ryanm.droid.configtest;
 
-import org.json.JSONException;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -31,14 +29,7 @@ public class ConfigTestActivity extends Activity
 		tv = new TextView( this );
 		sc.addView( tv );
 
-		try
-		{
-			tv.setText( Configuration.extract( testy ).toString( 3 ) );
-		}
-		catch( JSONException e )
-		{
-			e.printStackTrace();
-		}
+		tv.setText( testy.toString() );
 
 		setContentView( sc );
 	}
@@ -48,6 +39,7 @@ public class ConfigTestActivity extends Activity
 	{
 		Configuration.onActivityResult( requestCode, resultCode, data, testy );
 
+		// refresh the text to show all those lovely changed values
 		tv.setText( testy.toString() );
 	}
 
@@ -56,7 +48,7 @@ public class ConfigTestActivity extends Activity
 	{
 		if( keyCode == KeyEvent.KEYCODE_MENU )
 		{
-			Configuration.launchConfig( this, testy );
+			Configuration.configure( this, testy );
 
 			return true;
 		}
