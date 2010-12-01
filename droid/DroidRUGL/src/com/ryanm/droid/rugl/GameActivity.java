@@ -10,6 +10,11 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
+import com.ryanm.droid.config.VariableType;
+import com.ryanm.droid.rugl.config.ColourVarType;
+import com.ryanm.droid.rugl.config.RangeVarType;
+import com.ryanm.droid.rugl.config.Vector2fVarType;
+import com.ryanm.droid.rugl.config.Vector3fVarType;
 import com.ryanm.droid.rugl.res.ResourceLoader;
 
 /**
@@ -33,6 +38,12 @@ public class GameActivity extends Activity
 	 */
 	protected void start( Game game )
 	{
+		// additional configuration types
+		VariableType.register( new ColourVarType() );
+		VariableType.register( new RangeVarType() );
+		VariableType.register( new Vector2fVarType() );
+		VariableType.register( new Vector3fVarType() );
+
 		ResourceLoader.start( getResources() );
 
 		try
