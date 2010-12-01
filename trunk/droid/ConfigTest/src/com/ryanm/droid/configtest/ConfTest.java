@@ -27,6 +27,11 @@ public class ConfTest
 		Baz,
 	};
 
+	// @Variable( "I am very stupid" )
+	// @Summary(
+	// "This will cause an infinite loop, tree structure only please" )
+	// public ConfTest graphLoop = this;
+
 	/***/
 	@Variable( "An enumeration" )
 	@Summary( "Mutually exclusive" )
