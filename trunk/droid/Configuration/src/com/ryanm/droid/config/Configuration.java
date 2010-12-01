@@ -32,7 +32,6 @@ public class Configuration
 
 	private Configuration()
 	{
-		// no instances
 	}
 
 	/**
@@ -53,12 +52,19 @@ public class Configuration
 	}
 
 	/**
-	 * Call this from your activity to apply a configuration
+	 * Call this from your activity in {@link Activity}
+	 * .onActivityResult() to apply a configuration
 	 * 
 	 * @param requestCode
+	 *           from {@link Activity}.onActivityResult()
 	 * @param resultCode
+	 *           from {@link Activity}.onActivityResult()
 	 * @param data
+	 *           from {@link Activity}.onActivityResult()
 	 * @param roots
+	 *           The objects to configure. Probably best to pass the
+	 *           same ones as you did to
+	 *           {@link #configure(Activity, Object...)}
 	 */
 	public static void onActivityResult( int requestCode, int resultCode, Intent data,
 			Object... roots )

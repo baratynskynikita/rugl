@@ -9,10 +9,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for ordering {@link Variable}s. Variables without
- * {@link Order}s are sorted alphabetically after those with
- * {@link Order}s. The order of a category is given by the minimum
- * order of its variables
+ * Annotation for ordering {@link Variable}s. Variables without order
+ * values are sorted alphabetically after those with. The order of a
+ * {@link Category} is given by the minimum order of its member
+ * {@link Variable}s
  * 
  * @author ryanm
  */

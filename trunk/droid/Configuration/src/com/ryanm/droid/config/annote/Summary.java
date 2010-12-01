@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Used to add a descriptive string to an element
+ * Used to add a descriptive string to a {@link Variable}
  * 
  * @author ryanm
  */

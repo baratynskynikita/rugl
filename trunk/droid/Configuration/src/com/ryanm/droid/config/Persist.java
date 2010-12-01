@@ -13,7 +13,8 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 /**
- * Methods for storage of configurations
+ * Allows storage of configurations. Configurations are JSON-encoded
+ * and placed in a {@link SharedPreferences}
  * 
  * @author ryanm
  */
@@ -32,6 +33,7 @@ public class Persist
 	 * Saves the configuration of an object tree
 	 * 
 	 * @param owner
+	 *           The activity that owns the data
 	 * @param savename
 	 *           The name of the saved data
 	 * @param roots
@@ -44,9 +46,11 @@ public class Persist
 	}
 
 	/**
-	 * Loads and applies a saved configuration
+	 * Loads and applies a saved configuration. If there's a problem in
+	 * loading or parsing the save it is deleted.
 	 * 
 	 * @param owner
+	 *           The activity that owns the data
 	 * @param savename
 	 *           The name of the saved data
 	 * @param roots
@@ -66,6 +70,7 @@ public class Persist
 	 * Deletes a saved configuration
 	 * 
 	 * @param owner
+	 *           The activity that owns the data
 	 * @param savename
 	 *           The name of the save to delete
 	 */
@@ -78,6 +83,7 @@ public class Persist
 	 * Lists saved configurations
 	 * 
 	 * @param owner
+	 *           The activity that owns the saves
 	 * @return A sorted list of save names
 	 */
 	public static String[] listSaves( Activity owner )
