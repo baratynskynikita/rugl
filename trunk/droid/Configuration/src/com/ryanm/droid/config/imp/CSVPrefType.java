@@ -96,12 +96,18 @@ public abstract class CSVPrefType<T> extends VariableType<T>
 		return pref;
 	}
 
-	@Override
-	protected String formatInput( Object input )
+	/**
+	 * Parses an input string into a float array
+	 * 
+	 * @param input
+	 * @return A float value array
+	 * @throws NumberFormatException
+	 *            if a value cannot be parsed or if the number of
+	 *            values is wrong
+	 */
+	protected float[] parse( String input )
 	{
-		String sv = ( String ) input;
-
-		String[] va = sv.trim().split( "," );
+		String[] va = input.trim().split( "," );
 
 		if( va.length != valueCount )
 		{
@@ -124,6 +130,16 @@ public abstract class CSVPrefType<T> extends VariableType<T>
 						+ "\" as a decimal" );
 			}
 		}
+
+		return fa;
+	}
+
+	@Override
+	protected String formatInput( Object input )
+	{
+		String sv = ( String ) input;
+
+		float[] fa = parse( sv );
 
 		StringBuilder buff =
 				new StringBuilder( fractions ? Float.toString( fa[ 0 ] )

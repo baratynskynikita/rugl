@@ -46,6 +46,7 @@ public class FloatType extends VariableType<Number>
 		pref.setText( value );
 		pref.getEditText().setKeyListener( new DigitsKeyListener( true, true ) );
 		pref.getEditText().setSelectAllOnFocus( true );
+
 		return pref;
 	}
 
