@@ -7,6 +7,7 @@ import java.util.Map;
 import org.json.JSONException;
 
 import android.content.Context;
+import android.preference.DialogPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.util.Log;
@@ -82,6 +83,12 @@ public abstract class VariableType<T>
 		p.setTitle( var.name );
 		p.setSummary( var.description );
 		p.setOrder( var.order );
+
+		if( p instanceof DialogPreference )
+		{
+			DialogPreference dp = ( DialogPreference ) p;
+			dp.setDialogTitle( var.name );
+		}
 
 		p.setOnPreferenceChangeListener( new OnPreferenceChangeListener() {
 			@Override

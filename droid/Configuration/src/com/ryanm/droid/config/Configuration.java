@@ -44,6 +44,7 @@ public class Configuration
 	 */
 	public static void configure( Activity returnTo, Object... roots )
 	{
+		Log.i( LOG_TAG, "Launching configuration activity" );
 		// launch config
 		Intent i = new Intent( returnTo, ConfigActivity.class );
 		i.putExtra( "conf", Extract.extract( roots ).toString() );
@@ -72,6 +73,7 @@ public class Configuration
 		if( requestCode == Configuration.ACTIVITY_REQUEST_FLAG
 				&& resultCode == Activity.RESULT_OK )
 		{
+			Log.i( LOG_TAG, "Applying configuration" );
 			try
 			{
 				Apply.apply( new JSONObject( data.getStringExtra( "conf" ) ), roots );
