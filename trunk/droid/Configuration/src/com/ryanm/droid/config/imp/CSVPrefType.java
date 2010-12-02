@@ -105,7 +105,7 @@ public abstract class CSVPrefType<T> extends VariableType<T>
 	 *            if a value cannot be parsed or if the number of
 	 *            values is wrong
 	 */
-	protected float[] parse( String input )
+	protected float[] parse( String input ) throws NumberFormatException
 	{
 		String[] va = input.trim().split( "," );
 
@@ -130,16 +130,13 @@ public abstract class CSVPrefType<T> extends VariableType<T>
 						+ "\" as a decimal" );
 			}
 		}
-
 		return fa;
 	}
 
 	@Override
 	protected String formatInput( Object input )
 	{
-		String sv = ( String ) input;
-
-		float[] fa = parse( sv );
+		float[] fa = parse( ( String ) input );
 
 		StringBuilder buff =
 				new StringBuilder( fractions ? Float.toString( fa[ 0 ] )
