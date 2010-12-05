@@ -37,7 +37,7 @@ public class ConfigTestActivity extends Activity
 	@Override
 	protected void onActivityResult( int requestCode, int resultCode, Intent data )
 	{
-		Configuration.onActivityResult( requestCode, resultCode, data, testy );
+		Configuration.onActivityResult( requestCode, resultCode, data );
 
 		// refresh the text to show all those lovely changed values
 		tv.setText( testy.toString() );
