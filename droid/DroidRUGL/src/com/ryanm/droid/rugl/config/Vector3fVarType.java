@@ -25,21 +25,14 @@ public class Vector3fVarType extends CSVPrefType<Vector3f>
 	@Override
 	public Vector3f decode( String encoded, Class runtimeType ) throws ParseException
 	{
-		String[] s = encoded.split( "," );
-		if( s.length < 3 )
-		{
-			throw new ParseException( "Only found " + s.length + " elements in " + encoded );
-		}
-
 		try
 		{
-			return new Vector3f( Float.parseFloat( s[ 0 ] ), Float.parseFloat( s[ 1 ] ),
-					Float.parseFloat( s[ 2 ] ) );
+			float[] v = parse( encoded );
+			return new Vector3f( v[ 0 ], v[ 1 ], v[ 2 ] );
 		}
 		catch( NumberFormatException nfe )
 		{
-			throw new ParseException( "Could not parse at least one of \"" + s[ 0 ]
-					+ "\", \"" + s[ 1 ] + "\" or \"" + s[ 2 ] + "\" from " + encoded );
+			throw new ParseException( nfe );
 		}
 	}
 }

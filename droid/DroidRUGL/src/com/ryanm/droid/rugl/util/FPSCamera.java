@@ -1,6 +1,12 @@
 
 package com.ryanm.droid.rugl.util;
 
+import android.opengl.GLES10;
+
+import com.ryanm.droid.config.annote.Category;
+import com.ryanm.droid.config.annote.Order;
+import com.ryanm.droid.config.annote.Summary;
+import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.gl.GLU;
 import com.ryanm.droid.rugl.util.geom.Frustum;
@@ -9,19 +15,22 @@ import com.ryanm.droid.rugl.util.geom.Vector3f;
 import com.ryanm.droid.rugl.util.geom.Vector4f;
 import com.ryanm.droid.rugl.util.math.Range;
 
-import android.opengl.GLES10;
-
 /**
  * A camera suitable for first-person stuff, assumes that the x-z
  * plane is horizontal
  * 
  * @author ryanm
  */
+@Variable( "Camera" )
+@Summary( "View and steering options" )
 public class FPSCamera
 {
 	/**
 	 * Invert mode - i.e.: pull down to look up
 	 */
+	@Variable( )
+	@Summary( "Invert mode FTW!" )
+	@Order( 0 )
 	public boolean invert = true;
 
 	/**
@@ -49,25 +58,49 @@ public class FPSCamera
 	/***/
 	public float heading = 0;
 
+	/***/
+	@Variable( "Horizontal" )
+	@Summary( "in degrees per second" )
+	@Category( "Turn speed" )
+	public float headingSpeed = 90;
+
+	/***/
+	@Variable( "Vertical" )
+	@Summary( "in degrees per second" )
+	@Category( "Turn speed" )
+	public float pitchSpeed = 90;
+
 	/**
 	 * Aspect ratio of projection. Set to -1 to have it automatically
 	 * update itself according to screen dimensions
 	 */
+	@Variable( "Aspect ratio" )
+	@Summary( "width / height ratio\n<0 to set from screen size" )
+	@Category( "Frustum control" )
 	public float aspect = -1;
 
 	/**
 	 * Field of view, in degrees
 	 */
+	@Variable( "Field of view" )
+	@Summary( "In degrees" )
+	@Category( "Frustum control" )
 	public float fov = 70;
 
 	/**
 	 * Distance to near clipping plane
 	 */
+	@Variable( "Near" )
+	@Summary( "Distance to near clip plane" )
+	@Category( "Frustum control" )
 	public float near = 0.01f;
 
 	/**
 	 * Distance to far clipping plane
 	 */
+	@Variable( "Far" )
+	@Summary( "Distance to far clip plane" )
+	@Category( "Frustum control" )
 	public float far = 100f;
 
 	/**
@@ -75,6 +108,7 @@ public class FPSCamera
 	 */
 	public final Frustum frustum = new Frustum();
 
+	/***/
 	private boolean frustumDirty = true;
 
 	/**
@@ -87,9 +121,8 @@ public class FPSCamera
 	 */
 	public void advance( float delta, float x, float y )
 	{
-		float turn = Trig.PI * 2 / 2;
-		heading += -x * turn * delta;
-		elevation += ( invert ? 1 : -1 ) * y * turn * delta;
+		heading += -x * Math.toRadians( headingSpeed ) * delta;
+		elevation += ( invert ? 1 : -1 ) * y * Math.toRadians( pitchSpeed ) * delta;
 		heading = Range.wrap( heading, 0, Trig.TWO_PI );
 		elevation = Range.limit( elevation, -Trig.HALF_PI * 0.99f, Trig.HALF_PI * 0.99f );
 
@@ -119,7 +152,7 @@ public class FPSCamera
 	 * @param eyeY
 	 * @param eyeZ
 	 */
-	public void apply( float eyeX, float eyeY, float eyeZ )
+	public void setPosition( float eyeX, float eyeY, float eyeZ )
 	{
 		if( aspect == -1 )
 		{

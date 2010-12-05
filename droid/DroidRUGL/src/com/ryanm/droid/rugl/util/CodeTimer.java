@@ -7,11 +7,17 @@ import java.util.Collections;
 
 import android.util.Log;
 
+import com.ryanm.droid.config.annote.Category;
+import com.ryanm.droid.config.annote.Summary;
+import com.ryanm.droid.config.annote.Variable;
+
 /**
  * A convenience class to do code profiling.
  * 
  * @author Keith Woodward
  */
+@Variable( "Code Timer" )
+@Summary( "Code profiling tool" )
 public class CodeTimer
 {
 	private static DecimalFormat fourDP = new DecimalFormat( "0.####" );
@@ -76,6 +82,7 @@ public class CodeTimer
 	/**
 	 * Defaults to <code>true</code>
 	 */
+	@Variable( "Enabled" )
 	public boolean enabled = true;
 
 	private long lastPrintOutNanos = System.nanoTime();
@@ -83,17 +90,23 @@ public class CodeTimer
 	/**
 	 * The number of seconds between prints, defaults to 5
 	 */
-	public int printFrequencySeconds = 5;
+	@Variable( "Log frequency" )
+	@Summary( "Seconds between output logging" )
+	public int logFrequencySeconds = 5;
 
 	/**
 	 * The level of information printed for the total time spent in a
 	 * profiling period
 	 */
+	@Variable( "Period" )
+	@Category( "Output" )
 	public Output period;
 
 	/**
 	 * The level of information printed for time taken in intervals
 	 */
+	@Variable( "Interval" )
+	@Category( "Output" )
 	public Output interval;
 
 	/**
@@ -155,11 +168,11 @@ public class CodeTimer
 
 	/**
 	 * Call to end a profiling period, and print the results if
-	 * {@link #printFrequencySeconds} have passed since we last printed
+	 * {@link #logFrequencySeconds} have passed since we last printed
 	 */
 	public void lastTick()
 	{
-		lastTick( System.nanoTime() - lastPrintOutNanos > printFrequencySeconds
+		lastTick( System.nanoTime() - lastPrintOutNanos > logFrequencySeconds
 				* NANOS_IN_A_SECOND );
 	}
 
