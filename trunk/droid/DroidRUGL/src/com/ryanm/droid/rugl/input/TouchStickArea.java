@@ -1,6 +1,8 @@
 
 package com.ryanm.droid.rugl.input;
 
+import com.ryanm.droid.config.annote.Summary;
+import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.geom.ColouredShape;
 import com.ryanm.droid.rugl.geom.ShapeUtil;
 import com.ryanm.droid.rugl.gl.GLUtil;
@@ -17,14 +19,22 @@ import com.ryanm.droid.rugl.util.geom.BoundingRectangle;
  * 
  * @author ryanm
  */
+@Variable( "Touchstick area" )
+@Summary( "Control the sensitive area" )
 public class TouchStickArea extends AbstractTouchStick
 {
 	/***/
-	public final BoundingRectangle pad = new BoundingRectangle();
+	@Variable( "Draw" )
+	@Summary( "Outline the sensitive area" )
+	public boolean draw = false;
 
-	private final TouchStick stick;
+	private final BoundingRectangle pad = new BoundingRectangle();
 
-	private final ColouredShape outline;
+	/***/
+	@Variable
+	public final TouchStick stick;
+
+	private ColouredShape outline;
 
 	/**
 	 * @param x
@@ -49,10 +59,6 @@ public class TouchStickArea extends AbstractTouchStick
 				notifyClick();
 			}
 		} );
-
-		outline =
-				new ColouredShape( ShapeUtil.innerQuad( x, y, x + width, y + height, 5, 0 ),
-						Colour.packFloat( 1, 1, 1, 0.25f ), GLUtil.typicalState );
 	}
 
 	@Override
@@ -89,9 +95,38 @@ public class TouchStickArea extends AbstractTouchStick
 	@Override
 	public void draw( StackedRenderer sr )
 	{
-		if( touch == null )
+		if( draw && touch == null )
 		{
+			if( outline == null )
+			{
+				outline =
+						new ColouredShape( ShapeUtil.innerQuad( pad.x.getMin(), pad.y.getMin(),
+								pad.x.getMax(), pad.y.getMax(), 5, 0 ), Colour.packFloat( 1, 1,
+								1, 0.25f ), GLUtil.typicalState );
+			}
+
 			outline.render( sr );
 		}
+	}
+
+	/**
+	 * @return the sensitive pad area
+	 */
+	@Variable( "Pad area" )
+	@Summary( "Position and size of sensitive area" )
+	public BoundingRectangle getPad()
+	{
+		return pad;
+	}
+
+	/**
+	 * @param pad
+	 *           The new sensitive pad area
+	 */
+	@Variable( "Pad area" )
+	public void setPad( BoundingRectangle pad )
+	{
+		this.pad.set( pad );
+		outline = null;
 	}
 }

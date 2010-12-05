@@ -1,6 +1,8 @@
 
 package com.ryanm.droid.rugl.input;
 
+import com.ryanm.droid.config.annote.Summary;
+import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.geom.ColouredShape;
 import com.ryanm.droid.rugl.geom.ShapeUtil;
 import com.ryanm.droid.rugl.gl.StackedRenderer;
@@ -14,13 +16,23 @@ import com.ryanm.droid.rugl.util.math.Range;
  * 
  * @author ryanm
  */
+@Variable( "TouchStick" )
+@Summary( "Control sensitivity and ramp" )
 public class TouchStick extends AbstractTouchStick
 {
 	private ColouredShape limit;
 
 	private ColouredShape stick;
 
-	private float radius;
+	/***/
+	@Variable( "Radius" )
+	@Summary( "Limit of touchstick range, smaller values = more sensitive" )
+	public float radius;
+
+	/***/
+	@Variable( "Ramp" )
+	@Summary( "Input exponent. 1 = linear, >1 = deadzone, <1 = antideadzone, <0 = stupid" )
+	public float ramp = 1;
 
 	private float xPos;
 
@@ -45,8 +57,6 @@ public class TouchStick extends AbstractTouchStick
 	{
 		setPosition( x, y );
 		radius = limitRadius;
-
-		buildShape();
 	}
 
 	private void buildShape()
@@ -108,6 +118,8 @@ public class TouchStick extends AbstractTouchStick
 
 			float r = ( float ) Math.sqrt( dx * dx + dy * dy ) / radius;
 			r = Range.limit( r, 0, 1 );
+
+			r = ( float ) Math.pow( r, ramp );
 
 			x = r * Trig.cos( a );
 			y = r * Trig.sin( a );

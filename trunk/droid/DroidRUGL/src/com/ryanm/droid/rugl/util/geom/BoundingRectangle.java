@@ -61,6 +61,15 @@ public class BoundingRectangle
 	}
 
 	/**
+	 * @param r
+	 */
+	public void set( BoundingRectangle r )
+	{
+		x.set( r.x );
+		y.set( r.y );
+	}
+
+	/**
 	 * Alters this {@link BoundingRectangle} as necessary to contain
 	 * the specified point
 	 * 

@@ -6,22 +6,28 @@ import java.util.Date;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import android.opengl.GLES10;
+import android.opengl.GLSurfaceView.Renderer;
+import android.util.Log;
+
+import com.ryanm.droid.config.Configuration;
+import com.ryanm.droid.config.annote.Summary;
+import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.gl.GLUtil;
 import com.ryanm.droid.rugl.gl.State;
+import com.ryanm.droid.rugl.gl.VBOShape;
 import com.ryanm.droid.rugl.res.ResourceLoader;
 import com.ryanm.droid.rugl.texture.TextureFactory;
 import com.ryanm.droid.rugl.util.CodeTimer;
 import com.ryanm.droid.rugl.util.CodeTimer.Output;
-
-import android.opengl.GLES10;
-import android.opengl.GLSurfaceView.Renderer;
-import android.util.Log;
 
 /**
  * A convenient {@link Phase}-based game model
  * 
  * @author ryanm
  */
+@Variable( "DroidRUGL" )
+@Summary( "Loop control and profiling" )
 public class Game implements Renderer
 {
 	/**
@@ -39,15 +45,49 @@ public class Game implements Renderer
 	 */
 	public static int height;
 
+	/**
+	 * Roots of the tree that will be configured with
+	 * {@link #launchConfiguration()}
+	 */
+	public static Object[] confRoots = new Object[] {};
+
+	/**
+	 * Convenience to set {@link #confRoots}
+	 * 
+	 * @param roots
+	 */
+	public static void setConfigurationRoots( Object... roots )
+	{
+		confRoots = roots;
+	}
+
+	/**
+	 * Launches a configuration activity for the objects in
+	 * {@link #confRoots}
+	 * 
+	 * @see #setConfigurationRoots(Object...)
+	 */
+	public void launchConfiguration()
+	{
+		Configuration.configure( ga, confRoots );
+	}
+
 	private final GameActivity ga;
 
-	private static float logicAdvance;
-
-	private static long lam;
+	/**
+	 * The desired logic advance, in seconds, or -1 to disable fixed
+	 * interval advances. Be careful when setting a fixed logic advance
+	 * - things will not go well if executing the logic code takes
+	 * longer than the logic advance value.
+	 */
+	@Variable( "Logic advance" )
+	@Summary( "Fixed logic tick delta in seconds, or <0 for variable advance" )
+	public static float logicAdvance = -1;
 
 	/**
 	 * Profiles game logic, drawing and GL Rendering
 	 */
+	@Variable( "Loop timer" )
 	public final CodeTimer timer = new CodeTimer( "RUGL loop", Output.Millis,
 			Output.Millis );
 
@@ -69,21 +109,6 @@ public class Game implements Renderer
 		currentPhase = phase;
 	}
 
-	/**
-	 * Controls time advance mode. Be careful when setting a fixed
-	 * logic advance - things will not go well if executing the logic
-	 * code takes longer than the logic advance value.
-	 * 
-	 * @param advance
-	 *           the desired logic advance, or -1 to disable fixed
-	 *           interval advances
-	 */
-	public static void setLogicAdvance( float advance )
-	{
-		logicAdvance = advance;
-		lam = ( long ) ( 1000 * logicAdvance );
-	}
-
 	@Override
 	public void onSurfaceCreated( GL10 gl, EGLConfig config )
 	{
@@ -100,6 +125,7 @@ public class Game implements Renderer
 
 		State.stateReset();
 		TextureFactory.recreateTextures();
+		VBOShape.contextID++;
 
 		GLUtil.enableVertexArrays();
 
@@ -134,10 +160,11 @@ public class Game implements Renderer
 		{
 			Log.i( RUGL_TAG, "Phase " + currentPhase + " initing" );
 			currentPhase.openGLinit();
-			currentPhase.init();
+			currentPhase.init( this );
 			phaseInited = true;
 		}
 
+		Configuration.applyDeferredConfigurations();
 		ResourceLoader.checkCompletion();
 
 		timer.tick( "logic" );
@@ -150,7 +177,7 @@ public class Game implements Renderer
 			while( lastLogic < now )
 			{
 				currentPhase.advance( logicAdvance );
-				lastLogic += lam;
+				lastLogic += ( long ) ( 1000 * logicAdvance );
 			}
 		}
 		else

@@ -7,6 +7,7 @@ import java.nio.ShortBuffer;
 import android.opengl.GLES10;
 import android.opengl.GLES11;
 
+import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.geom.ColouredShape;
 import com.ryanm.droid.rugl.geom.TexturedShape;
 import com.ryanm.droid.rugl.util.FastFloatBuffer;
@@ -16,8 +17,23 @@ import com.ryanm.droid.rugl.util.FastFloatBuffer;
  */
 public class VBOShape
 {
+	/**
+	 * Increment this to indicate that VBO state may have been
+	 * invalidated, i.e. in
+	 * {@link Game#onSurfaceCreated(javax.microedition.khronos.opengles.GL10, javax.microedition.khronos.egl.EGLConfig)}
+	 * This should cause all {@link VBOShape}s to re-upload their data
+	 */
+	public static int contextID = 0;
+
 	/***/
 	public State state;
+
+	/**
+	 * The {@link #contextID} when the data was uploaded. If this is
+	 * ever different from {@link #contextID}, we know that the VBOs
+	 * may have been squelched
+	 */
+	private int uploadedContextID;
 
 	private int vertBufferID = -1;
 
@@ -92,6 +108,22 @@ public class VBOShape
 	/***/
 	public void draw()
 	{
+		if( uploadedContextID != contextID )
+		{ // the context may have changed - we need to refresh our
+			// buffer handles
+			IntBuffer ib = GLUtil.intScratch( 4 );
+			ib.put( 0, vertBufferID );
+			ib.put( 1, colourBufferID );
+			ib.put( 2, texCoordBufferID );
+			ib.put( 3, indexBufferID );
+			GLES11.glDeleteBuffers( 4, ib );
+
+			vertBufferID = -1;
+			colourBufferID = -1;
+			texCoordBufferID = -1;
+			indexBufferID = -1;
+		}
+
 		if( vertBufferID == -1 )
 		{
 			IntBuffer ib = GLUtil.intScratch( 4 );
@@ -118,6 +150,8 @@ public class VBOShape
 					indexBuffer, GLES11.GL_STATIC_DRAW );
 
 			GLUtil.checkGLError();
+
+			uploadedContextID = contextID;
 		}
 
 		state.apply();

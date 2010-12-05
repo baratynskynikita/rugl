@@ -232,7 +232,7 @@ public class GLUtil
 	}
 
 	/**
-	 * Enables the client state for using vertex arrays
+	 * Enables the client state for using vertex arrays and VBOs
 	 */
 	public static void enableVertexArrays()
 	{
