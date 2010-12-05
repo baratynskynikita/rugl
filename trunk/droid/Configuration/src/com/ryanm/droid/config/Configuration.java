@@ -1,6 +1,9 @@
 
 package com.ryanm.droid.config;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,6 +33,11 @@ public class Configuration
 	 */
 	public static final int ACTIVITY_REQUEST_FLAG = 266344;
 
+	private static Object[] configTargets = null;
+
+	private static Queue<ConfigResult> deferredResults =
+			new LinkedList<Configuration.ConfigResult>();
+
 	private Configuration()
 	{
 	}
@@ -40,11 +48,14 @@ public class Configuration
 	 * @param returnTo
 	 *           The activity to return to when we are done configuring
 	 * @param roots
-	 *           The (annotated) objects to configure
+	 *           The (annotated) objects to configure. These will be
+	 *           saved to use the next time
+	 *           {@link #onActivityResult(int, int, Intent)} is called
 	 */
 	public static void configure( Activity returnTo, Object... roots )
 	{
 		Log.i( LOG_TAG, "Launching configuration activity" );
+		configTargets = roots;
 		// launch config
 		Intent i = new Intent( returnTo, ConfigActivity.class );
 		i.putExtra( "conf", Extract.extract( roots ).toString() );
@@ -62,13 +73,8 @@ public class Configuration
 	 *           from {@link Activity}.onActivityResult()
 	 * @param data
 	 *           from {@link Activity}.onActivityResult()
-	 * @param roots
-	 *           The objects to configure. Probably best to pass the
-	 *           same ones as you did to
-	 *           {@link #configure(Activity, Object...)}
 	 */
-	public static void onActivityResult( int requestCode, int resultCode, Intent data,
-			Object... roots )
+	public static void onActivityResult( int requestCode, int resultCode, Intent data )
 	{
 		if( requestCode == Configuration.ACTIVITY_REQUEST_FLAG
 				&& resultCode == Activity.RESULT_OK )
@@ -76,13 +82,85 @@ public class Configuration
 			Log.i( LOG_TAG, "Applying configuration" );
 			try
 			{
-				Apply.apply( new JSONObject( data.getStringExtra( "conf" ) ), roots );
+				Apply.apply( new JSONObject( data.getStringExtra( "conf" ) ), configTargets );
 			}
 			catch( JSONException e )
 			{
 				Log.e( LOG_TAG,
 						"Problem parsing json data : " + data.getStringExtra( "conf" ), e );
 			}
+		}
+	}
+
+	/**
+	 * Call this from your {@link Activity}.onActivityResult() instead
+	 * of {@link #onActivityResult(int, int, Intent)} to save a
+	 * configuration for later application. This is useful if your
+	 * configuration changes need to be done in a particular thread
+	 * like, for example, OpenGL stuff
+	 * 
+	 * @param requestCode
+	 *           from {@link Activity}.onActivityResult()
+	 * @param resultCode
+	 *           from {@link Activity}.onActivityResult()
+	 * @param data
+	 *           from {@link Activity}.onActivityResult()
+	 */
+	public static void deferActivityResult( int requestCode, int resultCode, Intent data )
+	{
+		if( requestCode == Configuration.ACTIVITY_REQUEST_FLAG
+				&& resultCode == Activity.RESULT_OK )
+		{
+			synchronized( deferredResults )
+			{
+				Log.i( LOG_TAG, "Deferring configuration" );
+				try
+				{
+					JSONObject json = new JSONObject( data.getStringExtra( "conf" ) );
+					deferredResults.add( new ConfigResult( configTargets, json ) );
+				}
+				catch( JSONException e )
+				{
+					Log.e( LOG_TAG,
+							"Problem parsing json data : " + data.getStringExtra( "conf" ), e );
+				}
+			}
+		}
+	}
+
+	/**
+	 * Call this to apply configurations previously deferred in
+	 * {@link #deferActivityResult(int, int, Intent)}
+	 */
+	public static void applyDeferredConfigurations()
+	{
+		synchronized( deferredResults )
+		{
+			while( !deferredResults.isEmpty() )
+			{
+				Log.i( LOG_TAG, "Applying deferred configuration" );
+
+				ConfigResult cr = deferredResults.poll();
+				Apply.apply( cr.config, cr.roots );
+			}
+		}
+	}
+
+	/**
+	 * For deferring configuration application
+	 * 
+	 * @author ryanm
+	 */
+	private static class ConfigResult
+	{
+		private final Object[] roots;
+
+		private final JSONObject config;
+
+		private ConfigResult( Object[] roots, JSONObject config )
+		{
+			this.roots = roots;
+			this.config = config;
 		}
 	}
 }
