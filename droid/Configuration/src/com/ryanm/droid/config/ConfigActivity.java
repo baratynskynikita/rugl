@@ -205,7 +205,11 @@ public class ConfigActivity extends PreferenceActivity
 			PreferenceCategory cat = new PreferenceCategory( this );
 			cat.setOrderingAsAdded( false );
 			cat.setTitle( entry.getKey() == null ? json.optString( "desc" ) : entry.getKey() );
-			cat.setOrder( minCatOrders.get( entry.getKey() ).intValue() );
+
+			// unnamed category always goes first
+			cat.setOrder( entry.getKey() == null ? Integer.MIN_VALUE : minCatOrders.get(
+					entry.getKey() ).intValue() );
+
 			screen.addPreference( cat );
 			for( Preference p : entry.getValue() )
 			{
