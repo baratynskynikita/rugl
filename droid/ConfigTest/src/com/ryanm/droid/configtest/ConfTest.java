@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.ryanm.droid.config.Configuration;
 import com.ryanm.droid.config.annote.Category;
+import com.ryanm.droid.config.annote.DirtyFlag;
 import com.ryanm.droid.config.annote.Order;
 import com.ryanm.droid.config.annote.Summary;
 import com.ryanm.droid.config.annote.Variable;
@@ -102,6 +103,35 @@ public class ConfTest
 		encap = i;
 	}
 
+	/***/
+	@Variable( "An action" )
+	@Summary( "Tick the box and the method will be called on application" )
+	public void action()
+	{
+		Log.i( Configuration.LOG_TAG, "Action!" );
+	}
+
+	/**
+	 * The {@link DirtyFlag} annotation can be applied to boolean
+	 * fields or void-return/no-arg methods, and will be set to
+	 * true/invoked when a variable value is changed
+	 */
+	@DirtyFlag
+	public void setDirty()
+	{
+		Log.i( Configuration.LOG_TAG, "Top-level variables are dirty!" );
+	}
+
+	/**
+	 * You can also use it to watch for changes to variables further
+	 * down in the tree
+	 */
+	@DirtyFlag( watchTree = true )
+	public void setTreeDirty()
+	{
+		Log.i( Configuration.LOG_TAG, "Tree variables are dirty!" );
+	}
+
 	/**
 	 * @author ryanm
 	 */
@@ -122,14 +152,6 @@ public class ConfTest
 		{
 			return subnum + " " + subString;
 		}
-	}
-
-	/***/
-	@Variable( "An action" )
-	@Summary( "Tick the box and the method will be called on application" )
-	public void action()
-	{
-		Log.i( Configuration.LOG_TAG, "Action!" );
 	}
 
 	@Override
