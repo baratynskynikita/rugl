@@ -1,6 +1,7 @@
 
 package com.ryanm.droid.rugl.gl;
 
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
@@ -10,7 +11,6 @@ import android.opengl.GLES11;
 import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.geom.ColouredShape;
 import com.ryanm.droid.rugl.geom.TexturedShape;
-import com.ryanm.droid.rugl.util.FastFloatBuffer;
 
 /**
  * @author ryanm
@@ -25,6 +25,8 @@ public class VBOShape
 	 */
 	public static int contextID = 0;
 
+	private static int vertexBytes = 3 * 4 + 4 + 2 * 4;
+
 	/***/
 	public State state;
 
@@ -35,25 +37,17 @@ public class VBOShape
 	 */
 	private int uploadedContextID;
 
-	private int vertBufferID = -1;
+	private int dataVBOID = -1;
 
-	private final FastFloatBuffer vertBuffer;
+	private final ByteBuffer dataBuffer;
 
-	private int colourBufferID = -1;
-
-	private final IntBuffer colourBuffer;
-
-	private int texCoordBufferID = -1;
-
-	private final FastFloatBuffer texCoordBuffer;
-
-	private int indexBufferID = -1;
+	private int indexVBOID = -1;
 
 	private final ShortBuffer indexBuffer;
 
-	private final int vertexCount;
+	private final int indexCount;
 
-	private final int triangleIndexCount;
+	private final int vertexCount;
 
 	/**
 	 * @param ts
@@ -62,22 +56,24 @@ public class VBOShape
 	{
 		state = ts.state;
 		vertexCount = ts.vertexCount();
-		triangleIndexCount = ts.triangles.length;
 
-		vertBuffer = new FastFloatBuffer( ts.vertices.length );
-		vertBuffer.put( ts.vertices );
-		vertBuffer.flip();
+		dataBuffer = BufferUtils.createByteBuffer( vertexCount * vertexBytes );
+		for( int i = 0; i < vertexCount; i++ )
+		{
+			dataBuffer.putFloat( ts.vertices[ 3 * i + 0 ] );
+			dataBuffer.putFloat( ts.vertices[ 3 * i + 1 ] );
+			dataBuffer.putFloat( ts.vertices[ 3 * i + 2 ] );
 
-		colourBuffer = BufferUtils.createIntBuffer( ts.colours.length );
-		colourBuffer.put( ts.colours );
-		colourBuffer.flip();
+			dataBuffer.putInt( ts.colours[ i ] );
 
-		texCoordBuffer = new FastFloatBuffer( ts.texCoords.length );
-		texCoordBuffer.put( ts.getTextureCoords() );
-		texCoordBuffer.flip();
+			dataBuffer.putFloat( ts.texCoords[ 2 * i ] );
+			dataBuffer.putFloat( ts.texCoords[ 2 * i + 1 ] );
+		}
+		dataBuffer.flip();
 
-		indexBuffer = BufferUtils.createShortBuffer( ts.triangles.length );
-		indexBuffer.put( ts.triangles );
+		indexCount = ts.indices.length;
+		indexBuffer = BufferUtils.createShortBuffer( indexCount );
+		indexBuffer.put( ts.indices );
 		indexBuffer.flip();
 	}
 
@@ -88,20 +84,24 @@ public class VBOShape
 	{
 		state = cs.state;
 		vertexCount = cs.vertexCount();
-		triangleIndexCount = cs.triangles.length;
 
-		vertBuffer = new FastFloatBuffer( cs.vertices.length );
-		vertBuffer.put( cs.vertices );
-		vertBuffer.flip();
+		dataBuffer = BufferUtils.createByteBuffer( vertexCount * vertexBytes );
+		for( int i = 0; i < vertexCount; i++ )
+		{
+			dataBuffer.putFloat( cs.vertices[ 3 * i + 0 ] );
+			dataBuffer.putFloat( cs.vertices[ 3 * i + 1 ] );
+			dataBuffer.putFloat( cs.vertices[ 3 * i + 2 ] );
 
-		colourBuffer = BufferUtils.createIntBuffer( cs.colours.length );
-		colourBuffer.put( cs.colours );
-		colourBuffer.flip();
+			dataBuffer.putInt( cs.colours[ i ] );
 
-		texCoordBuffer = new FastFloatBuffer( 2 * vertexCount );
+			dataBuffer.putFloat( 0 );
+			dataBuffer.putFloat( 0 );
+		}
+		dataBuffer.flip();
 
-		indexBuffer = BufferUtils.createShortBuffer( cs.triangles.length );
-		indexBuffer.put( cs.triangles );
+		indexCount = cs.indices.length;
+		indexBuffer = BufferUtils.createShortBuffer( indexCount );
+		indexBuffer.put( cs.indices );
 		indexBuffer.flip();
 	}
 
@@ -111,42 +111,22 @@ public class VBOShape
 		if( uploadedContextID != contextID )
 		{ // the context may have changed - we need to refresh our
 			// buffer handles
-			IntBuffer ib = GLUtil.intScratch( 4 );
-			ib.put( 0, vertBufferID );
-			ib.put( 1, colourBufferID );
-			ib.put( 2, texCoordBufferID );
-			ib.put( 3, indexBufferID );
-			GLES11.glDeleteBuffers( 4, ib );
-
-			vertBufferID = -1;
-			colourBufferID = -1;
-			texCoordBufferID = -1;
-			indexBufferID = -1;
+			delete();
 		}
 
-		if( vertBufferID == -1 )
+		if( dataVBOID == -1 )
 		{
-			IntBuffer ib = GLUtil.intScratch( 4 );
-			GLES11.glGenBuffers( 4, ib );
-			vertBufferID = ib.get( 0 );
-			colourBufferID = ib.get( 1 );
-			texCoordBufferID = ib.get( 2 );
-			indexBufferID = ib.get( 3 );
+			IntBuffer ib = GLUtil.intScratch( 2 );
+			GLES11.glGenBuffers( 2, ib );
+			dataVBOID = ib.get( 0 );
+			indexVBOID = ib.get( 1 );
 
-			GLES11.glBindBuffer( GLES11.GL_ARRAY_BUFFER, vertBufferID );
-			GLES11.glBufferData( GLES11.GL_ARRAY_BUFFER, vertexCount * 3 * 4,
-					vertBuffer.bytes, GLES11.GL_STATIC_DRAW );
+			GLES11.glBindBuffer( GLES11.GL_ARRAY_BUFFER, dataVBOID );
+			GLES11.glBufferData( GLES11.GL_ARRAY_BUFFER, vertexCount * vertexBytes,
+					dataBuffer, GLES11.GL_STATIC_DRAW );
 
-			GLES11.glBindBuffer( GLES11.GL_ARRAY_BUFFER, colourBufferID );
-			GLES11.glBufferData( GLES11.GL_ARRAY_BUFFER, vertexCount * 4, colourBuffer,
-					GLES11.GL_STATIC_DRAW );
-
-			GLES11.glBindBuffer( GLES11.GL_ARRAY_BUFFER, texCoordBufferID );
-			GLES11.glBufferData( GLES11.GL_ARRAY_BUFFER, vertexCount * 2 * 4,
-					texCoordBuffer.bytes, GLES11.GL_STATIC_DRAW );
-
-			GLES11.glBindBuffer( GLES11.GL_ELEMENT_ARRAY_BUFFER, indexBufferID );
-			GLES11.glBufferData( GLES11.GL_ELEMENT_ARRAY_BUFFER, indexBuffer.limit() * 2,
+			GLES11.glBindBuffer( GLES11.GL_ELEMENT_ARRAY_BUFFER, indexVBOID );
+			GLES11.glBufferData( GLES11.GL_ELEMENT_ARRAY_BUFFER, indexCount * 2,
 					indexBuffer, GLES11.GL_STATIC_DRAW );
 
 			GLUtil.checkGLError();
@@ -156,17 +136,14 @@ public class VBOShape
 
 		state.apply();
 
-		GLES11.glBindBuffer( GLES11.GL_ARRAY_BUFFER, vertBufferID );
-		GLES11.glVertexPointer( 3, GLES10.GL_FLOAT, 0, 0 );
+		GLES11.glBindBuffer( GLES11.GL_ARRAY_BUFFER, dataVBOID );
 
-		GLES11.glBindBuffer( GLES11.GL_ARRAY_BUFFER, colourBufferID );
-		GLES11.glColorPointer( 4, GLES10.GL_UNSIGNED_BYTE, 0, 0 );
+		GLES11.glVertexPointer( 3, GLES10.GL_FLOAT, vertexBytes, 0 );
+		GLES11.glColorPointer( 4, GLES10.GL_UNSIGNED_BYTE, vertexBytes, 12 );
+		GLES11.glTexCoordPointer( 2, GLES10.GL_FLOAT, vertexBytes, 16 );
 
-		GLES11.glBindBuffer( GLES11.GL_ARRAY_BUFFER, texCoordBufferID );
-		GLES11.glTexCoordPointer( 2, GLES10.GL_FLOAT, 0, 0 );
-
-		GLES11.glBindBuffer( GLES11.GL_ELEMENT_ARRAY_BUFFER, indexBufferID );
-		GLES11.glDrawElements( GLES10.GL_TRIANGLES, triangleIndexCount,
+		GLES11.glBindBuffer( GLES11.GL_ELEMENT_ARRAY_BUFFER, indexVBOID );
+		GLES11.glDrawElements( state.drawMode.glValue, indexCount,
 				GLES10.GL_UNSIGNED_SHORT, 0 );
 
 		GLES11.glBindBuffer( GLES11.GL_ARRAY_BUFFER, 0 );
@@ -176,30 +153,16 @@ public class VBOShape
 	/***/
 	public void delete()
 	{
-		if( vertBufferID != -1 )
+		if( dataVBOID != -1 )
 		{
-			IntBuffer ib = GLUtil.intScratch( 4 );
-			ib.put( 0, vertBufferID );
-			ib.put( 1, colourBufferID );
-			ib.put( 2, texCoordBufferID );
-			ib.put( 3, indexBufferID );
-			GLES11.glDeleteBuffers( 4, ib );
+			IntBuffer ib = GLUtil.intScratch( 2 );
+			ib.put( 0, dataVBOID );
+			ib.put( 1, indexVBOID );
+			GLES11.glDeleteBuffers( 2, ib );
+			dataVBOID = -1;
+			indexVBOID = -1;
 
-			vertBufferID = -1;
-			colourBufferID = -1;
-			texCoordBufferID = -1;
-			indexBufferID = -1;
+			GLUtil.checkGLError();
 		}
-	}
-
-	@Override
-	public String toString()
-	{
-		StringBuilder buff =
-				new StringBuilder( "VBOShape " + vertexCount + " verts\n\tbufferIDs: v="
-						+ vertBufferID + " c=" + colourBufferID + " tx=" + texCoordBufferID
-						+ " i=" + indexBufferID + "\n" + state );
-
-		return buff.toString();
 	}
 }

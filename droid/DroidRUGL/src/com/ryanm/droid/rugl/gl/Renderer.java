@@ -80,7 +80,7 @@ public class Renderer
 	 * Array of triangle lists, indexed by compiled
 	 * {@link State#getCompiledIndex()}
 	 */
-	private TriangleList[] triangles = new TriangleList[ 0 ];
+	private IndexList[] indices = new IndexList[ 0 ];
 
 	/**
 	 * A list of states that have been used with this renderer
@@ -141,8 +141,8 @@ public class Renderer
 	 */
 	public State intern( State s )
 	{
-		if( triangles.length > 0
-				&& triangles[ 0 ].state.getCompilationBatch() == s.getCompilationBatch() )
+		if( indices.length > 0
+				&& indices[ 0 ].state.getCompilationBatch() == s.getCompilationBatch() )
 		{
 			// the state has been compiled in the same batch as our pool,
 			// it must already be in there
@@ -171,14 +171,14 @@ public class Renderer
 			}
 
 			// redo the triangle lists
-			TriangleList[] newTL = new TriangleList[ interned.size() ];
-			newTL[ s.getCompiledIndex() ] = new TriangleList( s );
-			for( int i = 0; i < triangles.length; i++ )
+			IndexList[] newTL = new IndexList[ interned.size() ];
+			newTL[ s.getCompiledIndex() ] = new IndexList( s );
+			for( int i = 0; i < indices.length; i++ )
 			{
-				newTL[ triangles[ i ].state.getCompiledIndex() ] = triangles[ i ];
+				newTL[ indices[ i ].state.getCompiledIndex() ] = indices[ i ];
 			}
 
-			triangles = newTL;
+			indices = newTL;
 
 			return s;
 		}
@@ -195,14 +195,14 @@ public class Renderer
 	 *           Can be null, for (0,0) coords
 	 * @param vertexColours
 	 *           The vertex colours. Can be null for all-white
-	 * @param triangleIndices
-	 *           The indices of triangle vertices.
+	 * @param geomIndices
+	 *           The indices of geometry primitives.
 	 * @param state
 	 *           The rendering state for this set of triangles. Can be
 	 *           null for the default state
 	 */
-	public void addTriangles( float[] verts, float[] textureCoordinates,
-			int[] vertexColours, short[] triangleIndices, State state )
+	public void addGeometry( float[] verts, float[] textureCoordinates,
+			int[] vertexColours, short[] geomIndices, State state )
 	{
 		int vc = verts.length / 3;
 
@@ -252,7 +252,7 @@ public class Renderer
 		}
 
 		// insert triangle indices
-		triangles[ state.getCompiledIndex() ].add( triangleIndices, indexOffset );
+		indices[ state.getCompiledIndex() ].add( geomIndices, indexOffset );
 	}
 
 	/**
@@ -269,14 +269,14 @@ public class Renderer
 	 *           Can be null, for (0,0) coords
 	 * @param vertexColours
 	 *           The vertex colours. Can be null for all-white
-	 * @param triangleIndices
-	 *           The indices of triangle vertices.
+	 * @param geomIndices
+	 *           The indices of geometry primitives.
 	 * @param state
 	 *           The rendering state for this set of triangles. Can be
 	 *           null for the default state
 	 */
-	public void addTriangles( int[] verts, int[] textureCoordinates, int[] vertexColours,
-			short[] triangleIndices, State state )
+	public void addGeometry( int[] verts, int[] textureCoordinates, int[] vertexColours,
+			short[] geomIndices, State state )
 	{
 		int vc = verts.length / 3;
 
@@ -330,7 +330,7 @@ public class Renderer
 		}
 
 		// insert triangle indices
-		triangles[ state.getCompiledIndex() ].add( triangleIndices, indexOffset );
+		indices[ state.getCompiledIndex() ].add( geomIndices, indexOffset );
 	}
 
 	/**
@@ -375,9 +375,9 @@ public class Renderer
 		GLES10.glTexCoordPointer( 2, GLES10.GL_FLOAT, 0, texCoords.bytes );
 
 		// render
-		for( int i = 0; i < triangles.length; i++ )
+		for( int i = 0; i < indices.length; i++ )
 		{
-			TriangleList tl = triangles[ i ];
+			IndexList tl = indices[ i ];
 
 			if( tl.count > 0 )
 			{
@@ -386,20 +386,20 @@ public class Renderer
 
 				triangleCount += tl.count;
 
-				if( tris == null || tris.capacity() < tl.tris.length )
+				if( tris == null || tris.capacity() < tl.indices.length )
 				{
-					tris = BufferUtils.createShortBuffer( tl.tris.length );
+					tris = BufferUtils.createShortBuffer( tl.indices.length );
 				}
 
 				tris.clear();
 
-				tris.put( tl.tris );
+				tris.put( tl.indices );
 				tris.position( tl.count );
 
 				tris.flip();
 
 				// render
-				GLES10.glDrawElements( GLES10.GL_TRIANGLES, tl.count,
+				GLES10.glDrawElements( tl.state.drawMode.glValue, tl.count,
 						GLES10.GL_UNSIGNED_SHORT, tris );
 			}
 		}
@@ -424,9 +424,9 @@ public class Renderer
 		texCoords.clear();
 		colours.clear();
 
-		for( int i = 0; i < triangles.length; i++ )
+		for( int i = 0; i < indices.length; i++ )
 		{
-			triangles[ i ].count = 0;
+			indices[ i ].count = 0;
 		}
 	}
 
@@ -482,14 +482,14 @@ public class Renderer
 	}
 
 	/**
-	 * Keeps track of added triangle indices
+	 * Keeps track of added element indices
 	 * 
 	 * @author ryanm
 	 */
-	private static class TriangleList
+	private static class IndexList
 	{
 		/**
-		 * The GL state for these triangles
+		 * The GL state for these indices
 		 */
 		private final State state;
 
@@ -501,25 +501,25 @@ public class Renderer
 		/**
 		 * The triangle indices
 		 */
-		private short[] tris = new short[ 100 ];
+		private short[] indices = new short[ 100 ];
 
-		private TriangleList( State state )
+		private IndexList( State state )
 		{
 			this.state = state;
 		}
 
 		private void add( short[] ti, int indexOffset )
 		{
-			if( count + ti.length > tris.length )
+			if( count + ti.length > indices.length )
 			{
-				short[] nTris = new short[ count + ti.length ];
-				System.arraycopy( tris, 0, nTris, 0, tris.length );
-				tris = nTris;
+				short[] nInd = new short[ count + ti.length ];
+				System.arraycopy( indices, 0, nInd, 0, indices.length );
+				indices = nInd;
 			}
 
 			for( int i = 0; i < ti.length; i++ )
 			{
-				tris[ count + i ] = ( short ) ( ti[ i ] + indexOffset );
+				indices[ count + i ] = ( short ) ( ti[ i ] + indexOffset );
 			}
 
 			count += ti.length;

@@ -56,7 +56,7 @@ public class ShapeWelder<T extends Shape>
 	{
 		shapes.add( s );
 		vertexCount += s.vertexCount();
-		triangleCount += s.triangles.length;
+		triangleCount += s.indices.length;
 
 		return true;
 	}
@@ -91,14 +91,14 @@ public class ShapeWelder<T extends Shape>
 
 			System.arraycopy( s.vertices, 0, verts, vi, s.vertices.length );
 
-			System.arraycopy( s.triangles, 0, tris, ti, s.triangles.length );
-			for( int i = 0; i < s.triangles.length; i++ )
+			System.arraycopy( s.indices, 0, tris, ti, s.indices.length );
+			for( int i = 0; i < s.indices.length; i++ )
 			{
 				tris[ ti + i ] += vi / 3;
 			}
 
 			vi += s.vertices.length;
-			ti += s.triangles.length;
+			ti += s.indices.length;
 		}
 
 		clear();
