@@ -14,6 +14,7 @@ import android.os.Environment;
 import com.ryanm.droid.config.annote.Summary;
 import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.gl.MutableState;
+import com.ryanm.droid.rugl.gl.Renderer;
 import com.ryanm.droid.rugl.res.ResourceLoader;
 import com.ryanm.droid.rugl.util.CodeTimer;
 import com.ryanm.droid.rugl.util.CodeTimer.Output;
@@ -35,6 +36,19 @@ public class World
 	/***/
 	@Variable( "Render state" )
 	public MutableState muState;
+
+	/***/
+	@Variable( "Draw chunklets" )
+	public boolean drawChunklets = true;
+
+	/***/
+	@Variable( "Outline chunklets" )
+	public boolean drawOutlines = false;
+
+	/**
+	 * For drawing the wireframes
+	 */
+	private Renderer renderer = new Renderer();
 
 	/**
 	 * The world save directory
@@ -370,7 +384,7 @@ public class World
 			c = renderList[ i ];
 			c.generateGeometry();
 
-			if( c.solidVBO != null )
+			if( c.solidVBO != null && drawChunklets )
 			{
 				c.solidVBO.state = BlockFactory.state;
 				c.solidVBO.draw();
@@ -383,11 +397,21 @@ public class World
 		for( int i = renderListSize - 1; i >= 0; i-- )
 		{
 			c = renderList[ i ];
-			if( c.transparentVBO != null )
+			if( c.transparentVBO != null && drawChunklets )
 			{
 				c.transparentVBO.state = BlockFactory.state;
 				c.transparentVBO.draw();
 			}
+		}
+
+		ct.tick( "outline" );
+		for( int i = 0; i < renderListSize - 1 && drawOutlines; i++ )
+		{
+			renderList[ i ].drawOutline( renderer );
+		}
+		if( drawOutlines )
+		{
+			renderer.render();
 		}
 
 		ct.tick( "clear" );

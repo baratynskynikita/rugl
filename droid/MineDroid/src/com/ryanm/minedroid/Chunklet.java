@@ -5,8 +5,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.ryanm.droid.rugl.geom.ColouredShape;
+import com.ryanm.droid.rugl.geom.Shape;
 import com.ryanm.droid.rugl.geom.ShapeBuilder;
 import com.ryanm.droid.rugl.geom.TexturedShape;
+import com.ryanm.droid.rugl.geom.WireUtil;
+import com.ryanm.droid.rugl.gl.Renderer;
 import com.ryanm.droid.rugl.gl.VBOShape;
 import com.ryanm.droid.rugl.util.Colour;
 import com.ryanm.droid.rugl.util.geom.Frustum;
@@ -42,6 +46,8 @@ public class Chunklet
 	 * world coordinate
 	 */
 	public final int z;
+
+	private ColouredShape outline = null;
 
 	/**
 	 * Lowest level of blocks in this chunklet in block index
@@ -341,6 +347,27 @@ public class Chunklet
 		return "Chunklet @ " + x + ", " + y + ", " + z + "\nsheets n " + northSheet + " s "
 				+ southSheet + "\n e " + eastSheet + " w " + westSheet + "\n t " + topSheet
 				+ " b " + bottomSheet;
+	}
+
+	/**
+	 * Draws wireframe outline
+	 * 
+	 * @param r
+	 */
+	public void drawOutline( Renderer r )
+	{
+		if( solidVBO != null || transparentVBO != null || geomPending )
+		{
+			if( outline == null )
+			{
+				Shape s = WireUtil.unitCube();
+				s.translate( x, y, z );
+
+				outline = new ColouredShape( s, Colour.black, WireUtil.state );
+			}
+
+			outline.render( r );
+		}
 	}
 
 	/**
