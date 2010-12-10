@@ -1,17 +1,18 @@
 
 package com.ryanm.minedroid;
 
-import android.util.Log;
-
-import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.geom.ShapeBuilder;
 import com.ryanm.droid.rugl.gl.GLUtil;
 import com.ryanm.droid.rugl.gl.State;
+import com.ryanm.droid.rugl.gl.enums.FogMode;
 import com.ryanm.droid.rugl.gl.enums.MagFilter;
 import com.ryanm.droid.rugl.gl.enums.MinFilter;
+import com.ryanm.droid.rugl.gl.facets.Fog;
 import com.ryanm.droid.rugl.res.BitmapLoader;
+import com.ryanm.droid.rugl.res.ResourceLoader;
 import com.ryanm.droid.rugl.texture.Texture;
 import com.ryanm.droid.rugl.texture.TextureFactory;
+import com.ryanm.droid.rugl.util.Colour;
 
 /**
  * Defines block data, can add face geometry to {@link ShapeBuilder}s
@@ -47,14 +48,15 @@ public class BlockFactory
 	 * Rendering state for blocks. Texture filtering is for wimps
 	 */
 	public static State state = GLUtil.typicalState.with( MinFilter.NEAREST,
-			MagFilter.NEAREST );
+			MagFilter.NEAREST )
+			.with( new Fog( FogMode.LINEAR, 1, 3.5f, 4.5f, Colour.white ) );
 
 	/**
 	 * Synchronously loads the terrain texture
 	 */
 	public static void loadTexture()
 	{
-		BitmapLoader l = new BitmapLoader( R.drawable.terrain ) {
+		ResourceLoader.loadNow( new BitmapLoader( R.drawable.terrain ) {
 			@Override
 			public void complete()
 			{
@@ -66,15 +68,7 @@ public class BlockFactory
 					state = texture.applyTo( state );
 				}
 			}
-		};
-
-		l.load();
-		l.loaded();
-
-		Log.i( Game.RUGL_TAG, "terrain texture loaded: " );
-		Log.i( Game.RUGL_TAG, l.toString() );
-
-		l.complete();
+		} );
 	}
 
 	/**

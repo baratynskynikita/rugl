@@ -7,6 +7,9 @@ import static android.opengl.GLES10.glClear;
 import android.opengl.GLES10;
 import android.view.KeyEvent;
 
+import com.ryanm.droid.config.annote.Summary;
+import com.ryanm.droid.config.annote.Variable;
+import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.Phase;
 import com.ryanm.droid.rugl.util.FPSCamera;
 import com.ryanm.droid.rugl.util.geom.Frustum;
@@ -15,11 +18,22 @@ import com.ryanm.droid.rugl.util.geom.Vector3f;
 /**
  * @author ryanm
  */
+@Variable
+@Summary( "Explore minecraft worlds" )
 public class BlockView extends Phase
 {
-	private GUI gui;
+	/***/
+	@Variable
+	public GUI gui;
 
-	private FPSCamera cam = new FPSCamera();
+	/***/
+	@Variable
+	public FPSCamera cam = new FPSCamera();
+
+	/***/
+	@Variable( "Speed" )
+	@Summary( "Speed of camera, in units per second" )
+	public float speed = 0.25f;
 
 	private Frustum savedFrustum;
 
@@ -27,7 +41,11 @@ public class BlockView extends Phase
 
 	private Vector3f position = new Vector3f();
 
-	private final World world;
+	/***/
+	@Variable
+	public final World world;
+
+	private Game game;
 
 	/**
 	 * @param world
@@ -39,8 +57,11 @@ public class BlockView extends Phase
 	}
 
 	@Override
-	public void init()
+	public void init( Game game )
 	{
+		Game.setConfigurationRoots( game, this );
+		this.game = game;
+
 		cam.far = 4.5f;
 
 		if( gui == null )
@@ -55,12 +76,6 @@ public class BlockView extends Phase
 	public void openGLinit()
 	{
 		GLES10.glClearColor( 0.7f, 0.7f, 0.9f, 1 );
-
-		GLES10.glEnable( GLES10.GL_FOG );
-		GLES10.glFogx( GLES10.GL_FOG_MODE, GLES10.GL_LINEAR );
-		GLES10.glFogf( GLES10.GL_FOG_START, 3.5f );
-		GLES10.glFogf( GLES10.GL_FOG_END, 4.5f );
-		GLES10.glFogfv( GLES10.GL_FOG_COLOR, new float[] { 1, 1, 1, 1 }, 0 );
 	}
 
 	@Override
@@ -69,8 +84,6 @@ public class BlockView extends Phase
 		gui.advance( delta );
 
 		cam.advance( delta, gui.right.x, gui.right.y );
-
-		float speed = 0.25f;
 
 		position.x += gui.left.y * delta * cam.forward.x * speed;
 		position.y += gui.left.y * delta * cam.forward.y * speed;
@@ -88,7 +101,7 @@ public class BlockView extends Phase
 	{
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-		cam.apply( position.x, position.y, position.z );
+		cam.setPosition( position.x, position.y, position.z );
 
 		if( savedFrustum != null )
 		{
@@ -114,6 +127,10 @@ public class BlockView extends Phase
 		if( keyCode == KeyEvent.KEYCODE_BACK )
 		{
 			complete = true;
+		}
+		else if( keyCode == KeyEvent.KEYCODE_MENU )
+		{
+			game.launchConfiguration();
 		}
 	}
 }

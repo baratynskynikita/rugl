@@ -1,9 +1,11 @@
 
 package com.ryanm.minedroid;
 
+import java.io.File;
 import java.io.IOException;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -23,25 +25,42 @@ public class MineDroidActivity extends GameActivity
 	{
 		super.onCreate( savedInstanceState );
 
-		try
-		{
-			// change the 1 to whatever world number you want
-			World w = new World( 1 );
+		File dir = new File( Environment.getExternalStorageDirectory(), ".minecraft/saves" );
 
-			Game game = new Game( this, new BlockView( w ) );
+		boolean created = dir.mkdirs();
 
-			start( game );
-		}
-		catch( IOException e )
+		if( created )
 		{
 			Toast t =
-					Toast.makeText( getApplicationContext(),
-							"Could not load world level.dat, check logcat", Toast.LENGTH_LONG );
+					Toast.makeText( this,
+							"\".minecraft/saves\" directory structure was missing,"
+									+ " but has been created. Copy your \"World1\" "
+									+ "directory there", Toast.LENGTH_LONG );
 			t.show();
-
-			Log.e( Game.RUGL_TAG, "Problem loading level.dat", e );
-
 			finish();
+		}
+		else
+		{
+			try
+			{
+				// change the 1 to whatever world number you want
+				World w = new World( 1 );
+
+				Game game = new Game( this, new BlockView( w ) );
+
+				start( game );
+			}
+			catch( IOException e )
+			{
+				Toast t =
+						Toast.makeText( this, "Could not load world level.dat, check logcat",
+								Toast.LENGTH_LONG );
+				t.show();
+
+				Log.e( Game.RUGL_TAG, "Problem loading level.dat", e );
+
+				finish();
+			}
 		}
 	}
 }

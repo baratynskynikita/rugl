@@ -3,6 +3,7 @@ package com.ryanm.minedroid;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.ryanm.droid.rugl.geom.ShapeBuilder;
 import com.ryanm.droid.rugl.geom.TexturedShape;
@@ -104,6 +105,8 @@ public class Chunklet
 	 */
 	public boolean westSheet = true;
 
+	private boolean empty = true;
+
 	/**
 	 * Stops us revisiting this chunklet when we flood-fill the view
 	 * frustum to find which chunklets to render
@@ -122,6 +125,16 @@ public class Chunklet
 	 * {@link #transVBOBuilder}
 	 */
 	private static ExecutorService geomGenService = Executors.newSingleThreadExecutor();
+
+	private static AtomicInteger queueSize = new AtomicInteger( 0 );
+
+	/**
+	 * @return The number of chunklets awaiting geometry generation
+	 */
+	public static int getChunkletQueueSize()
+	{
+		return queueSize.get();
+	}
 
 	/**
 	 * @param parent
@@ -162,6 +175,35 @@ public class Chunklet
 				bottomSheet &= BlockFactory.opaque( bt );
 			}
 		}
+
+		// empty check
+		empty =
+				!( northSheet || southSheet || eastSheet || westSheet || topSheet || bottomSheet );
+		for( int x = 0; x < 16 && empty; x++ )
+		{
+			for( int z = 0; z < 16 && empty; z++ )
+			{
+				for( int k = 0; k < 16 && empty; k++ )
+				{
+					empty &= parent.blockType( x, yMin + k, z ) == 0;
+				}
+			}
+		}
+		// need to check the sides of neighbouring blocks too
+		for( int i = 0; i < 16 && empty; i++ )
+		{
+			for( int j = 0; j < 16 && empty; j++ )
+			{
+				empty &= parent.blockType( -1, i + yMin, j ) == 0;
+				empty &= parent.blockType( 16, i + yMin, j ) == 0;
+
+				empty &= parent.blockType( i, j + yMin, -1 ) == 0;
+				empty &= parent.blockType( i, j + yMin, 16 ) == 0;
+
+				empty &= parent.blockType( i, -1 + yMin, j ) == 0;
+				empty &= parent.blockType( i, 16 + yMin, j ) == 0;
+			}
+		}
 	}
 
 	/**
@@ -194,6 +236,11 @@ public class Chunklet
 	 */
 	public void generateGeometry()
 	{
+		if( empty )
+		{
+			return;
+		}
+
 		if( geomDirty && !geomPending )
 		{
 			Runnable r = new Runnable() {
@@ -258,10 +305,12 @@ public class Chunklet
 
 					geomDirty = false;
 					geomPending = false;
+					queueSize.decrementAndGet();
 				}
 			};
 
 			geomPending = true;
+			queueSize.incrementAndGet();
 			geomGenService.submit( r );
 		}
 	}
