@@ -48,9 +48,12 @@ public abstract class FontLoader extends Loader<Font>
 	@Override
 	public final void complete()
 	{
-		resource.init( mipmap );
+		if( resource != null )
+		{
+			resource.init( mipmap );
 
-		fontLoaded();
+			fontLoaded();
+		}
 	}
 
 	/**

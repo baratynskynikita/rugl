@@ -6,12 +6,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import android.content.res.Resources;
 import android.util.Log;
 
 /**
- * Provides a resource-loading thread
+ * An asynchronous resource-loading service. Maintains two threads:
+ * one to do the loading IO, one to do post-loading processing
  * 
  * @author ryanm
  */
@@ -20,17 +22,14 @@ public class ResourceLoader
 	/***/
 	public static Resources resources;
 
-	private static LoaderThread thread;
-
-	private static List<Loader> loaders = Collections
+	private static List<Loader> complete = Collections
 			.synchronizedList( new LinkedList<Loader>() );
 
-	private static List<Loader> loaded = Collections
-			.synchronizedList( new LinkedList<Loader>() );
+	private static ExecutorService loaderService = Executors.newSingleThreadExecutor();
 
-	private static Object waitLock = new Object();
+	private static AtomicInteger queueSize = new AtomicInteger( 0 );
 
-	private static ExecutorService postLoader = Executors.newSingleThreadExecutor();
+	private static ExecutorService postLoaderService = Executors.newSingleThreadExecutor();
 
 	/***/
 	public static final String LOG_TAG = "ResourceLoader";
@@ -43,12 +42,6 @@ public class ResourceLoader
 	public static void start( Resources resources )
 	{
 		ResourceLoader.resources = resources;
-
-		if( thread == null )
-		{
-			thread = new LoaderThread();
-			thread.start();
-		}
 	}
 
 	/**
@@ -58,12 +51,20 @@ public class ResourceLoader
 	 */
 	public static void load( Loader l )
 	{
-		loaders.add( l );
+		queueSize.incrementAndGet();
+		loaderService.submit( new LoaderRunnable( l ) );
+	}
 
-		synchronized( waitLock )
-		{
-			waitLock.notify();
-		}
+	/**
+	 * Synchronously load a resource
+	 * 
+	 * @param l
+	 */
+	public static void loadNow( Loader l )
+	{
+		l.load();
+		l.postLoad();
+		l.complete();
 	}
 
 	/**
@@ -72,14 +73,24 @@ public class ResourceLoader
 	 */
 	public static void checkCompletion()
 	{
-		while( !loaded.isEmpty() )
+		while( !complete.isEmpty() )
 		{
-			Loader l = loaded.remove( 0 );
-
+			Loader l = complete.remove( 0 );
+			queueSize.decrementAndGet();
 			Log.i( LOG_TAG, "Loaded resource " + l );
 
 			l.complete();
 		}
+	}
+
+	/**
+	 * Gets the size of the loader queue
+	 * 
+	 * @return the number of loaders waiting to be executed
+	 */
+	public static int queueSize()
+	{
+		return queueSize.get();
 	}
 
 	/**
@@ -102,10 +113,10 @@ public class ResourceLoader
 		public abstract void load();
 
 		/**
-		 * This method is called on it's own thread. Use it to do any
+		 * This method is called on its own thread. Use it to do any
 		 * processing
 		 */
-		public void loaded()
+		public void postLoad()
 		{
 		};
 
@@ -115,48 +126,30 @@ public class ResourceLoader
 		public abstract void complete();
 	}
 
-	private static class LoaderThread extends Thread
+	private static class LoaderRunnable implements Runnable
 	{
-		private LoaderThread()
+		private final Loader loader;
+
+		private boolean loaded = false;
+
+		private LoaderRunnable( Loader loader )
 		{
-			super( "Resource Loader" );
-			setDaemon( true );
+			this.loader = loader;
 		}
 
 		@Override
 		public void run()
 		{
-			while( true )
+			if( !loaded )
 			{
-				while( !loaders.isEmpty() )
-				{
-					final Loader l = loaders.remove( 0 );
-
-					Log.i( LOG_TAG, "Loading resource " + l );
-
-					l.load();
-
-					postLoader.submit( new Runnable() {
-						@Override
-						public void run()
-						{
-							l.loaded();
-
-							loaded.add( l );
-						}
-					} );
-				}
-
-				synchronized( waitLock )
-				{
-					try
-					{
-						waitLock.wait();
-					}
-					catch( InterruptedException e )
-					{
-					}
-				}
+				loader.load();
+				loaded = true;
+				postLoaderService.submit( this );
+			}
+			else
+			{
+				loader.postLoad();
+				complete.add( loader );
 			}
 		}
 	}

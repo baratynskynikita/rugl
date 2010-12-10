@@ -1,6 +1,7 @@
 
 package com.ryanm.droid.rugl.util;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.IntBuffer;
@@ -50,15 +51,14 @@ public class ScreenShot
 	 * @param y
 	 * @param w
 	 * @param h
-	 * @param name
-	 *           path of file to save to (under "/sdcard")
+	 * @param output
 	 */
-	public static void savePNG( int x, int y, int w, int h, String name )
+	public static void savePNG( int x, int y, int w, int h, File output )
 	{
 		Bitmap bmp = savePixels( x, y, w, h );
 		try
 		{
-			FileOutputStream fos = new FileOutputStream( "/sdcard/" + name );
+			FileOutputStream fos = new FileOutputStream( output );
 			bmp.compress( CompressFormat.PNG, 100, fos );
 			fos.close();
 		}

@@ -20,7 +20,6 @@ import com.ryanm.droid.rugl.util.geom.BoundingRectangle;
  * @author ryanm
  */
 @Variable( "Touchstick area" )
-@Summary( "Control the sensitive area" )
 public class TouchStickArea extends AbstractTouchStick
 {
 	/***/
