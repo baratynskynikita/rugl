@@ -24,4 +24,13 @@ public class ParseException extends Exception
 	{
 		super( cause );
 	}
+
+	/**
+	 * @param message
+	 * @param cause
+	 */
+	public ParseException( String message, Throwable cause )
+	{
+		super( message, cause );
+	}
 }

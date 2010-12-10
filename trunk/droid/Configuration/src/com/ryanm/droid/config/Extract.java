@@ -67,7 +67,7 @@ class Extract
 	private static JSONObject extract( Object o ) throws Exception
 	{
 		JSONObject conf = new JSONObject();
-		conf.putOpt( "desc", Util.getDescription( o ) );
+		conf.putOpt( Util.DESC, Util.getDescription( o ) );
 
 		// fields
 
@@ -139,8 +139,8 @@ class Extract
 				if( codec != null )
 				{
 					conf = new JSONObject();
-					conf.put( "type", f.getType().getName() );
-					conf.put( "value", codec.encode( value ) );
+					conf.put( Util.TYPE, f.getType().getName() );
+					conf.put( Util.VALUE, codec.encode( value ) );
 				}
 				else
 				{ // subconfigurable?
@@ -177,7 +177,7 @@ class Extract
 			if( m.getReturnType() == void.class )
 			{ // action
 				conf = new JSONObject();
-				conf.put( "type", "void" );
+				conf.put( Util.TYPE, "void" );
 				Util.getOptional( conf, m );
 			}
 			else
@@ -190,9 +190,9 @@ class Extract
 					{
 						conf = new JSONObject();
 
-						conf.put( "type", v.getClass().getName() );
+						conf.put( Util.TYPE, v.getClass().getName() );
 
-						conf.put( "value", codec.encode( v ) );
+						conf.put( Util.VALUE, codec.encode( v ) );
 
 						Util.getOptional( conf, m );
 
@@ -204,7 +204,7 @@ class Extract
 						if( conf != null )
 						{
 							// override desc
-							conf.putOpt( "desc", Util.getDescription( m ) );
+							conf.putOpt( Util.DESC, Util.getDescription( m ) );
 						}
 					}
 				}
@@ -247,8 +247,8 @@ class Extract
 			if( codec != null )
 			{
 				conf = new JSONObject();
-				conf.put( "type", getter.getReturnType().getName() );
-				conf.put( "value", codec.encode( v ) );
+				conf.put( Util.TYPE, getter.getReturnType().getName() );
+				conf.put( Util.VALUE, codec.encode( v ) );
 
 				Util.getOptional( conf, getter );
 				Util.getOptional( conf, setter );

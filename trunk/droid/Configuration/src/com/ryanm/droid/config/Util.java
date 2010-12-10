@@ -25,6 +25,35 @@ import com.ryanm.droid.config.annote.WidgetHint;
  */
 class Util
 {
+	/**
+	 * JSON key for variable name
+	 */
+	static final String NAME = "name";
+
+	/**
+	 * JSON key for variable type
+	 */
+	static final String TYPE = "type";
+
+	/**
+	 * JSON key for variable summary
+	 */
+	static final String DESC = "desc";
+
+	/**
+	 * JSON key for variable category
+	 */
+	static final String CAT = "cat";
+
+	/**
+	 * JSON key for variable order
+	 */
+	static final String ORDER = "order";
+
+	/**
+	 * JSON key for variable order
+	 */
+	static final String VALUE = "value";
 
 	private Util()
 	{
@@ -210,19 +239,19 @@ class Util
 	{
 		if( conf != null )
 		{
-			conf.putOpt( "desc", getDescription( ao ) );
-			conf.putOpt( "cat", getCategory( ao ) );
+			conf.putOpt( DESC, getDescription( ao ) );
+			conf.putOpt( CAT, getCategory( ao ) );
 
 			Order o = ao.getAnnotation( Order.class );
 			if( o != null )
 			{
-				conf.put( "order", o.value() );
+				conf.put( ORDER, o.value() );
 			}
 
 			WidgetHint th = ao.getAnnotation( WidgetHint.class );
 			if( th != null )
 			{
-				conf.put( "type", th.value().getName() );
+				conf.put( TYPE, th.value().getName() );
 			}
 		}
 	}
