@@ -26,6 +26,10 @@ public class Configuration
 	 */
 	public static final String LOG_TAG = "Configuration";
 
+	private static final String CONF_TAG = "conf";
+
+	private static final String RETURNTO_TAG = "returnto";
+
 	/**
 	 * The activity request flag used in
 	 * {@link Activity#startActivityForResult(Intent, int)} when
@@ -58,8 +62,8 @@ public class Configuration
 		configTargets = roots;
 		// launch config
 		Intent i = new Intent( returnTo, ConfigActivity.class );
-		i.putExtra( "conf", Extract.extract( roots ).toString() );
-		i.putExtra( "returnto", returnTo.getClass().getName() );
+		i.putExtra( CONF_TAG, Extract.extract( roots ).toString() );
+		i.putExtra( RETURNTO_TAG, returnTo.getClass().getName() );
 		returnTo.startActivityForResult( i, ACTIVITY_REQUEST_FLAG );
 	}
 
@@ -82,7 +86,7 @@ public class Configuration
 			Log.i( LOG_TAG, "Applying configuration" );
 			try
 			{
-				Apply.apply( new JSONObject( data.getStringExtra( "conf" ) ), configTargets );
+				Apply.apply( new JSONObject( data.getStringExtra( CONF_TAG ) ), configTargets );
 			}
 			catch( JSONException e )
 			{
@@ -116,13 +120,13 @@ public class Configuration
 				Log.i( LOG_TAG, "Deferring configuration" );
 				try
 				{
-					JSONObject json = new JSONObject( data.getStringExtra( "conf" ) );
+					JSONObject json = new JSONObject( data.getStringExtra( CONF_TAG ) );
 					deferredResults.add( new ConfigResult( configTargets, json ) );
 				}
 				catch( JSONException e )
 				{
 					Log.e( LOG_TAG,
-							"Problem parsing json data : " + data.getStringExtra( "conf" ), e );
+							"Problem parsing json data : " + data.getStringExtra( CONF_TAG ), e );
 				}
 			}
 		}

@@ -376,11 +376,11 @@ public class ConfigActivity extends PreferenceActivity
 			this.name = name;
 			this.json = json;
 
-			description = json.optString( "desc" );
+			description = json.optString( Util.DESC );
 
-			category = json.has( "cat" ) ? json.optString( "cat" ) : null;
+			category = json.has( Util.CAT ) ? json.optString( Util.CAT ) : null;
 
-			String t = json.optString( "type" );
+			String t = json.optString( Util.TYPE );
 
 			if( "".equals( t ) )
 			{ // configurable type
