@@ -4,15 +4,18 @@ package com.ryanm.minedroid;
 import static android.opengl.GLES10.GL_DEPTH_BUFFER_BIT;
 import static android.opengl.GLES10.glClear;
 
+import com.ryanm.droid.config.annote.Category;
+import com.ryanm.droid.config.annote.Summary;
+import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.gl.GLUtil;
 import com.ryanm.droid.rugl.gl.StackedRenderer;
-import com.ryanm.droid.rugl.input.AbstractTouchStick;
 import com.ryanm.droid.rugl.input.Touch;
 import com.ryanm.droid.rugl.input.TouchStickArea;
 import com.ryanm.droid.rugl.res.FontLoader;
 import com.ryanm.droid.rugl.res.ResourceLoader;
 import com.ryanm.droid.rugl.text.Font;
+import com.ryanm.droid.rugl.text.Readout;
 import com.ryanm.droid.rugl.text.TextShape;
 import com.ryanm.droid.rugl.util.Colour;
 
@@ -21,15 +24,29 @@ import com.ryanm.droid.rugl.util.Colour;
  * 
  * @author ryanm
  */
+@Variable( "Interface" )
+@Summary( "GUI options" )
 public class GUI
 {
 	private static final float radius = 100;
 
 	/***/
-	public final AbstractTouchStick left = new TouchStickArea( 0, 0, 400, 480, radius );
+	@Variable( "Left" )
+	@Category( "Sticks" )
+	public final TouchStickArea left = new TouchStickArea( 0, 0, 400, 480, radius );
 
 	/***/
-	public final AbstractTouchStick right = new TouchStickArea( 400, 0, 400, 480, radius );
+	@Variable( "Right" )
+	@Category( "Sticks" )
+	public final TouchStickArea right = new TouchStickArea( 400, 0, 400, 480, radius );
+
+	/***/
+	@Variable( "Print queue sizes" )
+	@Summary( "Show the number of chunks awaiting loading and chunklets "
+			+ "awaiting geometry generation" )
+	public boolean printQueues = true;
+
+	private Readout loadQueue, geomQueue;
 
 	private StackedRenderer r = new StackedRenderer();
 
@@ -50,6 +67,14 @@ public class GUI
 			public void fontLoaded()
 			{
 				font = resource;
+
+				loadQueue = new Readout( font, Colour.black, "Load queue = ", false, 2, 0 );
+				loadQueue.translate( 10,
+						Game.height - 10 - loadQueue.getBounds().y.getSpan(), 0 );
+
+				geomQueue = new Readout( font, Colour.black, "Geom queue = ", false, 3, 0 );
+				geomQueue.translate( 10,
+						Game.height - 20 - 2 * geomQueue.getBounds().y.getSpan(), 0 );
 			}
 		} );
 
@@ -77,17 +102,27 @@ public class GUI
 	 */
 	public void draw()
 	{
+		GLUtil.scaledOrtho( 800, 480, Game.width, Game.height );
+		glClear( GL_DEPTH_BUFFER_BIT );
+
+		left.draw( r );
+		right.draw( r );
+
 		if( notification != null )
 		{
-			GLUtil.scaledOrtho( 800, 480, Game.width, Game.height );
-
-			glClear( GL_DEPTH_BUFFER_BIT );
-
 			notification.render( r );
-
-			r.render();
-			r.clear();
 		}
+
+		if( printQueues && loadQueue != null )
+		{
+			loadQueue.updateValue( ResourceLoader.queueSize() );
+			loadQueue.render( r );
+
+			geomQueue.updateValue( Chunklet.getChunkletQueueSize() );
+			geomQueue.render( r );
+		}
+
+		r.render();
 	}
 
 	/**

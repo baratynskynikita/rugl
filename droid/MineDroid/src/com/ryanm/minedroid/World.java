@@ -4,17 +4,20 @@ package com.ryanm.minedroid;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import android.os.Environment;
 
-import com.ryanm.droid.rugl.gl.Renderer;
+import com.ryanm.droid.config.annote.Summary;
+import com.ryanm.droid.config.annote.Variable;
+import com.ryanm.droid.rugl.gl.MutableState;
 import com.ryanm.droid.rugl.res.ResourceLoader;
+import com.ryanm.droid.rugl.util.CodeTimer;
+import com.ryanm.droid.rugl.util.CodeTimer.Output;
+import com.ryanm.droid.rugl.util.QuickSort;
 import com.ryanm.droid.rugl.util.geom.Frustum;
 import com.ryanm.droid.rugl.util.geom.Frustum.Result;
 import com.ryanm.droid.rugl.util.geom.ReadableVector3f;
@@ -25,26 +28,39 @@ import com.ryanm.droid.rugl.util.geom.Vector3f;
  * 
  * @author ryanm
  */
+@Variable( "World" )
+@Summary( "Controls chunk loading and render state" )
 public class World
 {
+	/***/
+	@Variable( "Render state" )
+	public MutableState muState;
+
 	/**
 	 * The world save directory
 	 */
 	public final File dir;
 
+	private int loadradius = 4;
+
 	/**
-	 * The size of the square of chunks around the player that we try
-	 * to load
+	 * 1st index = x, 2nd = z
 	 */
-	private int width = 9, depth = 9;
+	private Chunk[][] chunks =
+			new Chunk[ 2 * getLoadRadius() + 1 ][ 2 * getLoadRadius() + 1 ];
 
-	private List<Chunk> chunks = new ArrayList<Chunk>();
-
+	/**
+	 * Coordinates of the currently-occupied chunk
+	 */
 	private int chunkPosX, chunkPosZ;
 
 	private Queue<Chunklet> floodQueue = new ArrayBlockingQueue<Chunklet>( 50 );
 
-	private ArrayList<Chunklet> renderList = new ArrayList<Chunklet>();
+	// we're not using ArrayList here because Collections.sort creates
+	// garbage. Hopefully Arrays.sort does not
+	private Chunklet[] renderList = new Chunklet[ 64 ];
+
+	private int renderListSize = 0;
 
 	private int drawFlag = Integer.MIN_VALUE;
 
@@ -54,8 +70,6 @@ public class World
 	public final ReadableVector3f startPosition;
 
 	private static final ChunkSorter cs = new ChunkSorter();
-
-	private Renderer renderer = new Renderer();
 
 	/**
 	 * @param n
@@ -84,11 +98,6 @@ public class World
 		chunkPosZ = ( int ) startPosition.getZ();
 
 		fillChunks();
-
-		// it will often be the case that we want to render the same
-		// chunklets frame after frame, so no sense repeatedly filling
-		// the buffers with the same data
-		renderer.automaticallyClear = false;
 	}
 
 	/**
@@ -102,16 +111,30 @@ public class World
 		boolean chunksDirty = false;
 
 		int cx = ( int ) Math.floor( posX );
-		if( cx != chunkPosX )
+		if( cx < chunkPosX )
 		{
-			chunkPosX = cx;
+			shiftUpX();
+			chunkPosX--;
+			chunksDirty = true;
+		}
+		else if( cx > chunkPosX )
+		{
+			shiftDownX();
+			chunkPosX++;
 			chunksDirty = true;
 		}
 
 		int cz = ( int ) Math.floor( posZ );
-		if( cz != chunkPosZ )
+		if( cz < chunkPosZ )
 		{
-			chunkPosZ = cz;
+			shiftUpZ();
+			chunkPosZ--;
+			chunksDirty = true;
+		}
+		else if( cz > chunkPosZ )
+		{
+			shiftDownZ();
+			chunkPosZ++;
 			chunksDirty = true;
 		}
 
@@ -119,30 +142,93 @@ public class World
 		{ // load new chunks
 			fillChunks();
 		}
+	}
 
-		// free extraneous, far-away chunks for GC
-		while( chunks.size() > 100 )
+	private void shiftDownX()
+	{
+		// free bottom x
+		Chunk[] swap = chunks[ 0 ];
+		for( int i = 0; i < swap.length; i++ )
 		{
-			int furthest = -1;
-			float distance = -1;
-			for( int i = 0; i < chunks.size(); i++ )
+			if( swap[ i ] != null )
 			{
-				Chunk c = chunks.get( i );
-				float dx = c.x - posX;
-				float dz = c.z - posZ;
-				float d = dx * dx + dz * dz;
+				swap[ i ].unload();
+				swap[ i ] = null;
+			}
+		}
 
-				if( d > distance )
-				{
-					distance = d;
-					furthest = i;
-				}
+		// shift down
+		for( int i = 0; i < chunks.length - 1; i++ )
+		{
+			chunks[ i ] = chunks[ i + 1 ];
+		}
+
+		// add swap
+		chunks[ chunks.length - 1 ] = swap;
+	}
+
+	private void shiftUpX()
+	{
+		// free top x
+		Chunk[] swap = chunks[ chunks.length - 1 ];
+		for( int i = 0; i < swap.length; i++ )
+		{
+			if( swap[ i ] != null )
+			{
+				swap[ i ].unload();
+				swap[ i ] = null;
+			}
+		}
+
+		// shift up
+		for( int i = chunks.length - 1; i > 0; i-- )
+		{
+			chunks[ i ] = chunks[ i - 1 ];
+		}
+
+		// add swap
+		chunks[ 0 ] = swap;
+	}
+
+	private void shiftDownZ()
+	{
+		for( int i = 0; i < chunks.length; i++ )
+		{
+			if( chunks[ i ][ 0 ] != null )
+			{
+				chunks[ i ][ 0 ].unload();
 			}
 
-			Chunk chunk = chunks.remove( furthest );
-			chunk.unload();
+			for( int j = 0; j < chunks[ i ].length - 1; j++ )
+			{
+				chunks[ i ][ j ] = chunks[ i ][ j + 1 ];
+			}
+
+			chunks[ i ][ chunks[ i ].length - 1 ] = null;
 		}
 	}
+
+	private void shiftUpZ()
+	{
+		for( int i = 0; i < chunks.length; i++ )
+		{
+			if( chunks[ i ][ chunks[ i ].length - 1 ] != null )
+			{
+				chunks[ i ][ chunks[ i ].length - 1 ].unload();
+			}
+
+			for( int j = chunks[ i ].length - 1; j > 0; j-- )
+			{
+				chunks[ i ][ j ] = chunks[ i ][ j - 1 ];
+			}
+
+			chunks[ i ][ 0 ] = null;
+		}
+	}
+
+	/***/
+	@Variable( "Render profiler" )
+	public CodeTimer ct = new CodeTimer( "render", Output.Millis, Output.Millis );
 
 	/**
 	 * @param eye
@@ -150,11 +236,24 @@ public class World
 	 */
 	public void draw( Vector3f eye, Frustum frustum )
 	{
+		if( muState == null )
+		{
+			muState = new MutableState( BlockFactory.state );
+		}
+
+		if( muState.dirty )
+		{ // the rendering state has been changed by configuration
+			BlockFactory.state = muState.compile();
+			muState.dirty = false;
+		}
+
 		Chunklet c = getChunklet( eye.x, eye.y, eye.z );
-		float distlimit = 25;
+		// float distlimit = 100;
 
 		if( c != null )
 		{
+			ct.tick( "flood" );
+
 			Chunklet origin = c;
 			c.drawFlag = drawFlag;
 			floodQueue.offer( c );
@@ -163,7 +262,14 @@ public class World
 			{
 				c = floodQueue.poll();
 
-				renderList.add( c );
+				// renderList.add( c );
+				renderList[ renderListSize++ ] = c;
+				if( renderListSize >= renderList.length )
+				{ // grow
+					Chunklet[] nrl = new Chunklet[ renderList.length * 2 ];
+					System.arraycopy( renderList, 0, nrl, 0, renderList.length );
+					renderList = nrl;
+				}
 
 				// floodfill - for each neighbouring chunklet...
 				if( c.x <= origin.x && !c.northSheet )
@@ -177,7 +283,8 @@ public class World
 							// we can see through the traversal face
 							&& north.drawFlag != drawFlag
 							// we haven't already visited it in this frame
-							&& north.distanceSq( eye.x, eye.y, eye.z ) < distlimit
+							// && north.distanceSq( eye.x, eye.y, eye.z ) <
+							// distlimit
 							// it is within the distance limit
 							&& north.intersection( frustum ) != Result.Miss )
 					// it intersects the frustum
@@ -190,7 +297,8 @@ public class World
 				{
 					Chunklet south = getChunklet( c.x + 1, c.y, c.z );
 					if( south != null && !south.northSheet && south.drawFlag != drawFlag
-							&& south.distanceSq( eye.x, eye.y, eye.z ) < distlimit
+					// && south.distanceSq( eye.x, eye.y, eye.z ) <
+					// distlimit
 							&& south.intersection( frustum ) != Result.Miss )
 					{
 						south.drawFlag = drawFlag;
@@ -201,7 +309,8 @@ public class World
 				{
 					Chunklet east = getChunklet( c.x, c.y, c.z - 1 );
 					if( east != null && !east.westSheet && east.drawFlag != drawFlag
-							&& east.distanceSq( eye.x, eye.y, eye.z ) < distlimit
+					// && east.distanceSq( eye.x, eye.y, eye.z ) <
+					// distlimit
 							&& east.intersection( frustum ) != Result.Miss )
 					{
 						east.drawFlag = drawFlag;
@@ -212,7 +321,8 @@ public class World
 				{
 					Chunklet west = getChunklet( c.x, c.y, c.z + 1 );
 					if( west != null && !west.eastSheet && west.drawFlag != drawFlag
-							&& west.distanceSq( eye.x, eye.y, eye.z ) < distlimit
+					// && west.distanceSq( eye.x, eye.y, eye.z ) <
+					// distlimit
 							&& west.intersection( frustum ) != Result.Miss )
 					{
 						west.drawFlag = drawFlag;
@@ -223,7 +333,8 @@ public class World
 				{
 					Chunklet bottom = getChunklet( c.x, c.y - 1, c.z );
 					if( bottom != null && !bottom.topSheet && bottom.drawFlag != drawFlag
-							&& bottom.distanceSq( eye.x, eye.y, eye.z ) < distlimit
+					// && bottom.distanceSq( eye.x, eye.y, eye.z ) <
+					// distlimit
 							&& bottom.intersection( frustum ) != Result.Miss )
 					{
 						bottom.drawFlag = drawFlag;
@@ -234,7 +345,7 @@ public class World
 				{
 					Chunklet top = getChunklet( c.x, c.y + 1, c.z );
 					if( top != null && !top.bottomSheet && top.drawFlag != drawFlag
-							&& top.distanceSq( eye.x, eye.y, eye.z ) < distlimit
+					// && top.distanceSq( eye.x, eye.y, eye.z ) < distlimit
 							&& top.intersection( frustum ) != Result.Miss )
 					{
 						top.drawFlag = drawFlag;
@@ -244,45 +355,59 @@ public class World
 			}
 		}
 
+		ct.tick( "sort" );
+
 		// sort chunklets into ascending order of distance from the eye
 		cs.eye.set( eye );
-		Collections.sort( renderList, cs );
+		QuickSort.sort( renderList, cs, 0, renderListSize - 1 );
+
+		ct.tick( "solid" );
 
 		// vbo
 		// solid stuff from near to far
-		for( int i = 0; i < renderList.size(); i++ )
+		for( int i = 0; i < renderListSize - 1; i++ )
 		{
-			c = renderList.get( i );
+			c = renderList[ i ];
 			c.generateGeometry();
 
 			if( c.solidVBO != null )
 			{
+				c.solidVBO.state = BlockFactory.state;
 				c.solidVBO.draw();
 			}
 		}
 
+		ct.tick( "trans" );
+
 		// translucent stuff from far to near
-		for( int i = renderList.size() - 1; i >= 0; i-- )
+		for( int i = renderListSize - 1; i >= 0; i-- )
 		{
-			c = renderList.get( i );
+			c = renderList[ i ];
 			if( c.transparentVBO != null )
 			{
+				c.transparentVBO.state = BlockFactory.state;
 				c.transparentVBO.draw();
 			}
 		}
 
-		renderList.clear();
+		ct.tick( "clear" );
+
+		Arrays.fill( renderList, null );
+		renderListSize = 0;
 		drawFlag++;
+
+		ct.lastTick();
 	}
 
 	private void fillChunks()
 	{
-		for( int i = 0; i < width; i++ )
+		for( int i = 0; i < chunks.length; i++ )
 		{
-			for( int j = 0; j < depth; j++ )
+			for( int j = 0; j < chunks[ i ].length; j++ )
 			{
-				final int x = chunkPosX + i - ( int ) ( width / 2.0f );
-				final int z = chunkPosZ + j - ( int ) ( depth / 2.0f );
+				final int caix = i, caiz = j;
+				final int x = chunkPosX + i - getLoadRadius();
+				final int z = chunkPosZ + j - getLoadRadius();
 
 				if( getChunk( x, z ) == null )
 				{
@@ -292,7 +417,7 @@ public class World
 						{
 							if( resource != null )
 							{
-								chunks.add( resource );
+								chunks[ caix ][ caiz ] = resource;
 
 								// need to re-evaluate the geometry of
 								// neighbouring chunks
@@ -331,20 +456,19 @@ public class World
 	 */
 	public Chunk getChunk( int x, int z )
 	{
-		// this is just awful, change to some spatial data structure
-		// ASAP
+		int dx = x - chunkPosX;
+		int dz = z - chunkPosZ;
+		int caix = getLoadRadius() + dx;
+		int caiz = getLoadRadius() + dz;
 
-		for( int i = 0; i < chunks.size(); i++ )
+		if( caix < 0 || caix >= chunks.length || caiz < 0 || caiz >= chunks[ caix ].length )
 		{
-			Chunk c = chunks.get( i );
-
-			if( c != null && c.x == x && c.z == z )
-			{
-				return c;
-			}
+			return null;
 		}
-
-		return null;
+		else
+		{
+			return chunks[ caix ][ caiz ];
+		}
 	}
 
 	/**
@@ -365,6 +489,41 @@ public class World
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param chunkRadius
+	 */
+	@Variable( "Chunk load range" )
+	@Summary( "The distance at which to load chunks" )
+	public void setLoadRadius( int chunkRadius )
+	{
+		loadradius = chunkRadius;
+
+		// I can't be bothered to work out the indices to do this
+		// properly, so brace yourself for the Madagascan strategy:
+
+		// RELOAD. EVERYTHING.
+
+		for( int i = 0; i < chunks.length; i++ )
+		{
+			for( int j = 0; j < chunks[ i ].length; j++ )
+			{
+				chunks[ i ][ j ].unload();
+			}
+		}
+
+		chunks = new Chunk[ 2 * chunkRadius + 1 ][ 2 * chunkRadius + 1 ];
+		fillChunks();
+	}
+
+	/**
+	 * @return chunk load radius
+	 */
+	@Variable( "Chunk load range" )
+	public int getLoadRadius()
+	{
+		return loadradius;
 	}
 
 	private static class ChunkSorter implements Comparator<Chunklet>

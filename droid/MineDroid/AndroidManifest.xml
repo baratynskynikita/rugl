@@ -15,11 +15,12 @@
 		</intent-filter>
 	</activity>
 	
-	<activity android:name="com.ryanm.droid.config.ConfigActivity"/>
-	
+	<activity android:name="com.ryanm.droid.config.ConfigActivity"
+			android:screenOrientation="portrait"/>	
+			
     </application>
     
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-sdk android:minSdkVersion="7" />
 	<supports-screens android:anyDensity="true"/>
-
 </manifest> 
