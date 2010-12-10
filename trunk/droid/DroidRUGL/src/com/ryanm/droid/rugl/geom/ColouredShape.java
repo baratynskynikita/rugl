@@ -89,7 +89,7 @@ public class ColouredShape extends Shape
 	public void render( Renderer renderer )
 	{
 		state = renderer.intern( state );
-		renderer.addTriangles( vertices, null, colours, triangles, state );
+		renderer.addGeometry( vertices, null, colours, indices, state );
 	}
 
 	@Override

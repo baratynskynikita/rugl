@@ -30,6 +30,7 @@ package com.ryanm.droid.rugl.gl;
 import com.ryanm.droid.config.Configuration;
 import com.ryanm.droid.config.annote.DirtyFlag;
 import com.ryanm.droid.config.annote.Variable;
+import com.ryanm.droid.rugl.gl.enums.DrawMode;
 import com.ryanm.droid.rugl.gl.facets.mutable.MutAlphaTest;
 import com.ryanm.droid.rugl.gl.facets.mutable.MutBlend;
 import com.ryanm.droid.rugl.gl.facets.mutable.MutDepthTest;
@@ -51,6 +52,10 @@ public class MutableState
 	 */
 	@DirtyFlag( watchTree = true )
 	public boolean dirty = false;
+
+	/***/
+	@Variable
+	public DrawMode drawMode;
 
 	/**
 	 * Texture state
@@ -93,6 +98,7 @@ public class MutableState
 	 */
 	public MutableState( State state )
 	{
+		drawMode = state.drawMode;
 		texture = new MutTextureState( state.texture );
 		alphaTest = new MutAlphaTest( state.alphaTest );
 		blend = new MutBlend( state.blend );
@@ -106,7 +112,7 @@ public class MutableState
 	 */
 	public State compile()
 	{
-		return new State( texture.compile(), alphaTest.compile(), blend.compile(),
-				depthTest.compile(), polyOffset.compile(), fog.compile() );
+		return new State( drawMode, texture.compile(), alphaTest.compile(),
+				blend.compile(), depthTest.compile(), polyOffset.compile(), fog.compile() );
 	}
 }

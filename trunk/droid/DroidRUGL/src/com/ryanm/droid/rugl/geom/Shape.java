@@ -25,7 +25,7 @@ public class Shape implements Cloneable
 	/**
 	 * The indices of triangle vertices - points to the x-coordinate
 	 */
-	public final short[] triangles;
+	public final short[] indices;
 
 	private final BoundingCuboid bounds = new BoundingCuboid( 0, 0, 0, 0, 0, 0 );
 
@@ -33,24 +33,16 @@ public class Shape implements Cloneable
 
 	private void sanity() throws IllegalArgumentException
 	{
-		if( vertices.length < 9 )
-		{
-			throw new IllegalArgumentException( "not enough vertices\n" + shortString() );
-		}
 		if( vertices.length % 3 != 0 )
 		{
 			throw new IllegalArgumentException( "vertex count error\n" + shortString() );
 		}
-		if( triangles.length < 3 )
-		{
-			throw new IllegalArgumentException( "not enough triangles\n" + shortString() );
-		}
 
-		for( int i = 0; i < triangles.length; i++ )
+		for( int i = 0; i < indices.length; i++ )
 		{
-			if( triangles[ i ] < 0 || triangles[ i ] >= vertexCount() )
+			if( indices[ i ] < 0 || indices[ i ] >= vertexCount() )
 			{
-				throw new IllegalArgumentException( "triangle index error : " + triangles[ i ]
+				throw new IllegalArgumentException( "triangle index error : " + indices[ i ]
 						+ "\n" + toString() );
 			}
 		}
@@ -65,21 +57,21 @@ public class Shape implements Cloneable
 	public Shape( Shape s )
 	{
 		vertices = s.vertices;
-		triangles = s.triangles;
+		indices = s.indices;
 	}
 
 	/**
 	 * Builds a new {@link Shape}
 	 * 
 	 * @param vertices
-	 * @param triangles
+	 * @param indices
 	 * @throws IllegalArgumentException
 	 *            If there's some problem with the supplied data
 	 */
-	public Shape( float[] vertices, short[] triangles ) throws IllegalArgumentException
+	public Shape( float[] vertices, short[] indices ) throws IllegalArgumentException
 	{
 		this.vertices = vertices;
-		this.triangles = triangles;
+		this.indices = indices;
 
 		sanity();
 	}
@@ -92,7 +84,7 @@ public class Shape implements Cloneable
 	public Shape( DataSource data ) throws IllegalArgumentException
 	{
 		vertices = SerialUtils.readFloatArray( data );
-		triangles = SerialUtils.readShortArray( data );
+		indices = SerialUtils.readShortArray( data );
 
 		sanity();
 	}
@@ -103,7 +95,7 @@ public class Shape implements Cloneable
 	public void write( DataSink sink )
 	{
 		SerialUtils.write( vertices, sink );
-		SerialUtils.write( triangles, sink );
+		SerialUtils.write( indices, sink );
 	}
 
 	/**
@@ -273,11 +265,11 @@ public class Shape implements Cloneable
 	 */
 	public boolean contains( float x, float y )
 	{
-		for( int i = 0; i < triangles.length; i += 3 )
+		for( int i = 0; i < indices.length; i += 3 )
 		{
-			int a = triangles[ i ] * 3;
-			int b = triangles[ i + 1 ] * 3;
-			int c = triangles[ i + 2 ] * 3;
+			int a = indices[ i ] * 3;
+			int b = indices[ i + 1 ] * 3;
+			int c = indices[ i + 2 ] * 3;
 
 			if( TriangleUtils.contains( x, y, vertices[ a ], vertices[ a + 1 ],
 					vertices[ b ], vertices[ b + 1 ], vertices[ c ], vertices[ c + 1 ] ) )
@@ -297,7 +289,7 @@ public class Shape implements Cloneable
 		StringBuilder buff = new StringBuilder( "Shape " );
 		buff.append( vertexCount() );
 		buff.append( " verts " );
-		buff.append( triangles.length / 3.0 );
+		buff.append( indices.length / 3.0 );
 		buff.append( " tris" );
 		return buff.toString();
 	}
@@ -308,7 +300,7 @@ public class Shape implements Cloneable
 		StringBuilder buff = new StringBuilder( "Shape " );
 		buff.append( vertexCount() );
 		buff.append( " verts " );
-		buff.append( triangles.length / 3.0 );
+		buff.append( indices.length / 3.0 );
 		buff.append( " tris" );
 
 		for( int i = 0; i < vertices.length; i += 3 )
@@ -321,14 +313,14 @@ public class Shape implements Cloneable
 			buff.append( vertices[ i + 2 ] );
 		}
 
-		for( int i = 0; i < triangles.length; i += 3 )
+		for( int i = 0; i < indices.length; i += 3 )
 		{
 			buff.append( "\n\t" );
-			buff.append( triangles[ i ] );
+			buff.append( indices[ i ] );
 			buff.append( "-" );
-			buff.append( triangles[ i + 1 ] );
+			buff.append( indices[ i + 1 ] );
 			buff.append( "-" );
-			buff.append( triangles[ i + 2 ] );
+			buff.append( indices[ i + 2 ] );
 		}
 
 		return buff.toString();
@@ -342,11 +334,11 @@ public class Shape implements Cloneable
 	public float getSurfaceArea()
 	{
 		float sum = 0;
-		for( int i = 0; i < triangles.length; i += 3 )
+		for( int i = 0; i < indices.length; i += 3 )
 		{
-			int a = triangles[ i ];
-			int b = triangles[ i + 1 ];
-			int c = triangles[ i + 2 ];
+			int a = indices[ i ];
+			int b = indices[ i + 1 ];
+			int c = indices[ i + 2 ];
 			sum +=
 					TriangleUtils.area( vertices[ a ], vertices[ a + 1 ], vertices[ a + 2 ],
 							vertices[ b ], vertices[ b + 1 ], vertices[ b + 2 ], vertices[ c ],
@@ -361,12 +353,12 @@ public class Shape implements Cloneable
 	 */
 	public int bytes()
 	{
-		return vertices.length * 4 + triangles.length * 2;
+		return vertices.length * 4 + indices.length * 2;
 	}
 
 	@Override
 	public Shape clone()
 	{
-		return new Shape( vertices.clone(), triangles.clone() );
+		return new Shape( vertices.clone(), indices.clone() );
 	}
 }

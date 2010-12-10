@@ -32,7 +32,7 @@ public class CompiledShape
 	public CompiledShape( TexturedShape ts )
 	{
 		vertices = FastFloatBuffer.convert( ts.vertices );
-		triangles = ts.triangles.clone();
+		triangles = ts.indices.clone();
 		colours = ts.colours.clone();
 		texCoords = FastFloatBuffer.convert( ts.texCoords );
 		state = ts.state;
@@ -44,7 +44,7 @@ public class CompiledShape
 	public CompiledShape( ColouredShape cs )
 	{
 		vertices = FastFloatBuffer.convert( cs.vertices );
-		triangles = cs.triangles.clone();
+		triangles = cs.indices.clone();
 		colours = cs.colours.clone();
 		texCoords = null;
 		state = cs.state;
@@ -56,7 +56,7 @@ public class CompiledShape
 	public void render( Renderer r )
 	{
 		state = r.intern( state );
-		r.addTriangles( vertices, texCoords, colours, triangles, state );
+		r.addGeometry( vertices, texCoords, colours, triangles, state );
 	}
 
 	/**

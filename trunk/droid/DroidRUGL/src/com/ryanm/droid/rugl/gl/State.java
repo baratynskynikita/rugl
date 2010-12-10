@@ -27,6 +27,7 @@
 
 package com.ryanm.droid.rugl.gl;
 
+import com.ryanm.droid.rugl.gl.enums.DrawMode;
 import com.ryanm.droid.rugl.gl.enums.MagFilter;
 import com.ryanm.droid.rugl.gl.enums.MinFilter;
 import com.ryanm.droid.rugl.gl.facets.AlphaTest;
@@ -67,6 +68,12 @@ public class State implements Comparable<State>
 	{
 		currentState = new State();
 	}
+
+	/**
+	 * OpenGL draw mode. It's not strictly OpenGL state, but I still
+	 * want to batch based on it
+	 */
+	public final DrawMode drawMode;
 
 	/**
 	 * Texture state
@@ -123,11 +130,12 @@ public class State implements Comparable<State>
 	 */
 	public State()
 	{
-		this( TextureState.disabled, AlphaTest.disabled, Blend.disabled,
-				DepthTest.disabled, PolygonOffset.disabled, Fog.disabled );
+		this( DrawMode.Triangles, TextureState.disabled, AlphaTest.disabled,
+				Blend.disabled, DepthTest.disabled, PolygonOffset.disabled, Fog.disabled );
 	}
 
 	/**
+	 * @param drawMode
 	 * @param texture
 	 * @param alphaTest
 	 * @param blend
@@ -135,10 +143,11 @@ public class State implements Comparable<State>
 	 * @param polyOffset
 	 * @param fog
 	 */
-	public State( TextureState texture, AlphaTest alphaTest, Blend blend,
-			DepthTest depthTest, PolygonOffset polyOffset, Fog fog )
+	public State( DrawMode drawMode, TextureState texture, AlphaTest alphaTest,
+			Blend blend, DepthTest depthTest, PolygonOffset polyOffset, Fog fog )
 	{
 		this.texture = texture;
+		this.drawMode = drawMode;
 		this.alphaTest = alphaTest;
 		this.blend = blend;
 		this.depthTest = depthTest;
@@ -154,7 +163,16 @@ public class State implements Comparable<State>
 	 */
 	public State with( TextureState texture )
 	{
-		return new State( texture, alphaTest, blend, depthTest, polyOffset, fog );
+		return new State( drawMode, texture, alphaTest, blend, depthTest, polyOffset, fog );
+	}
+
+	/**
+	 * @param drawMode
+	 * @return An altered clone
+	 */
+	public State with( DrawMode drawMode )
+	{
+		return new State( drawMode, texture, alphaTest, blend, depthTest, polyOffset, fog );
 	}
 
 	/**
@@ -163,7 +181,7 @@ public class State implements Comparable<State>
 	 */
 	public State with( AlphaTest alphaTest )
 	{
-		return new State( texture, alphaTest, blend, depthTest, polyOffset, fog );
+		return new State( drawMode, texture, alphaTest, blend, depthTest, polyOffset, fog );
 	}
 
 	/**
@@ -172,7 +190,7 @@ public class State implements Comparable<State>
 	 */
 	public State with( Blend blend )
 	{
-		return new State( texture, alphaTest, blend, depthTest, polyOffset, fog );
+		return new State( drawMode, texture, alphaTest, blend, depthTest, polyOffset, fog );
 	}
 
 	/**
@@ -181,7 +199,7 @@ public class State implements Comparable<State>
 	 */
 	public State with( DepthTest depthTest )
 	{
-		return new State( texture, alphaTest, blend, depthTest, polyOffset, fog );
+		return new State( drawMode, texture, alphaTest, blend, depthTest, polyOffset, fog );
 	}
 
 	/**
@@ -190,7 +208,7 @@ public class State implements Comparable<State>
 	 */
 	public State with( PolygonOffset polyOffset )
 	{
-		return new State( texture, alphaTest, blend, depthTest, polyOffset, fog );
+		return new State( drawMode, texture, alphaTest, blend, depthTest, polyOffset, fog );
 	}
 
 	/**
@@ -199,7 +217,7 @@ public class State implements Comparable<State>
 	 */
 	public State with( Fog fog )
 	{
-		return new State( texture, alphaTest, blend, depthTest, polyOffset, fog );
+		return new State( drawMode, texture, alphaTest, blend, depthTest, polyOffset, fog );
 	}
 
 	/**
@@ -209,8 +227,8 @@ public class State implements Comparable<State>
 	 */
 	public State with( MinFilter min, MagFilter mag )
 	{
-		return new State( texture.with( new Filters( min, mag ) ), alphaTest, blend,
-				depthTest, polyOffset, fog );
+		return new State( drawMode, texture.with( new Filters( min, mag ) ), alphaTest,
+				blend, depthTest, polyOffset, fog );
 	}
 
 	/**
@@ -221,8 +239,8 @@ public class State implements Comparable<State>
 	{
 		if( id != texture.id )
 		{
-			return new State( texture.with( id ), alphaTest, blend, depthTest, polyOffset,
-					fog );
+			return new State( drawMode, texture.with( id ), alphaTest, blend, depthTest,
+					polyOffset, fog );
 		}
 		return this;
 	}

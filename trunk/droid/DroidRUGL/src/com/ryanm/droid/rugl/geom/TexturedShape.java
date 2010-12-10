@@ -114,7 +114,7 @@ public class TexturedShape extends ColouredShape
 	{
 		state = texture.applyTo( state );
 
-		r.addTriangles( vertices, getTextureCoords(), colours, triangles, state );
+		r.addGeometry( vertices, getTextureCoords(), colours, indices, state );
 	}
 
 	@Override

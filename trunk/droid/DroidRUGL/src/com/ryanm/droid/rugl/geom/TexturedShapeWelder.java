@@ -65,14 +65,14 @@ public class TexturedShapeWelder extends ShapeWelder<TexturedShape>
 			System.arraycopy( s.colours, 0, colours, ci, s.colours.length );
 			System.arraycopy( s.texCoords, 0, texCoords, tci, s.texCoords.length );
 
-			System.arraycopy( s.triangles, 0, tris, ti, s.triangles.length );
-			for( int i = 0; i < s.triangles.length; i++ )
+			System.arraycopy( s.indices, 0, tris, ti, s.indices.length );
+			for( int i = 0; i < s.indices.length; i++ )
 			{
 				tris[ ti + i ] += vi / 3;
 			}
 
 			vi += s.vertices.length;
-			ti += s.triangles.length;
+			ti += s.indices.length;
 			ci += s.colours.length;
 			tci += s.texCoords.length;
 		}
