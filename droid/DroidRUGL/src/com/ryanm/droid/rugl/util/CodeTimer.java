@@ -3,6 +3,7 @@ package com.ryanm.droid.rugl.util;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 import android.util.Log;
@@ -40,6 +41,8 @@ public class CodeTimer
 		recalibrate( 10000 );
 	}
 
+	private StringBuilder buff = new StringBuilder();
+
 	/**
 	 * The name of this {@link CodeTimer}, to identify the output
 	 */
@@ -54,6 +57,16 @@ public class CodeTimer
 	 * Sum of interval durations
 	 */
 	private long[] intervalDurationSums = new long[ intervalNames.length ];
+
+	/**
+	 * Minimum interval durations
+	 */
+	private long[] minIntervalDurations = new long[ intervalNames.length ];
+
+	/**
+	 * Maximum interval durations
+	 */
+	private long[] maxIntervalDurations = new long[ intervalNames.length ];
 
 	/**
 	 * The index of the current interval
@@ -78,6 +91,16 @@ public class CodeTimer
 	 * Sum of period durations
 	 */
 	private long periodDurationSum = 0;
+
+	/**
+	 * Minimum period duration
+	 */
+	private long minPeriodDuration = Long.MAX_VALUE;
+
+	/**
+	 * Maximum period duration
+	 */
+	private long maxPerdiodDuration = -1;
 
 	/**
 	 * Defaults to <code>true</code>
@@ -123,6 +146,9 @@ public class CodeTimer
 		this.name = name;
 		this.period = period;
 		this.interval = interval;
+
+		Arrays.fill( minIntervalDurations, Long.MAX_VALUE );
+		Arrays.fill( maxIntervalDurations, -1 );
 	}
 
 	/**
@@ -150,6 +176,14 @@ public class CodeTimer
 			{
 				long duration = clickTime - lastClickTime;
 				intervalDurationSums[ intervalIndex ] += duration;
+				if( duration < minIntervalDurations[ intervalIndex ] )
+				{
+					minIntervalDurations[ intervalIndex ] = duration;
+				}
+				else if( duration > maxIntervalDurations[ intervalIndex ] )
+				{
+					maxIntervalDurations[ intervalIndex ] = duration;
+				}
 
 				intervalIndex++;
 
@@ -157,6 +191,8 @@ public class CodeTimer
 				{
 					intervalNames = ArrayUtil.grow( intervalNames );
 					intervalDurationSums = ArrayUtil.grow( intervalDurationSums );
+					minIntervalDurations = ArrayUtil.grow( minIntervalDurations );
+					maxIntervalDurations = ArrayUtil.grow( maxIntervalDurations );
 				}
 
 				intervalNames[ intervalIndex ] = name;
@@ -191,35 +227,68 @@ public class CodeTimer
 
 			long intervalDuration = clickTime - lastClickTime;
 			intervalDurationSums[ intervalIndex ] += intervalDuration;
+			if( intervalDuration < minIntervalDurations[ intervalIndex ] )
+			{
+				minIntervalDurations[ intervalIndex ] = intervalDuration;
+			}
+			else if( intervalDuration > maxIntervalDurations[ intervalIndex ] )
+			{
+				maxIntervalDurations[ intervalIndex ] = intervalDuration;
+			}
 
 			intervalIndex = 0;
 
 			long periodDuration = clickTime - periodStartTime;
 			periodDurationSum += periodDuration;
+			if( periodDuration < minPeriodDuration )
+			{
+				minPeriodDuration = periodDuration;
+			}
+			else if( periodDuration > maxPerdiodDuration )
+			{
+				maxPerdiodDuration = periodDuration;
+			}
+
 			periodCount++;
 
 			periodStarted = false;
 
 			if( print )
 			{
-				Log.i( LOGTAG,
-						name + " period " + period.format( periodDurationSum, periodCount ) );
+				buff.append( name ).append( " period \tmin=" )
+						.append( period.format( minPeriodDuration, 1 ) ).append( "\tmean=" )
+						.append( period.format( periodDurationSum, periodCount ) )
+						.append( "\tmax=" ).append( period.format( maxPerdiodDuration, 1 ) );
+				Log.i( LOGTAG, buff.toString() );
+				buff.delete( 0, buff.length() );
+
 				long perDur = periodDurationSum / periodCount;
 
 				for( int i = 0; i < intervalNames.length && intervalNames[ i ] != null; i++ )
 				{
 					float intDur = intervalDurationSums[ i ] / periodCount;
 					float p = intDur / perDur;
-					Log.i( LOGTAG, "\t" + intervalNames[ i ] + "\t" + percent.format( p )
-							+ "\t" + interval.format( intervalDurationSums[ i ], periodCount ) );
+					buff.append( "\t" ).append( intervalNames[ i ] )
+							.append( "\t" + percent.format( p ) ).append( "\t" )
+							.append( interval.format( minIntervalDurations[ i ], 1 ) )
+							.append( "\t" )
+							.append( interval.format( intervalDurationSums[ i ], periodCount ) )
+							.append( "\t" )
+							.append( interval.format( maxIntervalDurations[ i ], 1 ) );
+					Log.i( LOGTAG, buff.toString() );
+					buff.delete( 0, buff.length() );
 				}
 
 				for( int i = 0; i < intervalDurationSums.length; i++ )
 				{
 					intervalDurationSums[ i ] = 0;
 					intervalNames[ i ] = null;
+					minIntervalDurations[ i ] = Long.MAX_VALUE;
+					maxIntervalDurations[ i ] = -1;
 				}
 				periodDurationSum = 0;
+				minPeriodDuration = Long.MAX_VALUE;
+				maxPerdiodDuration = -1;
 				periodCount = 0;
 
 				lastPrintOutNanos = clickTime;

@@ -43,6 +43,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import android.graphics.Point;
+
 import com.ryanm.droid.rugl.geom.ColouredShape;
 import com.ryanm.droid.rugl.geom.Shape;
 import com.ryanm.droid.rugl.geom.ShapeUtil;
@@ -51,16 +53,13 @@ import com.ryanm.droid.rugl.gl.GLUtil;
 import com.ryanm.droid.rugl.gl.enums.MagFilter;
 import com.ryanm.droid.rugl.gl.enums.MinFilter;
 import com.ryanm.droid.rugl.gl.facets.TextureState.Filters;
-import com.ryanm.droid.rugl.texture.TextureFactory;
 import com.ryanm.droid.rugl.texture.Image.Format;
+import com.ryanm.droid.rugl.texture.TextureFactory;
 import com.ryanm.droid.rugl.texture.TextureFactory.GLTexture;
 import com.ryanm.droid.rugl.util.Colour;
 import com.ryanm.droid.rugl.util.RectanglePacker;
 import com.ryanm.droid.rugl.util.geom.BoundingRectangle;
 import com.ryanm.droid.rugl.util.geom.Vector2f;
-import com.ryanm.droid.rugl.util.geom.Vector3f;
-
-import android.graphics.Point;
 
 /**
  * Has some global characteristics, a number of {@link Glyph} s, and a
@@ -610,16 +609,12 @@ public final class Font
 	 *           Ignored in dest is null;
 	 * @return an array of glyph vertices
 	 */
-	public Vector3f[] getVertices( CharSequence text, Vector3f[] dest, int start )
+	public float[] getVertices( CharSequence text, float[] dest, int start )
 	{
 		int index = start;
 		if( dest == null )
 		{
-			dest = new Vector3f[ 4 * text.length() ];
-			for( int i = 0; i < dest.length; i++ )
-			{
-				dest[ i ] = new Vector3f();
-			}
+			dest = new float[ 4 * 3 * text.length() ];
 			index = 0;
 		}
 
@@ -646,10 +641,18 @@ public final class Font
 			tempBounds
 					.translate( tempPoint.getX() + penX + kerning, tempPoint.getY() + penY );
 
-			dest[ index++ ].set( tempBounds.x.getMin(), tempBounds.y.getMin(), 0 );
-			dest[ index++ ].set( tempBounds.x.getMin(), tempBounds.y.getMax(), 0 );
-			dest[ index++ ].set( tempBounds.x.getMax(), tempBounds.y.getMin(), 0 );
-			dest[ index++ ].set( tempBounds.x.getMax(), tempBounds.y.getMax(), 0 );
+			dest[ index++ ] = tempBounds.x.getMin();
+			dest[ index++ ] = tempBounds.y.getMin();
+			dest[ index++ ] = 0;
+			dest[ index++ ] = tempBounds.x.getMin();
+			dest[ index++ ] = tempBounds.y.getMax();
+			dest[ index++ ] = 0;
+			dest[ index++ ] = tempBounds.x.getMax();
+			dest[ index++ ] = tempBounds.y.getMin();
+			dest[ index++ ] = 0;
+			dest[ index++ ] = tempBounds.x.getMax();
+			dest[ index++ ] = tempBounds.y.getMax();
+			dest[ index++ ] = 0;
 
 			if( !nl )
 			{
@@ -669,23 +672,22 @@ public final class Font
 	 * 
 	 * @param text
 	 *           The text to render
-	 * @param c
+	 * @param colour
 	 *           The {@link Colour} of the text
 	 * @return A {@link TexturedShape} that will render the text
 	 */
-	public TextShape buildTextShape( CharSequence text, int c )
+	public TextShape buildTextShape( CharSequence text, int colour )
 	{
 		assert texture != null : "Font " + name + " not initialised";
 		assert text.length() != 0 : "Empty string";
 
-		Vector3f[] verts = getVertices( text, null, 0 );
-		Vector2f[] texcoords = getTexCoords( text, null, 0 );
-		short[] indices = ShapeUtil.makeQuads( verts.length, 0, null, 0 );
+		float[] verts = getVertices( text, null, 0 );
+		float[] texcoords = getTexCoords( text, ( float[] ) null, 0 );
+		short[] indices = ShapeUtil.makeQuads( verts.length / 3, 0, null, 0 );
 
 		TexturedShape ts =
-				new TexturedShape( new ColouredShape( new Shape( ShapeUtil.extract( verts ),
-						indices ), c, null ), ShapeUtil.extract( texcoords ),
-						texture.getTexture() );
+				new TexturedShape( new ColouredShape( new Shape( verts, indices ), colour,
+						null ), texcoords, texture.getTexture() );
 
 		ts.state =
 				ts.state.with( ts.state.texture.with( new Filters(
@@ -697,29 +699,24 @@ public final class Font
 
 	/**
 	 * Calculates the glyph texture coordinates. The dest array will
-	 * have 4 * text.length elements written to it, in bl tl br tr
+	 * have 4 * 2 * text.length elements written to it, in bl tl br tr
 	 * format
 	 * 
 	 * @param text
 	 *           The text to render
 	 * @param dest
-	 *           A destination texcoord array, or null. If non-null,
-	 *           all elements must also be non-null
+	 *           A destination texcoord array, or null.
 	 * @param start
 	 *           The element to start writing to in the dest array.
-	 *           Ignored in dest is null;
+	 *           Ignored if dest is <code>null</code>;
 	 * @return an array of glyph texture coordinates
 	 */
-	public Vector2f[] getTexCoords( CharSequence text, Vector2f[] dest, int start )
+	public float[] getTexCoords( CharSequence text, float[] dest, int start )
 	{
 		int index = start;
 		if( dest == null )
 		{
-			dest = new Vector2f[ 4 * text.length() ];
-			for( int i = 0; i < dest.length; i++ )
-			{
-				dest[ i ] = new Vector2f();
-			}
+			dest = new float[ 4 * 2 * text.length() ];
 			index = 0;
 		}
 
@@ -730,10 +727,14 @@ public final class Font
 			g.image.getOrigin( tempOrigin );
 			g.image.getExtent( tempExtent );
 
-			dest[ index++ ].set( tempOrigin.x, tempOrigin.y );
-			dest[ index++ ].set( tempOrigin.x, tempExtent.y );
-			dest[ index++ ].set( tempExtent.x, tempOrigin.y );
-			dest[ index++ ].set( tempExtent.x, tempExtent.y );
+			dest[ index++ ] = tempOrigin.x;
+			dest[ index++ ] = tempOrigin.y;
+			dest[ index++ ] = tempOrigin.x;
+			dest[ index++ ] = tempExtent.y;
+			dest[ index++ ] = tempExtent.x;
+			dest[ index++ ] = tempOrigin.y;
+			dest[ index++ ] = tempExtent.x;
+			dest[ index++ ] = tempExtent.y;
 		}
 
 		return dest;

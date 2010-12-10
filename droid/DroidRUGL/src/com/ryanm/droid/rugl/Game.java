@@ -27,7 +27,7 @@ import com.ryanm.droid.rugl.util.CodeTimer.Output;
  * @author ryanm
  */
 @Variable( "DroidRUGL" )
-@Summary( "Loop control and profiling" )
+@Summary( "General settings" )
 public class Game implements Renderer
 {
 	/**
@@ -217,4 +217,5 @@ public class Game implements Renderer
 	{
 		return currentPhase;
 	}
+
 }

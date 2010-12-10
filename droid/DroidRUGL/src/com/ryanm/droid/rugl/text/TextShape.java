@@ -4,7 +4,7 @@ package com.ryanm.droid.rugl.text;
 import com.ryanm.droid.rugl.geom.TexturedShape;
 
 /**
- * Represensta string of text
+ * Represents a string of text
  * 
  * @author ryanm
  */

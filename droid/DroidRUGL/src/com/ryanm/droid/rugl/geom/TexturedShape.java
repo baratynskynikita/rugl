@@ -23,7 +23,7 @@ public class TexturedShape extends ColouredShape
 	 * The texture coordinates in terms of the sub-texture range.
 	 * Generated as needed
 	 */
-	private final float[] correctedTexCoords;
+	protected final float[] correctedTexCoords;
 
 	/**
 	 * Set to true if you change the texture coordinates
