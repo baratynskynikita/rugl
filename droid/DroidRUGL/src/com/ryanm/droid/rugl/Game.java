@@ -20,6 +20,7 @@ import com.ryanm.droid.rugl.res.ResourceLoader;
 import com.ryanm.droid.rugl.texture.TextureFactory;
 import com.ryanm.droid.rugl.util.CodeTimer;
 import com.ryanm.droid.rugl.util.CodeTimer.Output;
+import com.ryanm.droid.rugl.util.ExceptionHandler;
 
 /**
  * A convenient {@link Phase}-based game model
@@ -44,6 +45,18 @@ public class Game implements Renderer
 	 * Screen height
 	 */
 	public static int height;
+
+	/**
+	 * Major version number for opengl, will be -1 before
+	 * {@link #onSurfaceChanged(GL10, int, int)} is called
+	 */
+	public static int glVersionMajor = -1;
+
+	/**
+	 * Minor version number for opengl, will be -1 before
+	 * {@link #onSurfaceChanged(GL10, int, int)} is called
+	 */
+	public static int glVersionMinor = -1;
 
 	/**
 	 * Roots of the tree that will be configured with
@@ -113,15 +126,19 @@ public class Game implements Renderer
 	public void onSurfaceCreated( GL10 gl, EGLConfig config )
 	{
 		Log.i( RUGL_TAG, "Surface created at " + new Date() );
-		Log.i( RUGL_TAG, "GL Surface created" );
-		Log.i( RUGL_TAG, GLES10.glGetString( GLES10.GL_VENDOR ) );
-		Log.i( RUGL_TAG, GLES10.glGetString( GLES10.GL_RENDERER ) );
-		Log.i( RUGL_TAG, GLES10.glGetString( GLES10.GL_VERSION ) );
-		Log.i( RUGL_TAG, "Extensions" );
+
+		StringBuilder buff = new StringBuilder();
+		buff.append( "\tVendor = " ).append( GLES10.glGetString( GLES10.GL_VENDOR ) );
+		buff.append( "\n\tRenderer = " ).append( GLES10.glGetString( GLES10.GL_RENDERER ) );
+		buff.append( "\n\tVersion = " ).append( GLES10.glGetString( GLES10.GL_VERSION ) );
+		buff.append( "\n\tExtensions" );
 		for( String ex : GLES10.glGetString( GLES10.GL_EXTENSIONS ).split( " " ) )
 		{
-			Log.i( RUGL_TAG, "\t" + ex );
+			buff.append( "\n\t\t" + ex );
 		}
+		ExceptionHandler.addLogInfo( "GLInfo", buff.toString() );
+
+		Log.i( RUGL_TAG, buff.toString() );
 
 		State.stateReset();
 		TextureFactory.recreateTextures();

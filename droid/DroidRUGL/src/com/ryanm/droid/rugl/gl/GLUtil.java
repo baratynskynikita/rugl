@@ -27,18 +27,13 @@
 
 package com.ryanm.droid.rugl.gl;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.HashMap;
-import java.util.Iterator;
 
 import javax.microedition.khronos.opengles.GL10;
 import javax.microedition.khronos.opengles.GL11;
 
 import android.opengl.GLES10;
-import android.opengl.GLES11;
 import android.opengl.GLException;
 
 import com.ryanm.droid.rugl.gl.enums.ComparisonFunction;
@@ -53,9 +48,6 @@ import com.ryanm.droid.rugl.gl.facets.DepthTest;
  */
 public class GLUtil
 {
-	/** A map of constant names to values */
-	private static HashMap<String, Integer> glConstantsMap;
-
 	private static ByteBuffer scratch = BufferUtils.createByteBuffer( 4 * 16 );
 
 	/**
@@ -99,100 +91,6 @@ public class GLUtil
 		}
 
 		return x;
-	}
-
-	/**
-	 * Decode a gl string constant
-	 * 
-	 * @param glstring
-	 *           The name of the GL constant
-	 * @return The value
-	 * @throws GLException
-	 *            if the constant is not found
-	 */
-	public static int decode( String glstring )
-	{
-		if( glConstantsMap == null )
-		{
-			glConstantsMap = new HashMap<String, Integer>( 513, 0.1f );
-			loadGLConstants();
-		}
-
-		Integer i = glConstantsMap.get( glstring.toUpperCase() );
-		if( i == null )
-		{
-			throw new GLException( 0, glstring + " not found" );
-		}
-		else
-		{
-			return i.intValue();
-		}
-	}
-
-	/**
-	 * Recode a gl constant back into a string
-	 * 
-	 * @param code
-	 *           the value
-	 * @return The name of the constant with that value or
-	 *         <code>null</code>
-	 */
-	public static String recode( int code )
-	{
-		if( glConstantsMap == null )
-		{
-			glConstantsMap = new HashMap<String, Integer>( 513, 0.1f );
-			loadGLConstants();
-		}
-
-		for( Iterator i = glConstantsMap.keySet().iterator(); i.hasNext(); )
-		{
-			String s = ( String ) i.next();
-			Integer n = glConstantsMap.get( s );
-			if( n.intValue() == code )
-			{
-				return s;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Reads all the constant enumerations from this class and stores
-	 * them so we can decode them from strings.
-	 * 
-	 * @see #decode(String)
-	 * @see #recode(int)
-	 */
-	private static void loadGLConstants()
-	{
-		Class[] classes = new Class[] { GLES11.class };
-		for( int i = 0; i < classes.length; i++ )
-		{
-			loadGLConstants( classes[ i ] );
-		}
-	}
-
-	private static void loadGLConstants( Class intf )
-	{
-		Field[] field = intf.getFields();
-		for( int i = 0; i < field.length; i++ )
-		{
-			try
-			{
-				if( Modifier.isStatic( field[ i ].getModifiers() )
-						&& Modifier.isPublic( field[ i ].getModifiers() )
-						&& Modifier.isFinal( field[ i ].getModifiers() )
-						&& field[ i ].getType().equals( int.class ) )
-				{
-					glConstantsMap.put( field[ i ].getName(),
-							new Integer( field[ i ].getInt( null ) ) );
-				}
-			}
-			catch( Exception e )
-			{
-			}
-		}
 	}
 
 	/**
