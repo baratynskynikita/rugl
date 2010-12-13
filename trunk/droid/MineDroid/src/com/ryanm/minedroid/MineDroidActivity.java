@@ -48,7 +48,7 @@ public class MineDroidActivity extends GameActivity
 
 				Game game = new Game( this, new BlockView( w ) );
 
-				start( game );
+				start( game, "therealryan+minedroid@gmail.com" );
 			}
 			catch( IOException e )
 			{

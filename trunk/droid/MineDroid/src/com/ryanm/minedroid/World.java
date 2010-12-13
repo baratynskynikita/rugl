@@ -16,8 +16,6 @@ import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.gl.MutableState;
 import com.ryanm.droid.rugl.gl.Renderer;
 import com.ryanm.droid.rugl.res.ResourceLoader;
-import com.ryanm.droid.rugl.util.CodeTimer;
-import com.ryanm.droid.rugl.util.CodeTimer.Output;
 import com.ryanm.droid.rugl.util.QuickSort;
 import com.ryanm.droid.rugl.util.geom.Frustum;
 import com.ryanm.droid.rugl.util.geom.Frustum.Result;
@@ -240,10 +238,6 @@ public class World
 		}
 	}
 
-	/***/
-	@Variable( "Render profiler" )
-	public CodeTimer ct = new CodeTimer( "render", Output.Millis, Output.Millis );
-
 	/**
 	 * @param eye
 	 * @param frustum
@@ -266,8 +260,6 @@ public class World
 
 		if( c != null )
 		{
-			ct.tick( "flood" );
-
 			Chunklet origin = c;
 			c.drawFlag = drawFlag;
 			floodQueue.offer( c );
@@ -278,6 +270,7 @@ public class World
 
 				// renderList.add( c );
 				renderList[ renderListSize++ ] = c;
+
 				if( renderListSize >= renderList.length )
 				{ // grow
 					Chunklet[] nrl = new Chunklet[ renderList.length * 2 ];
@@ -369,13 +362,9 @@ public class World
 			}
 		}
 
-		ct.tick( "sort" );
-
 		// sort chunklets into ascending order of distance from the eye
 		cs.eye.set( eye );
 		QuickSort.sort( renderList, cs, 0, renderListSize - 1 );
-
-		ct.tick( "solid" );
 
 		// vbo
 		// solid stuff from near to far
@@ -391,8 +380,6 @@ public class World
 			}
 		}
 
-		ct.tick( "trans" );
-
 		// translucent stuff from far to near
 		for( int i = renderListSize - 1; i >= 0; i-- )
 		{
@@ -404,7 +391,6 @@ public class World
 			}
 		}
 
-		ct.tick( "outline" );
 		for( int i = 0; i < renderListSize - 1 && drawOutlines; i++ )
 		{
 			renderList[ i ].drawOutline( renderer );
@@ -414,13 +400,9 @@ public class World
 			renderer.render();
 		}
 
-		ct.tick( "clear" );
-
 		Arrays.fill( renderList, null );
 		renderListSize = 0;
 		drawFlag++;
-
-		ct.lastTick();
 	}
 
 	private void fillChunks()
