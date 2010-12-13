@@ -148,21 +148,20 @@ public class VBOShape
 
 		GLES11.glBindBuffer( GLES11.GL_ARRAY_BUFFER, 0 );
 		GLES11.glBindBuffer( GLES11.GL_ELEMENT_ARRAY_BUFFER, 0 );
+
+		GLUtil.checkGLError();
 	}
 
 	/***/
 	public void delete()
 	{
-		if( dataVBOID != -1 )
-		{
-			IntBuffer ib = GLUtil.intScratch( 2 );
-			ib.put( 0, dataVBOID );
-			ib.put( 1, indexVBOID );
-			GLES11.glDeleteBuffers( 2, ib );
-			dataVBOID = -1;
-			indexVBOID = -1;
+		IntBuffer ib = GLUtil.intScratch( 2 );
+		ib.put( 0, dataVBOID );
+		ib.put( 1, indexVBOID );
+		GLES11.glDeleteBuffers( 2, ib );
+		dataVBOID = -1;
+		indexVBOID = -1;
 
-			GLUtil.checkGLError();
-		}
+		GLUtil.checkGLError();
 	}
 }
