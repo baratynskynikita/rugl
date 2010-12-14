@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.GameActivity;
+import com.ryanm.droid.rugl.gl.GLVersion;
 
 /**
  * Entry point for application. Not much happens here, look to
@@ -46,7 +47,7 @@ public class MineDroidActivity extends GameActivity
 				// change the 1 to whatever world number you want
 				World w = new World( 1 );
 
-				Game game = new Game( this, new BlockView( w ) );
+				Game game = new Game( this, GLVersion.OnePointOne, new BlockView( w ) );
 
 				start( game, "therealryan+minedroid@gmail.com" );
 			}
