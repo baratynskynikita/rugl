@@ -14,6 +14,7 @@ import com.ryanm.droid.config.Configuration;
 import com.ryanm.droid.config.annote.Summary;
 import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.gl.GLUtil;
+import com.ryanm.droid.rugl.gl.GLVersion;
 import com.ryanm.droid.rugl.gl.State;
 import com.ryanm.droid.rugl.gl.VBOShape;
 import com.ryanm.droid.rugl.res.ResourceLoader;
@@ -47,16 +48,9 @@ public class Game implements Renderer
 	public static int height;
 
 	/**
-	 * Major version number for opengl, will be -1 before
-	 * {@link #onSurfaceChanged(GL10, int, int)} is called
+	 * OpenGLES version
 	 */
-	public static int glVersionMajor = -1;
-
-	/**
-	 * Minor version number for opengl, will be -1 before
-	 * {@link #onSurfaceChanged(GL10, int, int)} is called
-	 */
-	public static int glVersionMinor = -1;
+	public static GLVersion glVersion;
 
 	/**
 	 * Roots of the tree that will be configured with
@@ -110,15 +104,21 @@ public class Game implements Renderer
 
 	private long lastLogic = System.currentTimeMillis();
 
+	private final GLVersion requiredVersion;
+
 	/**
 	 * @param ga
 	 *           used solely to quit when we run out of phases
+	 * @param requiredVersion
+	 *           The {@link GLVersion} that will be required in the
+	 *           game, or <code>null</code> not to bother checking
 	 * @param phase
 	 *           The initial phase
 	 */
-	public Game( GameActivity ga, Phase phase )
+	public Game( GameActivity ga, GLVersion requiredVersion, Phase phase )
 	{
 		this.ga = ga;
+		this.requiredVersion = requiredVersion;
 		currentPhase = phase;
 	}
 
@@ -127,10 +127,21 @@ public class Game implements Renderer
 	{
 		Log.i( RUGL_TAG, "Surface created at " + new Date() );
 
+		String glVersionString = GLES10.glGetString( GLES10.GL_VERSION );
+		glVersion = GLVersion.findVersion( glVersionString );
+
+		if( requiredVersion != null && requiredVersion.ordinal() > glVersion.ordinal() )
+		{
+			// requirements fail!
+			ga.showToast( "Required OpenGLES version " + requiredVersion
+					+ " but found version " + glVersion, true );
+			ga.finish();
+		}
+
 		StringBuilder buff = new StringBuilder();
 		buff.append( "\tVendor = " ).append( GLES10.glGetString( GLES10.GL_VENDOR ) );
 		buff.append( "\n\tRenderer = " ).append( GLES10.glGetString( GLES10.GL_RENDERER ) );
-		buff.append( "\n\tVersion = " ).append( GLES10.glGetString( GLES10.GL_VERSION ) );
+		buff.append( "\n\tVersion = " ).append( glVersionString );
 		buff.append( "\n\tExtensions" );
 		for( String ex : GLES10.glGetString( GLES10.GL_EXTENSIONS ).split( " " ) )
 		{

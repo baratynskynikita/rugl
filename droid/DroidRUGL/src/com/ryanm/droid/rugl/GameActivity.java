@@ -4,6 +4,7 @@ package com.ryanm.droid.rugl;
 import android.app.Activity;
 import android.content.Intent;
 import android.view.KeyEvent;
+import android.widget.Toast;
 
 import com.ryanm.droid.config.Configuration;
 import com.ryanm.droid.config.VariableType;
@@ -63,6 +64,28 @@ public abstract class GameActivity extends Activity
 		gameView = new GameView( this, game );
 
 		setContentView( gameView );
+	}
+
+	/**
+	 * Displays a short message to the user
+	 * 
+	 * @param message
+	 * @param longShow
+	 *           <code>true</code> for {@link Toast#LENGTH_LONG},
+	 *           <code>false</code> for {@link Toast#LENGTH_SHORT}
+	 */
+	public void showToast( final String message, final boolean longShow )
+	{
+		runOnUiThread( new Runnable() {
+			@Override
+			public void run()
+			{
+				Toast t =
+						Toast.makeText( getApplicationContext(), message,
+								longShow ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT );
+				t.show();
+			}
+		} );
 	}
 
 	@Override
