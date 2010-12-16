@@ -1,11 +1,11 @@
 
 package com.ryanm.droid.rugl;
 
-import com.ryanm.droid.rugl.input.Touch;
-
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.view.MotionEvent;
+
+import com.ryanm.droid.rugl.input.Touch;
 
 /**
  * @author ryanm
@@ -24,7 +24,11 @@ final class GameView extends GLSurfaceView
 	public GameView( Context context, Game game )
 	{
 		super( context );
+
+		setDebugFlags( DEBUG_CHECK_GL_ERROR );
+
 		setRenderer( game );
+
 		this.game = game;
 	}
 
