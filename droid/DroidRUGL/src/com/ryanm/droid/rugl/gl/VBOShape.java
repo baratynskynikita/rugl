@@ -7,6 +7,7 @@ import java.nio.ShortBuffer;
 
 import android.opengl.GLES10;
 import android.opengl.GLES11;
+import android.opengl.GLException;
 
 import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.geom.ColouredShape;
@@ -120,6 +121,13 @@ public class VBOShape
 			GLES11.glGenBuffers( 2, ib );
 			dataVBOID = ib.get( 0 );
 			indexVBOID = ib.get( 1 );
+
+			if( dataVBOID == 0 || indexVBOID == 0 )
+			{
+				throw new GLException( GLES10.GL_INVALID_OPERATION,
+						"Attempted to bind null buffer name : " + dataVBOID + " or "
+								+ indexVBOID );
+			}
 
 			GLES11.glBindBuffer( GLES11.GL_ARRAY_BUFFER, dataVBOID );
 			GLES11.glBufferData( GLES11.GL_ARRAY_BUFFER, vertexCount * vertexBytes,

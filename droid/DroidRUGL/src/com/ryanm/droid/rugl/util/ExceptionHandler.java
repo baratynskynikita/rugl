@@ -21,8 +21,6 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
 import android.util.Log;
 
-import com.ryanm.droid.rugl.GameActivity;
-
 /**
  * A handy utility that catches otherwise-uncaught exceptions and
  * saves it to private storage. On next launch, the user is prompted
@@ -56,12 +54,16 @@ public class ExceptionHandler implements UncaughtExceptionHandler
 	/**
 	 * Call this at startup to register the exception handler and to
 	 * check for saved exception files. Note that this is done for you
-	 * in {@link GameActivity#start(com.ryanm.droid.rugl.Game, String)}
+	 * in
+	 * {@link com.ryanm.droid.rugl.GameActivity#start(com.ryanm.droid.rugl.Game, String)}
 	 * if you supply a non-null support address
 	 * 
 	 * @param context
+	 *           The context whose private file storage we write crash
+	 *           logs to
 	 * @param address
-	 *           A list of address that the report should be sent to
+	 *           A list of email address that the report should be sent
+	 *           to
 	 */
 	public static void register( Context context, String... address )
 	{
@@ -106,8 +108,8 @@ public class ExceptionHandler implements UncaughtExceptionHandler
 
 			i.putExtra( Intent.EXTRA_EMAIL, address );
 			i.putExtra( Intent.EXTRA_SUBJECT, subject.toString() );
-
 			i.putExtra( Intent.EXTRA_TEXT, body.toString() );
+
 			context.startActivity( Intent.createChooser( i, "Send error report with:" ) );
 		}
 	}
@@ -177,6 +179,7 @@ public class ExceptionHandler implements UncaughtExceptionHandler
 		}
 		catch( Exception e )
 		{
+			// oh the irony...
 			Log.e( "ExceptionHandler", "Oh dear", e );
 		}
 
