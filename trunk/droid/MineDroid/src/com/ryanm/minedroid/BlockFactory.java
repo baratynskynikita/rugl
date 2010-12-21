@@ -48,8 +48,7 @@ public class BlockFactory
 	 * Rendering state for blocks. Texture filtering is for wimps
 	 */
 	public static State state = GLUtil.typicalState.with( MinFilter.NEAREST,
-			MagFilter.NEAREST )
-			.with( new Fog( FogMode.LINEAR, 1, 3.5f, 4.5f, Colour.white ) );
+			MagFilter.NEAREST ).with( new Fog( FogMode.LINEAR, 1, 60f, 80f, Colour.white ) );
 
 	/**
 	 * Synchronously loads the terrain texture

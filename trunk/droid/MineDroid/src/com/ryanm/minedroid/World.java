@@ -2,14 +2,10 @@
 package com.ryanm.minedroid;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
-
-import android.os.Environment;
 
 import com.ryanm.droid.config.annote.Summary;
 import com.ryanm.droid.config.annote.Variable;
@@ -74,6 +70,11 @@ public class World
 
 	private int renderListSize = 0;
 
+	/**
+	 * Number of chunklets rendered in the last draw call
+	 */
+	public static int renderedChunklets = 0;
+
 	private int drawFlag = Integer.MIN_VALUE;
 
 	/**
@@ -84,30 +85,16 @@ public class World
 	private static final ChunkSorter cs = new ChunkSorter();
 
 	/**
-	 * @param n
-	 * @throws IOException
-	 *            If something bad happens when we read level.dat
+	 * @param dir
+	 * @param startPosition
 	 */
-	public World( int n ) throws IOException
+	public World( File dir, Vector3f startPosition )
 	{
-		dir =
-				new File( Environment.getExternalStorageDirectory(), ".minecraft/saves/World"
-						+ n );
+		this.dir = dir;
+		this.startPosition = startPosition;
 
-		Tag level = Tag.readFrom( new FileInputStream( new File( dir, "level.dat" ) ) );
-		Tag player = level.findTagByName( "Player" );
-		Tag pos = player.findTagByName( "Pos" );
-
-		Tag[] tl = ( Tag[] ) pos.getValue();
-		Vector3f p = new Vector3f();
-		p.x = ( ( Double ) tl[ 0 ].getValue() ).floatValue() / 16.0f;
-		p.y = ( ( Double ) tl[ 1 ].getValue() ).floatValue() / 16.0f;
-		p.z = ( ( Double ) tl[ 2 ].getValue() ).floatValue() / 16.0f;
-
-		startPosition = p;
-
-		chunkPosX = ( int ) startPosition.getX();
-		chunkPosZ = ( int ) startPosition.getZ();
+		chunkPosX = ( int ) startPosition.getX() / 16;
+		chunkPosZ = ( int ) startPosition.getZ() / 16;
 
 		fillChunks();
 	}
@@ -116,13 +103,15 @@ public class World
 	 * Tries to ensure we have the right chunks loaded
 	 * 
 	 * @param posX
+	 *           player position
 	 * @param posZ
+	 *           player position
 	 */
 	public void advance( float posX, float posZ )
 	{
 		boolean chunksDirty = false;
 
-		int cx = ( int ) Math.floor( posX );
+		int cx = ( int ) Math.floor( posX / 16 );
 		if( cx < chunkPosX )
 		{
 			shiftUpX();
@@ -136,7 +125,7 @@ public class World
 			chunksDirty = true;
 		}
 
-		int cz = ( int ) Math.floor( posZ );
+		int cz = ( int ) Math.floor( posZ / 16 );
 		if( cz < chunkPosZ )
 		{
 			shiftUpZ();
@@ -256,7 +245,6 @@ public class World
 		}
 
 		Chunklet c = getChunklet( eye.x, eye.y, eye.z );
-		// float distlimit = 100;
 
 		if( c != null )
 		{
@@ -268,7 +256,6 @@ public class World
 			{
 				c = floodQueue.poll();
 
-				// renderList.add( c );
 				renderList[ renderListSize++ ] = c;
 
 				if( renderListSize >= renderList.length )
@@ -283,16 +270,13 @@ public class World
 				// we are not reversing flood direction and we can see
 				// through that face of this chunk
 				{
-					Chunklet north = getChunklet( c.x - 1, c.y, c.z );
+					Chunklet north = getChunklet( c.x - 16, c.y, c.z );
 					if( north != null
 					// neighbouring chunk exists
 							&& !north.southSheet
 							// we can see through the traversal face
 							&& north.drawFlag != drawFlag
 							// we haven't already visited it in this frame
-							// && north.distanceSq( eye.x, eye.y, eye.z ) <
-							// distlimit
-							// it is within the distance limit
 							&& north.intersection( frustum ) != Result.Miss )
 					// it intersects the frustum
 					{
@@ -302,10 +286,8 @@ public class World
 				}
 				if( c.x >= origin.x && !c.southSheet )
 				{
-					Chunklet south = getChunklet( c.x + 1, c.y, c.z );
+					Chunklet south = getChunklet( c.x + 16, c.y, c.z );
 					if( south != null && !south.northSheet && south.drawFlag != drawFlag
-					// && south.distanceSq( eye.x, eye.y, eye.z ) <
-					// distlimit
 							&& south.intersection( frustum ) != Result.Miss )
 					{
 						south.drawFlag = drawFlag;
@@ -314,10 +296,8 @@ public class World
 				}
 				if( c.z <= origin.z && !c.eastSheet )
 				{
-					Chunklet east = getChunklet( c.x, c.y, c.z - 1 );
+					Chunklet east = getChunklet( c.x, c.y, c.z - 16 );
 					if( east != null && !east.westSheet && east.drawFlag != drawFlag
-					// && east.distanceSq( eye.x, eye.y, eye.z ) <
-					// distlimit
 							&& east.intersection( frustum ) != Result.Miss )
 					{
 						east.drawFlag = drawFlag;
@@ -326,10 +306,8 @@ public class World
 				}
 				if( c.z >= origin.z && !c.westSheet )
 				{
-					Chunklet west = getChunklet( c.x, c.y, c.z + 1 );
+					Chunklet west = getChunklet( c.x, c.y, c.z + 16 );
 					if( west != null && !west.eastSheet && west.drawFlag != drawFlag
-					// && west.distanceSq( eye.x, eye.y, eye.z ) <
-					// distlimit
 							&& west.intersection( frustum ) != Result.Miss )
 					{
 						west.drawFlag = drawFlag;
@@ -338,10 +316,8 @@ public class World
 				}
 				if( c.y <= origin.y && !c.bottomSheet )
 				{
-					Chunklet bottom = getChunklet( c.x, c.y - 1, c.z );
+					Chunklet bottom = getChunklet( c.x, c.y - 16, c.z );
 					if( bottom != null && !bottom.topSheet && bottom.drawFlag != drawFlag
-					// && bottom.distanceSq( eye.x, eye.y, eye.z ) <
-					// distlimit
 							&& bottom.intersection( frustum ) != Result.Miss )
 					{
 						bottom.drawFlag = drawFlag;
@@ -350,9 +326,8 @@ public class World
 				}
 				if( c.y >= origin.y && !c.topSheet )
 				{
-					Chunklet top = getChunklet( c.x, c.y + 1, c.z );
+					Chunklet top = getChunklet( c.x, c.y + 16, c.z );
 					if( top != null && !top.bottomSheet && top.drawFlag != drawFlag
-					// && top.distanceSq( eye.x, eye.y, eye.z ) < distlimit
 							&& top.intersection( frustum ) != Result.Miss )
 					{
 						top.drawFlag = drawFlag;
@@ -362,13 +337,15 @@ public class World
 			}
 		}
 
+		renderedChunklets = 0;
+
 		// sort chunklets into ascending order of distance from the eye
 		cs.eye.set( eye );
 		QuickSort.sort( renderList, cs, 0, renderListSize - 1 );
 
 		// vbo
 		// solid stuff from near to far
-		for( int i = 0; i < renderListSize - 1; i++ )
+		for( int i = 0; i < renderListSize; i++ )
 		{
 			c = renderList[ i ];
 			c.generateGeometry();
@@ -377,6 +354,8 @@ public class World
 			{
 				c.solidVBO.state = BlockFactory.state;
 				c.solidVBO.draw();
+
+				renderedChunklets++;
 			}
 		}
 
@@ -391,12 +370,12 @@ public class World
 			}
 		}
 
-		for( int i = 0; i < renderListSize - 1 && drawOutlines; i++ )
-		{
-			renderList[ i ].drawOutline( renderer );
-		}
 		if( drawOutlines )
 		{
+			for( int i = 0; i < renderListSize; i++ )
+			{
+				renderList[ i ].drawOutline( renderer );
+			}
 			renderer.render();
 		}
 
@@ -485,11 +464,11 @@ public class World
 	 */
 	public Chunklet getChunklet( float x, float y, float z )
 	{
-		Chunk chunk = getChunk( ( int ) Math.floor( x ), ( int ) Math.floor( z ) );
+		Chunk chunk = getChunk( ( int ) Math.floor( x / 16 ), ( int ) Math.floor( z / 16 ) );
 
-		if( chunk != null && y >= 0 && y < 8 )
+		if( chunk != null && y >= 0 && y < 128 )
 		{
-			int yi = ( int ) Math.floor( y );
+			int yi = ( int ) Math.floor( y / 16 );
 
 			return chunk.chunklets[ yi ];
 		}
@@ -498,10 +477,28 @@ public class World
 	}
 
 	/**
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return The type of the block that contains the point
+	 */
+	public byte blockType( float x, float y, float z )
+	{
+		Chunklet c = getChunklet( x, y, z );
+
+		if( c != null )
+		{
+			return c.parent.blockTypeForPosition( x, y, z );
+		}
+
+		return 0;
+	}
+
+	/**
 	 * @param chunkRadius
 	 */
 	@Variable( "Chunk load range" )
-	@Summary( "The distance at which to load chunks" )
+	@Summary( "The distance (in chunk units) at which to load chunks" )
 	public void setLoadRadius( int chunkRadius )
 	{
 		loadradius = chunkRadius;

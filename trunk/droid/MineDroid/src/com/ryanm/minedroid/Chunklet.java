@@ -25,37 +25,27 @@ import com.ryanm.minedroid.BlockFactory.Face;
  */
 public class Chunklet
 {
-	private static final float SIXTEENTH = 1.0f / 16;
-
 	/**
 	 * Parent chunk
 	 */
 	public final Chunk parent;
 
 	/**
-	 * world coordinate
+	 * World coordinate
 	 */
 	public final int x;
 
 	/**
-	 * world coordinate
+	 * World coordinate
 	 */
 	public final int y;
 
 	/**
-	 * world coordinate
+	 * World coordinate
 	 */
 	public final int z;
 
 	private ColouredShape outline = null;
-
-	/**
-	 * Lowest level of blocks in this chunklet in block index
-	 * coordinates
-	 */
-	public final int yMin;
-
-	private final int yMax;
 
 	private boolean geomDirty = true;
 
@@ -150,34 +140,31 @@ public class Chunklet
 	public Chunklet( Chunk parent, int y )
 	{
 		this.parent = parent;
-		x = parent.x;
-		this.y = y;
-		z = parent.z;
-
-		yMin = y * 16;
-		yMax = yMin + 16;
+		x = parent.chunkX * 16;
+		this.y = y * 16;
+		z = parent.chunkZ * 16;
 
 		// find sheets
 		for( int i = 0; i < 16; i++ )
 		{
 			for( int j = 0; j < 16; j++ )
 			{
-				byte bt = parent.blockType( 0, i + yMin, j );
+				byte bt = blockType( 0, i, j );
 				northSheet &= BlockFactory.opaque( bt );
 
-				bt = parent.blockType( 15, i + yMin, j );
+				bt = blockType( 15, i, j );
 				southSheet &= BlockFactory.opaque( bt );
 
-				bt = parent.blockType( i, j + yMin, 0 );
+				bt = blockType( i, j, 0 );
 				eastSheet &= BlockFactory.opaque( bt );
 
-				bt = parent.blockType( i, j + yMin, 15 );
+				bt = blockType( i, j, 15 );
 				westSheet &= BlockFactory.opaque( bt );
 
-				bt = parent.blockType( i, 15 + yMin, j );
+				bt = blockType( i, 15, j );
 				topSheet &= BlockFactory.opaque( bt );
 
-				bt = parent.blockType( i, 0 + yMin, j );
+				bt = blockType( i, 0, j );
 				bottomSheet &= BlockFactory.opaque( bt );
 			}
 		}
@@ -191,7 +178,7 @@ public class Chunklet
 			{
 				for( int k = 0; k < 16 && empty; k++ )
 				{
-					empty &= parent.blockType( x, yMin + k, z ) == 0;
+					empty &= blockType( x, k, z ) == 0;
 				}
 			}
 		}
@@ -200,14 +187,14 @@ public class Chunklet
 		{
 			for( int j = 0; j < 16 && empty; j++ )
 			{
-				empty &= parent.blockType( -1, i + yMin, j ) == 0;
-				empty &= parent.blockType( 16, i + yMin, j ) == 0;
+				empty &= blockType( -1, i, j ) == 0;
+				empty &= blockType( 16, i, j ) == 0;
 
-				empty &= parent.blockType( i, j + yMin, -1 ) == 0;
-				empty &= parent.blockType( i, j + yMin, 16 ) == 0;
+				empty &= blockType( i, j, -1 ) == 0;
+				empty &= blockType( i, j, 16 ) == 0;
 
-				empty &= parent.blockType( i, -1 + yMin, j ) == 0;
-				empty &= parent.blockType( i, 16 + yMin, j ) == 0;
+				empty &= blockType( i, -1, j ) == 0;
+				empty &= blockType( i, 16, j ) == 0;
 			}
 		}
 	}
@@ -221,9 +208,9 @@ public class Chunklet
 	 */
 	public float distanceSq( float x, float y, float z )
 	{
-		float dx = this.x + 0.5f - x;
-		float dy = this.y + 0.5f - y;
-		float dz = this.z + 0.5f - z;
+		float dx = this.x + 8f - x;
+		float dy = this.y + 8f - y;
+		float dz = this.z + 8f - z;
 
 		return dx * dx + dy * dy + dz * dz;
 	}
@@ -253,16 +240,16 @@ public class Chunklet
 				@Override
 				public void run()
 				{
-					for( int x = 0; x < 16; x++ )
+					for( int xi = 0; xi < 16; xi++ )
 					{
-						for( int y = yMin; y < yMax; y++ )
+						for( int yi = 0; yi < 16; yi++ )
 						{
-							for( int z = 0; z < 16; z++ )
+							for( int zi = 0; zi < 16; zi++ )
 							{
-								Block b = BlockFactory.getBlock( parent.blockType( x, y, z ) );
+								Block b = BlockFactory.getBlock( blockType( xi, yi, zi ) );
 								// lighting
-								int sl = parent.skyLight( x, y, z );
-								int bl = parent.blockLight( x, y, z );
+								int sl = parent.skyLight( xi, y + yi, zi );
+								int bl = parent.blockLight( xi, y + yi, zi );
 								int l = Math.max( sl, bl );
 
 								float light = ( float ) Math.pow( 0.8, 15 - l );
@@ -271,18 +258,18 @@ public class Chunklet
 
 								if( b == null || !b.opaque )
 								{
-									addFace( b, x - 1, y, z, Face.South, colour, opaqueVBOBuilder,
-											transVBOBuilder );
-									addFace( b, x + 1, y, z, Face.North, colour, opaqueVBOBuilder,
-											transVBOBuilder );
-									addFace( b, x, y, z - 1, Face.West, colour, opaqueVBOBuilder,
-											transVBOBuilder );
-									addFace( b, x, y, z + 1, Face.East, colour, opaqueVBOBuilder,
-											transVBOBuilder );
-									addFace( b, x, y + 1, z, Face.Bottom, colour,
+									addFace( b, xi - 1, yi, zi, Face.South, colour,
 											opaqueVBOBuilder, transVBOBuilder );
-									addFace( b, x, y - 1, z, Face.Top, colour, opaqueVBOBuilder,
-											transVBOBuilder );
+									addFace( b, xi + 1, yi, zi, Face.North, colour,
+											opaqueVBOBuilder, transVBOBuilder );
+									addFace( b, xi, yi, zi - 1, Face.West, colour,
+											opaqueVBOBuilder, transVBOBuilder );
+									addFace( b, xi, yi, zi + 1, Face.East, colour,
+											opaqueVBOBuilder, transVBOBuilder );
+									addFace( b, xi, yi + 1, zi, Face.Bottom, colour,
+											opaqueVBOBuilder, transVBOBuilder );
+									addFace( b, xi, yi - 1, zi, Face.Top, colour,
+											opaqueVBOBuilder, transVBOBuilder );
 								}
 							}
 						}
@@ -293,8 +280,7 @@ public class Chunklet
 					if( ts != null )
 					{
 						ts.state = BlockFactory.state;
-						ts.scale( SIXTEENTH, SIXTEENTH, SIXTEENTH );
-						ts.translate( parent.x, 0, parent.z );
+						ts.translate( x, y, z );
 
 						solidVBO = new VBOShape( ts );
 					}
@@ -303,8 +289,7 @@ public class Chunklet
 					if( ts != null )
 					{
 						ts.state = BlockFactory.state;
-						ts.scale( SIXTEENTH, SIXTEENTH, SIXTEENTH );
-						ts.translate( parent.x, 0, parent.z );
+						ts.translate( x, y, z );
 
 						transparentVBO = new VBOShape( ts );
 					}
@@ -324,7 +309,7 @@ public class Chunklet
 	private void addFace( Block facing, int x, int y, int z, Face f, int colour,
 			ShapeBuilder opaque, ShapeBuilder transparent )
 	{
-		Block b = BlockFactory.getBlock( parent.blockType( x, y, z ) );
+		Block b = BlockFactory.getBlock( blockType( x, y, z ) );
 
 		if( b != null && b != facing )
 		{
@@ -333,20 +318,31 @@ public class Chunklet
 	}
 
 	/**
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return the so-indexed point
+	 */
+	private byte blockType( int x, int y, int z )
+	{
+		return parent.blockType( x, this.y + y, z );
+	}
+
+	/**
 	 * @param frustum
 	 * @return The intersection status of the chunk and frustum
 	 */
 	public Result intersection( Frustum frustum )
 	{
-		return frustum.cuboidIntersects( x, y, z, x + 1, y + 1, z + 1 );
+		return frustum.cuboidIntersects( x, y, z, x + 16, y + 16, z + 16 );
 	}
 
 	@Override
 	public String toString()
 	{
-		return "Chunklet @ " + x + ", " + y + ", " + z + "\nsheets n " + northSheet + " s "
-				+ southSheet + "\n e " + eastSheet + " w " + westSheet + "\n t " + topSheet
-				+ " b " + bottomSheet;
+		return "Chunklet @ " + x + ", " + y + ", " + z + "\n = " + x * 16 + ", " + y * 16
+				+ ", " + z * 16 + "\nsheets n " + northSheet + " s " + southSheet + "\n e "
+				+ eastSheet + " w " + westSheet + "\n t " + topSheet + " b " + bottomSheet;
 	}
 
 	/**
@@ -361,6 +357,7 @@ public class Chunklet
 			if( outline == null )
 			{
 				Shape s = WireUtil.unitCube();
+				s.scale( 16, 16, 16 );
 				s.translate( x, y, z );
 
 				outline = new ColouredShape( s, Colour.black, WireUtil.state );
