@@ -46,7 +46,7 @@ public class GUI
 			+ "awaiting geometry generation" )
 	public boolean printQueues = true;
 
-	private Readout loadQueue, geomQueue;
+	private Readout loadQueue, geomQueue, chunkletCount;
 
 	private StackedRenderer r = new StackedRenderer();
 
@@ -75,6 +75,11 @@ public class GUI
 				geomQueue = new Readout( font, Colour.black, "Geom queue = ", false, 3, 0 );
 				geomQueue.translate( 10,
 						Game.height - 20 - 2 * geomQueue.getBounds().y.getSpan(), 0 );
+
+				chunkletCount = new Readout( font, Colour.black, "Chunklets = ", false, 3, 0 );
+				chunkletCount.translate( 10, Game.height - 40 - 3
+						* chunkletCount.getBounds().y.getSpan(), 0 );
+
 			}
 		} );
 
@@ -120,6 +125,10 @@ public class GUI
 
 			geomQueue.updateValue( Chunklet.getChunkletQueueSize() );
 			geomQueue.render( r );
+
+			chunkletCount.updateValue( World.renderedChunklets );
+
+			chunkletCount.render( r );
 		}
 
 		r.render();

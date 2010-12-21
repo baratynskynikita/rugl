@@ -13,14 +13,14 @@ import java.io.IOException;
 public class Chunk
 {
 	/**
-	 * World x coordinate
+	 * World chunk x coordinate
 	 */
-	public int x;
+	public int chunkX;
 
 	/**
-	 * World z coordinate
+	 * World chunk z coordinate
 	 */
-	public int z;
+	public int chunkZ;
 
 	/**
 	 * Block data
@@ -56,8 +56,8 @@ public class Chunk
 	{
 		this.world = world;
 		Tag ct = Tag.readFrom( new FileInputStream( f ) );
-		x = ( ( Integer ) ct.findTagByName( "xPos" ).getValue() ).intValue();
-		z = ( ( Integer ) ct.findTagByName( "zPos" ).getValue() ).intValue();
+		chunkX = ( ( Integer ) ct.findTagByName( "xPos" ).getValue() ).intValue();
+		chunkZ = ( ( Integer ) ct.findTagByName( "zPos" ).getValue() ).intValue();
 		blockData = ( byte[] ) ct.findTagByName( "Blocks" ).getValue();
 		skylight = ( byte[] ) ct.findTagByName( "SkyLight" ).getValue();
 		blocklight = ( byte[] ) ct.findTagByName( "BlockLight" ).getValue();
@@ -73,28 +73,28 @@ public class Chunk
 	 * @param bx
 	 * @param by
 	 * @param bz
-	 * @return the type of the block at that point in the chunk
+	 * @return the type of the so-indexed block in this chunk
 	 */
 	public byte blockType( int bx, int by, int bz )
 	{
 		if( bx < 0 )
 		{
-			Chunk north = world.getChunk( x - 1, z );
+			Chunk north = world.getChunk( chunkX - 1, chunkZ );
 			return north == null ? 0 : north.blockType( bx + 16, by, bz );
 		}
 		else if( bx >= 16 )
 		{
-			Chunk south = world.getChunk( x + 1, z );
+			Chunk south = world.getChunk( chunkX + 1, chunkZ );
 			return south == null ? 0 : south.blockType( bx - 16, by, bz );
 		}
 		else if( bz < 0 )
 		{
-			Chunk east = world.getChunk( x, z - 1 );
+			Chunk east = world.getChunk( chunkX, chunkZ - 1 );
 			return east == null ? 0 : east.blockType( bx, by, bz + 16 );
 		}
 		else if( bz >= 16 )
 		{
-			Chunk west = world.getChunk( x, z + 1 );
+			Chunk west = world.getChunk( chunkX, chunkZ + 1 );
 			return west == null ? 0 : west.blockType( bx, by, bz - 16 );
 		}
 		else if( by < 0 || by >= 128 )
@@ -103,6 +103,18 @@ public class Chunk
 		}
 
 		return blockData[ by + bz * 128 + bx * 2048 ];
+	}
+
+	/**
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return The type of the block that contains the specified point
+	 */
+	public byte blockTypeForPosition( float x, float y, float z )
+	{
+		return blockType( ( int ) Math.floor( x - chunkX * 16 ), ( int ) Math.floor( y ),
+				( int ) Math.floor( z - chunkZ * 16 ) );
 	}
 
 	/**
