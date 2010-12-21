@@ -92,7 +92,11 @@ public abstract class GameActivity extends Activity
 	protected void onPause()
 	{
 		super.onPause();
-		gameView.onPause();
+
+		if( gameView != null )
+		{
+			gameView.onPause();
+		}
 	}
 
 	@Override
@@ -107,7 +111,10 @@ public abstract class GameActivity extends Activity
 	protected void onResume()
 	{
 		super.onResume();
-		gameView.onResume();
+		if( gameView != null )
+		{
+			gameView.onResume();
+		}
 	}
 
 	@Override
@@ -115,7 +122,10 @@ public abstract class GameActivity extends Activity
 	{
 		if( event.getRepeatCount() == 0 )
 		{
-			gameView.game.currentPhase().onKeyDown( keyCode, event );
+			if( gameView != null && gameView.game != null )
+			{
+				gameView.game.currentPhase().onKeyDown( keyCode, event );
+			}
 		}
 
 		return true;
@@ -124,7 +134,11 @@ public abstract class GameActivity extends Activity
 	@Override
 	public boolean onKeyUp( int keyCode, KeyEvent event )
 	{
-		gameView.game.currentPhase().onKeyUp( keyCode, event );
+		if( gameView != null && gameView.game != null )
+		{
+			gameView.game.currentPhase().onKeyUp( keyCode, event );
+		}
+
 		return true;
 	}
 }

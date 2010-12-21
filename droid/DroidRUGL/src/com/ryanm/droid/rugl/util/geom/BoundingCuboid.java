@@ -31,6 +31,21 @@ public class BoundingCuboid extends BoundingRectangle
 	}
 
 	/**
+	 * @param minX
+	 * @param minY
+	 * @param minZ
+	 * @param maxX
+	 * @param maxY
+	 * @param maxZ
+	 */
+	public void set( float minX, float minY, float minZ, float maxX, float maxY, float maxZ )
+	{
+		x.set( minX, maxX );
+		y.set( minY, maxY );
+		z.set( minZ, maxZ );
+	}
+
+	/**
 	 * Copy constructor
 	 * 
 	 * @param c
@@ -93,6 +108,24 @@ public class BoundingCuboid extends BoundingRectangle
 	}
 
 	/**
+	 * @param b
+	 * @param dest
+	 * @return true if the intersection exists
+	 */
+	public boolean intersection( BoundingCuboid b, BoundingCuboid dest )
+	{
+		if( intersects( b ) )
+		{
+			x.intersection( b.x, dest.x );
+			y.intersection( b.y, dest.y );
+			z.intersection( b.z, dest.z );
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Shifts this cuboid
 	 * 
 	 * @param dx
@@ -116,38 +149,6 @@ public class BoundingCuboid extends BoundingRectangle
 	{
 		super.scale( sx, sy );
 		z.scale( sz );
-	}
-
-	/**
-	 * Computes the time period for which two cuboids intersect, given
-	 * their velocities
-	 * 
-	 * @param a
-	 * @param avx
-	 * @param avy
-	 * @param avz
-	 * @param b
-	 * @param bvx
-	 * @param bvy
-	 * @param bvz
-	 * @return the intersection period, or <code>null</code> if there
-	 *         is no intersection
-	 */
-	public static Range intersectionTime( BoundingCuboid a, float avx, float avy,
-			float avz, BoundingCuboid b, float bvx, float bvy, float bvz )
-	{
-		Range twoDOverlap = BoundingRectangle.intersectionTime( a, avx, avy, b, bvx, bvy );
-
-		bvz -= avz;
-
-		Range zOverlap = Range.intersectionTime( a.z, b.z, bvz );
-
-		if( twoDOverlap != null && zOverlap != null )
-		{
-			return twoDOverlap.intersection( zOverlap );
-		}
-
-		return null;
 	}
 
 	@Override

@@ -107,13 +107,20 @@ public class ResourceLoader
 		protected T resource;
 
 		/**
-		 * Overload this to do the loading and set {@link #resource}.
-		 * This is called on a common loading thread
+		 * Indicates if the loader should {@link #complete()} as soon as
+		 * possible, or if it should be deferred to whenever
+		 * {@link ResourceLoader#checkCompletion()} is called.
+		 */
+		public boolean selfCompleting = false;
+
+		/**
+		 * Overload this to do the loading IO and set {@link #resource}.
+		 * This is called on a shared loading thread
 		 */
 		public abstract void load();
 
 		/**
-		 * This method is called on its own thread. Use it to do any
+		 * This method is called on shared thread. Use it to do any
 		 * processing
 		 */
 		public void postLoad()
@@ -149,7 +156,15 @@ public class ResourceLoader
 			else
 			{
 				loader.postLoad();
-				complete.add( loader );
+
+				if( loader.selfCompleting )
+				{
+					loader.complete();
+				}
+				else
+				{
+					complete.add( loader );
+				}
 			}
 		}
 	}

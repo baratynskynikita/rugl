@@ -119,40 +119,20 @@ public class BoundingRectangle
 	}
 
 	/**
-	 * Finds the time at which two axis-aligned rectangles intersect.
-	 * Note that this may be in the past
-	 * 
-	 * @param a
-	 * @param avx
-	 *           a's velocity on the x-axis
-	 * @param avy
-	 *           a's velocity on the y-axis
 	 * @param b
-	 * @param bvx
-	 *           b's velocity on the y-axis
-	 * @param bvy
-	 *           b's velocity on the y-axis
-	 * @return The time range for which the rectangles intersect, or
-	 *         null if no intersection
+	 * @param dest
+	 * @return true if the intersection exists
 	 */
-	public static Range intersectionTime( BoundingRectangle a, float avx, float avy,
-			BoundingRectangle b, float bvx, float bvy )
+	public boolean intersection( BoundingRectangle b, BoundingRectangle dest )
 	{
-		// take box A as static
-		bvx -= avx;
-		bvy -= avy;
-
-		// find the time ranges when the rects intersect in each axis
-		Range xOverlapPeriod = Range.intersectionTime( a.x, b.x, bvx );
-		Range yOverlapPeriod = Range.intersectionTime( a.y, b.y, bvy );
-
-		// if these time ranges exist
-		if( xOverlapPeriod != null && yOverlapPeriod != null )
+		if( intersects( b ) )
 		{
-			return xOverlapPeriod.intersection( yOverlapPeriod );
+			x.intersection( b.x, dest.x );
+			y.intersection( b.y, dest.y );
+			return true;
 		}
 
-		return null;
+		return false;
 	}
 
 	@Override
