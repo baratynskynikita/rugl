@@ -37,7 +37,7 @@ public class Configuration
 	 */
 	public static final int ACTIVITY_REQUEST_FLAG = 266344;
 
-	private static Object[] configTargets = null;
+	private static Object[] configTargets = new Object[ 0 ];
 
 	private static Queue<ConfigResult> deferredResults =
 			new LinkedList<Configuration.ConfigResult>();
