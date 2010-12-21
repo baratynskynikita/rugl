@@ -58,13 +58,21 @@ public class Configuration
 	 */
 	public static void configure( Activity returnTo, Object... roots )
 	{
-		Log.i( LOG_TAG, "Launching configuration activity" );
-		configTargets = roots;
-		// launch config
-		Intent i = new Intent( returnTo, ConfigActivity.class );
-		i.putExtra( CONF_TAG, Extract.extract( roots ).toString() );
-		i.putExtra( RETURNTO_TAG, returnTo.getClass().getName() );
-		returnTo.startActivityForResult( i, ACTIVITY_REQUEST_FLAG );
+		if( roots == null )
+		{
+			Log.e( LOG_TAG,
+					"Attempt made to configure null roots. I don't think we'll be doing that" );
+		}
+		else
+		{
+			Log.i( LOG_TAG, "Launching configuration activity" );
+			configTargets = roots;
+			// launch config
+			Intent i = new Intent( returnTo, ConfigActivity.class );
+			i.putExtra( CONF_TAG, Extract.extract( roots ).toString() );
+			i.putExtra( RETURNTO_TAG, returnTo.getClass().getName() );
+			returnTo.startActivityForResult( i, ACTIVITY_REQUEST_FLAG );
+		}
 	}
 
 	/**
