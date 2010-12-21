@@ -133,7 +133,7 @@ public class Game implements Renderer
 		if( requiredVersion != null && requiredVersion.ordinal() > glVersion.ordinal() )
 		{
 			// requirements fail!
-			ga.showToast( "Required OpenGLES version " + requiredVersion
+			ga.showToast( "Required OpenGLES ve rsion " + requiredVersion
 					+ " but found version " + glVersion, true );
 			ga.finish();
 		}

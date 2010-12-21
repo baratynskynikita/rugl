@@ -29,7 +29,12 @@ class Apply
 
 	static void apply( JSONObject json, Object... roots )
 	{
-		if( roots.length == 1 )
+		if( roots == null )
+		{
+			Log.i( Configuration.LOG_TAG,
+					"Null applilcation roots. Not sure how this happens, but it apparently does" );
+		}
+		else if( roots.length == 1 )
 		{
 			apply( json, roots[ 0 ] );
 		}
