@@ -29,15 +29,18 @@ public class Range
 
 	/**
 	 * @param r
-	 * @return The intersection of this {@link Range} and r
+	 * @param dest
+	 * @return <code>true</code> if the intersection exists
 	 */
-	public Range intersection( Range r )
+	public boolean intersection( Range r, Range dest )
 	{
 		if( intersects( r ) )
 		{
-			return new Range( Math.max( min, r.min ), Math.min( max, r.max ) );
+			dest.set( Math.max( min, r.min ), Math.min( max, r.max ) );
+			return true;
 		}
-		return null;
+
+		return false;
 	}
 
 	/**

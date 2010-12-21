@@ -56,7 +56,7 @@ public class Game implements Renderer
 	 * Roots of the tree that will be configured with
 	 * {@link #launchConfiguration()}
 	 */
-	public static Object[] confRoots = new Object[] {};
+	private static Object[] confRoots = new Object[] {};
 
 	/**
 	 * Convenience to set {@link #confRoots}
