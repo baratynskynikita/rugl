@@ -112,8 +112,10 @@ public class TexturedShape extends ColouredShape
 	@Override
 	public void render( Renderer r )
 	{
-		state = texture.applyTo( state );
-
+		if( texture != null )
+		{
+			state = texture.applyTo( state );
+		}
 		r.addGeometry( vertices, getTextureCoords(), colours, indices, state );
 	}
 
