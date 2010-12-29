@@ -53,7 +53,7 @@ public class World
 	 */
 	public final File dir;
 
-	private int loadradius = 4;
+	private int loadradius = 2;
 
 	/**
 	 * 1st index = x, 2nd = z
@@ -165,7 +165,6 @@ public class World
 		{
 			if( swap[ i ] != null )
 			{
-				swap[ i ].unload();
 				swap[ i ] = null;
 			}
 		}
@@ -188,7 +187,6 @@ public class World
 		{
 			if( swap[ i ] != null )
 			{
-				swap[ i ].unload();
 				swap[ i ] = null;
 			}
 		}
@@ -207,11 +205,6 @@ public class World
 	{
 		for( int i = 0; i < chunks.length; i++ )
 		{
-			if( chunks[ i ][ 0 ] != null )
-			{
-				chunks[ i ][ 0 ].unload();
-			}
-
 			for( int j = 0; j < chunks[ i ].length - 1; j++ )
 			{
 				chunks[ i ][ j ] = chunks[ i ][ j + 1 ];
@@ -225,11 +218,6 @@ public class World
 	{
 		for( int i = 0; i < chunks.length; i++ )
 		{
-			if( chunks[ i ][ chunks[ i ].length - 1 ] != null )
-			{
-				chunks[ i ][ chunks[ i ].length - 1 ].unload();
-			}
-
 			for( int j = chunks[ i ].length - 1; j > 0; j-- )
 			{
 				chunks[ i ][ j ] = chunks[ i ][ j - 1 ];
@@ -363,7 +351,7 @@ public class World
 			// solid stuff from near to far
 			for( int i = 0; i < renderListSize; i++ )
 			{
-				renderList[ i ].drawSolid();
+				renderList[ i ].drawSolid( renderer );
 
 				if( !renderList[ i ].isEmpty() )
 				{
@@ -376,7 +364,7 @@ public class World
 			// translucent stuff from far to near
 			for( int i = renderListSize - 1; i >= 0; i-- )
 			{
-				renderList[ i ].drawTransparent();
+				renderList[ i ].drawTransparent( renderer );
 			}
 
 			GLUtil.checkGLError();
@@ -388,8 +376,9 @@ public class World
 			{
 				renderList[ i ].drawOutline( renderer );
 			}
-			renderer.render();
 		}
+
+		renderer.render();
 
 		Arrays.fill( renderList, null );
 		renderListSize = 0;
@@ -519,17 +508,6 @@ public class World
 		// properly, so brace yourself for the Madagascan strategy:
 
 		// RELOAD. EVERYTHING.
-
-		for( int i = 0; i < chunks.length; i++ )
-		{
-			for( int j = 0; j < chunks[ i ].length; j++ )
-			{
-				if( chunks[ i ][ j ] != null )
-				{
-					chunks[ i ][ j ].unload();
-				}
-			}
-		}
 		chunks = new Chunk[ 2 * chunkRadius + 1 ][ 2 * chunkRadius + 1 ];
 		fillChunks();
 	}

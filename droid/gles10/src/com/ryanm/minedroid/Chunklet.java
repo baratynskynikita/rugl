@@ -3,9 +3,9 @@ package com.ryanm.minedroid;
 
 import com.ryanm.droid.rugl.geom.ColouredShape;
 import com.ryanm.droid.rugl.geom.Shape;
+import com.ryanm.droid.rugl.geom.TexturedShape;
 import com.ryanm.droid.rugl.geom.WireUtil;
 import com.ryanm.droid.rugl.gl.Renderer;
-import com.ryanm.droid.rugl.gl.VBOShape;
 import com.ryanm.droid.rugl.util.Colour;
 import com.ryanm.droid.rugl.util.geom.Frustum;
 import com.ryanm.droid.rugl.util.geom.Frustum.Result;
@@ -44,24 +44,12 @@ public class Chunklet
 	/**
 	 * Solid geometry
 	 */
-	private VBOShape solidVBO;
-
-	/**
-	 * This is where we hold a new solid geometry vbo, fresh from the
-	 * generation thread
-	 */
-	private VBOShape pendingSolid;
+	private TexturedShape solid;
 
 	/**
 	 * Transparent geometry
 	 */
-	private VBOShape transparentVBO;
-
-	/**
-	 * This is where we hold a new transparent geometry vbo, fresh from
-	 * the generation thread
-	 */
-	private VBOShape pendingTransparent;
+	private TexturedShape transparent;
 
 	/**
 	 * <code>true</code> if we're waiting on being processed by the
@@ -203,50 +191,30 @@ public class Chunklet
 	}
 
 	/**
-	 * Draws the solid geometry
+	 * @param r
 	 */
-	public void drawSolid()
+	public void drawSolid( Renderer r )
 	{
 		generateGeometry();
 
-		if( pendingSolid != null )
+		if( solid != null )
 		{
-			if( solidVBO != null )
-			{
-				solidVBO.delete();
-			}
-			solidVBO = pendingSolid;
-			pendingSolid = null;
-		}
-
-		if( solidVBO != null )
-		{
-			solidVBO.state = BlockFactory.state;
-			solidVBO.draw();
+			solid.state = BlockFactory.state;
+			solid.render( r );
 		}
 	}
 
 	/**
-	 * Draws the transparent geometry
+	 * @param r
 	 */
-	public void drawTransparent()
+	public void drawTransparent( Renderer r )
 	{
 		generateGeometry();
 
-		if( pendingTransparent != null )
+		if( transparent != null )
 		{
-			if( transparentVBO != null )
-			{
-				transparentVBO.delete();
-			}
-			transparentVBO = pendingTransparent;
-			pendingTransparent = null;
-		}
-
-		if( transparentVBO != null )
-		{
-			transparentVBO.state = BlockFactory.state;
-			transparentVBO.draw();
+			transparent.state = BlockFactory.state;
+			transparent.render( r );
 		}
 	}
 
@@ -286,12 +254,12 @@ public class Chunklet
 	 * @param solid
 	 * @param transparent
 	 */
-	public void geometryComplete( VBOShape solid, VBOShape transparent )
+	public void geometryComplete( TexturedShape solid, TexturedShape transparent )
 	{
 		geomPending = false;
 		geomDirty = false;
-		pendingSolid = solid;
-		pendingTransparent = transparent;
+		this.solid = solid;
+		this.transparent = transparent;
 	}
 
 	/**
@@ -343,7 +311,7 @@ public class Chunklet
 	 */
 	public void drawOutline( Renderer r )
 	{
-		if( solidVBO != null || transparentVBO != null || geomPending )
+		if( solid != null || transparent != null || geomPending )
 		{
 			if( outline == null )
 			{
@@ -356,22 +324,6 @@ public class Chunklet
 			}
 
 			outline.render( r );
-		}
-	}
-
-	/**
-	 * Deletes VBOs
-	 */
-	public void unload()
-	{
-		if( solidVBO != null )
-		{
-			solidVBO.delete();
-		}
-
-		if( transparentVBO != null )
-		{
-			transparentVBO.delete();
 		}
 	}
 }
