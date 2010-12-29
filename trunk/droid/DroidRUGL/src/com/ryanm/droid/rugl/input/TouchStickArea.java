@@ -51,13 +51,17 @@ public class TouchStickArea extends AbstractTouchStick
 
 		stick = new TouchStick( x, y, stickRadius );
 
-		stick.addListener( new ClickListener() {
+		// redirect clicks to our listener
+		stick.listener = new ClickListener() {
 			@Override
 			public void onClick()
 			{
-				notifyClick();
+				if( listener != null )
+				{
+					listener.onClick();
+				}
 			}
-		} );
+		};
 	}
 
 	@Override

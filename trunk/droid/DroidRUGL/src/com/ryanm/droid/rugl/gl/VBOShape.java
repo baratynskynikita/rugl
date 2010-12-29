@@ -10,6 +10,7 @@ import android.opengl.GLES11;
 import android.opengl.GLException;
 
 import com.ryanm.droid.rugl.Game;
+import com.ryanm.droid.rugl.Game.SurfaceListener;
 import com.ryanm.droid.rugl.geom.ColouredShape;
 import com.ryanm.droid.rugl.geom.TexturedShape;
 
@@ -18,13 +19,23 @@ import com.ryanm.droid.rugl.geom.TexturedShape;
  */
 public class VBOShape
 {
+	static
+	{
+		Game.addSurfaceLIstener( new SurfaceListener() {
+			@Override
+			public void onSurfaceCreated()
+			{
+				contextID++;
+			};
+		} );
+	}
+
 	/**
 	 * Increment this to indicate that VBO state may have been
-	 * invalidated, i.e. in
-	 * {@link Game#onSurfaceCreated(javax.microedition.khronos.opengles.GL10, javax.microedition.khronos.egl.EGLConfig)}
-	 * This should cause all {@link VBOShape}s to re-upload their data
+	 * invalidated, i.e. in This will cause all {@link VBOShape}s to
+	 * refresh their data
 	 */
-	public static int contextID = 0;
+	private static int contextID = 0;
 
 	private static int vertexBytes = 3 * 4 + 4 + 2 * 4;
 
@@ -109,6 +120,8 @@ public class VBOShape
 	/***/
 	public void draw()
 	{
+		GLUtil.checkGLError();
+
 		if( uploadedContextID != contextID )
 		{ // the context may have changed - we need to refresh our
 			// buffer handles
@@ -137,9 +150,9 @@ public class VBOShape
 			GLES11.glBufferData( GLES11.GL_ELEMENT_ARRAY_BUFFER, indexCount * 2,
 					indexBuffer, GLES11.GL_STATIC_DRAW );
 
-			GLUtil.checkGLError();
-
 			uploadedContextID = contextID;
+
+			GLUtil.checkGLError();
 		}
 
 		state.apply();
@@ -163,6 +176,8 @@ public class VBOShape
 	/***/
 	public void delete()
 	{
+		GLUtil.checkGLError();
+
 		IntBuffer ib = GLUtil.intScratch( 2 );
 		ib.put( 0, dataVBOID );
 		ib.put( 1, indexVBOID );

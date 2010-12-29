@@ -27,6 +27,8 @@
 
 package com.ryanm.droid.rugl.gl;
 
+import com.ryanm.droid.rugl.Game;
+import com.ryanm.droid.rugl.Game.SurfaceListener;
 import com.ryanm.droid.rugl.gl.enums.DrawMode;
 import com.ryanm.droid.rugl.gl.enums.MagFilter;
 import com.ryanm.droid.rugl.gl.enums.MinFilter;
@@ -45,6 +47,17 @@ import com.ryanm.droid.rugl.gl.facets.TextureState.Filters;
  */
 public class State implements Comparable<State>
 {
+	static
+	{
+		Game.addSurfaceLIstener( new SurfaceListener() {
+			@Override
+			public void onSurfaceCreated()
+			{
+				stateReset();
+			}
+		} );
+	}
+
 	/**
 	 * The current state of openGL
 	 */

@@ -28,7 +28,7 @@ public class FPSCamera
 	/**
 	 * Invert mode - i.e.: pull down to look up
 	 */
-	@Variable( )
+	@Variable( "Invert Y" )
 	@Summary( "Invert mode FTW!" )
 	@Order( 0 )
 	public boolean invert = true;

@@ -41,6 +41,7 @@ import android.opengl.GLException;
 import android.util.Log;
 
 import com.ryanm.droid.rugl.Game;
+import com.ryanm.droid.rugl.Game.SurfaceListener;
 import com.ryanm.droid.rugl.gl.BufferUtils;
 import com.ryanm.droid.rugl.gl.GLUtil;
 import com.ryanm.droid.rugl.gl.State;
@@ -55,6 +56,17 @@ import com.ryanm.droid.rugl.util.geom.Vector2f;
  */
 public class TextureFactory
 {
+	static
+	{
+		Game.addSurfaceLIstener( new SurfaceListener() {
+			@Override
+			public void onSurfaceCreated()
+			{
+				recreateTextures();
+			};
+		} );
+	}
+
 	/**
 	 * A list of OpenGL textures
 	 */
@@ -69,7 +81,7 @@ public class TextureFactory
 	 * Called in response to the opengl context going away, perhaps as
 	 * a result of the display mode changing
 	 */
-	public static void recreateTextures()
+	private static void recreateTextures()
 	{
 		if( !textures.isEmpty() )
 		{

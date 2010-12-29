@@ -1,6 +1,7 @@
 
 package com.ryanm.droid.rugl;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -15,10 +16,7 @@ import com.ryanm.droid.config.annote.Summary;
 import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.gl.GLUtil;
 import com.ryanm.droid.rugl.gl.GLVersion;
-import com.ryanm.droid.rugl.gl.State;
-import com.ryanm.droid.rugl.gl.VBOShape;
 import com.ryanm.droid.rugl.res.ResourceLoader;
-import com.ryanm.droid.rugl.texture.TextureFactory;
 import com.ryanm.droid.rugl.util.CodeTimer;
 import com.ryanm.droid.rugl.util.CodeTimer.Output;
 import com.ryanm.droid.rugl.util.ExceptionHandler;
@@ -56,7 +54,26 @@ public class Game implements Renderer
 	 * Roots of the tree that will be configured with
 	 * {@link #launchConfiguration()}
 	 */
-	private static Object[] confRoots = new Object[] {};
+	private static Object[] confRoots = null;
+
+	private static ArrayList<SurfaceListener> surfaceListeners =
+			new ArrayList<Game.SurfaceListener>();
+
+	/**
+	 * @param sl
+	 */
+	public static void addSurfaceLIstener( SurfaceListener sl )
+	{
+		surfaceListeners.add( sl );
+	}
+
+	/**
+	 * @param sl
+	 */
+	public static void removeSurfaceListener( SurfaceListener sl )
+	{
+		surfaceListeners.remove( sl );
+	}
 
 	/**
 	 * Convenience to set {@link #confRoots}
@@ -133,7 +150,7 @@ public class Game implements Renderer
 		if( requiredVersion != null && requiredVersion.ordinal() > glVersion.ordinal() )
 		{
 			// requirements fail!
-			ga.showToast( "Required OpenGLES ve rsion " + requiredVersion
+			ga.showToast( "Required OpenGLES version " + requiredVersion
 					+ " but found version " + glVersion, true );
 			ga.finish();
 		}
@@ -149,11 +166,7 @@ public class Game implements Renderer
 		}
 		ExceptionHandler.addLogInfo( "GLInfo", buff.toString() );
 
-		Log.i( RUGL_TAG, buff.toString() );
-
-		State.stateReset();
-		TextureFactory.recreateTextures();
-		VBOShape.contextID++;
+		// Log.i( RUGL_TAG, buff.toString() );
 
 		GLUtil.enableVertexArrays();
 
@@ -162,6 +175,11 @@ public class Game implements Renderer
 		lastLogic = System.currentTimeMillis();
 
 		GLUtil.checkGLError();
+
+		for( int i = 0; i < surfaceListeners.size(); i++ )
+		{
+			surfaceListeners.get( i ).onSurfaceCreated();
+		}
 	}
 
 	/**
@@ -179,6 +197,11 @@ public class Game implements Renderer
 		Log.i( RUGL_TAG, "Surface changed " + width + " x " + height );
 
 		GLUtil.checkGLError();
+
+		for( int i = 0; i < surfaceListeners.size(); i++ )
+		{
+			surfaceListeners.get( i ).onSurfaceChanged( width, height );
+		}
 	}
 
 	@Override
@@ -192,7 +215,11 @@ public class Game implements Renderer
 			phaseInited = true;
 		}
 
-		Configuration.applyDeferredConfigurations();
+		if( confRoots != null )
+		{
+			Configuration.applyDeferredConfigurations( confRoots );
+		}
+
 		ResourceLoader.checkCompletion();
 
 		timer.tick( "logic" );
@@ -246,4 +273,26 @@ public class Game implements Renderer
 		return currentPhase;
 	}
 
+	/**
+	 * @author ryanm
+	 */
+	public abstract static class SurfaceListener
+	{
+		/**
+		 * Called when the surface is created
+		 */
+		public void onSurfaceCreated()
+		{
+		}
+
+		/**
+		 * Called when the surface is changed
+		 * 
+		 * @param width
+		 * @param height
+		 */
+		public void onSurfaceChanged( int width, int height )
+		{
+		}
+	}
 }
