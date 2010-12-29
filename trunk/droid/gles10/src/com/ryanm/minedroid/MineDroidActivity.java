@@ -95,8 +95,8 @@ public class MineDroidActivity extends GameActivity
 									World w = new World( world1Dir, p );
 
 									Game game =
-											new Game( MineDroidActivity.this, GLVersion.OnePointOne,
-													new BlockView( w ) );
+											new Game( MineDroidActivity.this,
+													GLVersion.OnePointZero, new BlockView( w ) );
 
 									pd.dismiss();
 

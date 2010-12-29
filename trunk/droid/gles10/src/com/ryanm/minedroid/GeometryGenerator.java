@@ -6,7 +6,6 @@ import java.util.concurrent.Executors;
 
 import com.ryanm.droid.rugl.geom.ShapeBuilder;
 import com.ryanm.droid.rugl.geom.TexturedShape;
-import com.ryanm.droid.rugl.gl.VBOShape;
 import com.ryanm.droid.rugl.util.Colour;
 import com.ryanm.minedroid.BlockFactory.Block;
 import com.ryanm.minedroid.BlockFactory.Face;
@@ -85,25 +84,21 @@ public class GeometryGenerator
 					}
 				}
 
-				VBOShape solid = null;
 				TexturedShape s = opaqueVBOBuilder.compile();
 				if( s != null )
 				{
 					s.state = BlockFactory.state;
 					s.translate( c.x, c.y, c.z );
-					solid = new VBOShape( s );
 				}
 
-				VBOShape transparent = null;
 				TexturedShape t = transVBOBuilder.compile();
 				if( t != null )
 				{
 					t.state = BlockFactory.state;
 					t.translate( c.x, c.y, c.z );
-					transparent = new VBOShape( t );
 				}
 
-				c.geometryComplete( solid, transparent );
+				c.geometryComplete( s, t );
 				queueSize--;
 			}
 		};

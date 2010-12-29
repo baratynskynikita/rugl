@@ -175,15 +175,4 @@ public class Chunk
 			chunklets[ i ].geomDirty();
 		}
 	}
-
-	/**
-	 * Destroys VBO handles
-	 */
-	public void unload()
-	{
-		for( int i = 0; i < chunklets.length; i++ )
-		{
-			chunklets[ i ].unload();
-		}
-	}
 }
