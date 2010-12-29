@@ -1,8 +1,8 @@
 
 package com.ryanm.droid.rugl.input;
 
-import java.util.ArrayList;
-
+import com.ryanm.droid.config.annote.Summary;
+import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.gl.StackedRenderer;
 import com.ryanm.droid.rugl.input.Touch.TouchListener;
 
@@ -28,6 +28,8 @@ public abstract class AbstractTouchStick implements Touch.TouchListener
 	/**
 	 * The maximum touch time for a click to be registered
 	 */
+	@Variable( "Tap time" )
+	@Summary( "The maximum touch time for a click to be registered, in milliseconds" )
 	public long tapTime = 150;
 
 	/**
@@ -36,9 +38,9 @@ public abstract class AbstractTouchStick implements Touch.TouchListener
 	protected Touch.Pointer touch = null;
 
 	/**
-	 * Listeners to notify of a click
+	 * Listener to notify of a click
 	 */
-	private ArrayList<ClickListener> listeners = new ArrayList<ClickListener>();
+	public ClickListener listener = null;
 
 	/**
 	 * @author ryanm
@@ -60,31 +62,4 @@ public abstract class AbstractTouchStick implements Touch.TouchListener
 	 * @param sr
 	 */
 	public abstract void draw( StackedRenderer sr );
-
-	/**
-	 * Call this to notify your listeners of a click event
-	 */
-	protected void notifyClick()
-	{
-		for( int i = 0; i < listeners.size(); i++ )
-		{
-			listeners.get( i ).onClick();
-		}
-	}
-
-	/**
-	 * @param l
-	 */
-	public void addListener( ClickListener l )
-	{
-		listeners.add( l );
-	}
-
-	/**
-	 * @param l
-	 */
-	public void removeListener( ClickListener l )
-	{
-		listeners.remove( l );
-	}
 }

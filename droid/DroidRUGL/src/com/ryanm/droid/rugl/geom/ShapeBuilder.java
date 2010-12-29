@@ -1,6 +1,8 @@
 
 package com.ryanm.droid.rugl.geom;
 
+import java.util.Arrays;
+
 /**
  * Convenience class for piecing together a shape
  * 
@@ -135,6 +137,11 @@ public class ShapeBuilder
 		colourOffset = 0;
 		texCoordOffset = 0;
 		triangleOffset = 0;
+
+		Arrays.fill( vertices, 0 );
+		Arrays.fill( texCoords, 0 );
+		Arrays.fill( triangles, ( short ) 0 );
+		Arrays.fill( colours, 0 );
 	}
 
 	/**

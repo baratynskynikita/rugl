@@ -1,6 +1,8 @@
 
 package com.ryanm.droid.rugl.input;
 
+import android.util.FloatMath;
+
 import com.ryanm.droid.config.annote.Summary;
 import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.geom.ColouredShape;
@@ -103,9 +105,9 @@ public class TouchStick extends AbstractTouchStick
 
 			long tapDuration = System.currentTimeMillis() - touchTime;
 
-			if( tapDuration < tapTime )
+			if( tapDuration < tapTime && listener != null )
 			{
-				notifyClick();
+				listener.onClick();
 			}
 		}
 
@@ -116,7 +118,7 @@ public class TouchStick extends AbstractTouchStick
 
 			float a = Trig.atan2( dy, dx );
 
-			float r = ( float ) Math.sqrt( dx * dx + dy * dy ) / radius;
+			float r = FloatMath.sqrt( dx * dx + dy * dy ) / radius;
 			r = Range.limit( r, 0, 1 );
 
 			r = ( float ) Math.pow( r, ramp );
