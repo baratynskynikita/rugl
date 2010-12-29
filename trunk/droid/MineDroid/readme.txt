@@ -7,10 +7,9 @@ Installation:
 			"adb -d install MineDroid.apk"
 	or download it from your phone's browser and tap it in the download list to
 	install.
-	2) Copy your ".minecraft" installation directory over to the top level 
-	directory of your phone's storage. Only the saves/World1 directory is 
-	actually needed, so you can save some space by not copying the bin, resources
-	and other world directories
+	3) Run the app, a ".minecraft/saves" directory will be created on your 
+	phone's storage
+	2) Copy your "World1" directory over into the saves directory on your phone.
 	3) That's it. If there's some problem with loading the level.dat in the save 
 	directory you'll get a notification when you try to start the app.
 	The starting position of the camera is taken from the level.dat file and 
@@ -20,9 +19,13 @@ Installation:
 Controls:
 
 	Touch anywhere on the screen to create a touchstick - on the left half of 
-	the screen to control position, on the right half to control direction.
-	Look mode is inverted, because who doesn't enjoy pretending that their head 
-	is an aeroplane?
+	the screen to control position, on the lower-right half to control direction.
+	
+	Tap at the top-right half of the screen to jump, long-press in the same area to 
+	start crouching, tap again to stop. Note that crouching is only cosmetic for 
+	now- you will still fall off blocks
+	
+	The menu button will give an extensive tree of configuration options.
 	
 Getting the source:
 	You'll need the eclipse projects at
@@ -36,7 +39,6 @@ What I plan to do next:
 	* Play around with interface options. Touch-screen stick emulations suck, how 
 		will you jump/crouch, left/right click? How will the inventory and crafting 
 		work? As a requirement of this:
-	* Toggle between normal walking and noclip flying
 	* Placing and breaking blocks
 	
 Stuff that should be done that I can't do

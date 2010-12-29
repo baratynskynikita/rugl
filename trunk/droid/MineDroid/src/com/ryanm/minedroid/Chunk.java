@@ -80,21 +80,25 @@ public class Chunk
 		if( bx < 0 )
 		{
 			Chunk north = world.getChunk( chunkX - 1, chunkZ );
+			// north = null;
 			return north == null ? 0 : north.blockType( bx + 16, by, bz );
 		}
 		else if( bx >= 16 )
 		{
 			Chunk south = world.getChunk( chunkX + 1, chunkZ );
+			// south = null;
 			return south == null ? 0 : south.blockType( bx - 16, by, bz );
 		}
 		else if( bz < 0 )
 		{
 			Chunk east = world.getChunk( chunkX, chunkZ - 1 );
+			// east = null;
 			return east == null ? 0 : east.blockType( bx, by, bz + 16 );
 		}
 		else if( bz >= 16 )
 		{
 			Chunk west = world.getChunk( chunkX, chunkZ + 1 );
+			// west = null;
 			return west == null ? 0 : west.blockType( bx, by, bz - 16 );
 		}
 		else if( by < 0 || by >= 128 )

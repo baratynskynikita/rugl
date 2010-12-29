@@ -1,22 +1,14 @@
 
 package com.ryanm.minedroid;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.ryanm.droid.rugl.geom.ColouredShape;
 import com.ryanm.droid.rugl.geom.Shape;
-import com.ryanm.droid.rugl.geom.ShapeBuilder;
-import com.ryanm.droid.rugl.geom.TexturedShape;
 import com.ryanm.droid.rugl.geom.WireUtil;
 import com.ryanm.droid.rugl.gl.Renderer;
 import com.ryanm.droid.rugl.gl.VBOShape;
 import com.ryanm.droid.rugl.util.Colour;
 import com.ryanm.droid.rugl.util.geom.Frustum;
 import com.ryanm.droid.rugl.util.geom.Frustum.Result;
-import com.ryanm.minedroid.BlockFactory.Block;
-import com.ryanm.minedroid.BlockFactory.Face;
 
 /**
  * A 16 * 16 * 16 cube of a {@link Chunk}
@@ -52,18 +44,30 @@ public class Chunklet
 	/**
 	 * Solid geometry
 	 */
-	public VBOShape solidVBO;
+	private VBOShape solidVBO;
+
+	/**
+	 * This is where we hold a new solid geometry vbo, fresh from the
+	 * generation thread
+	 */
+	private VBOShape pendingSolid;
 
 	/**
 	 * Transparent geometry
 	 */
-	public VBOShape transparentVBO;
+	private VBOShape transparentVBO;
+
+	/**
+	 * This is where we hold a new transparent geometry vbo, fresh from
+	 * the generation thread
+	 */
+	private VBOShape pendingTransparent;
 
 	/**
 	 * <code>true</code> if we're waiting on being processed by the
 	 * geometry-generating thread
 	 */
-	private boolean geomPending = false;
+	boolean geomPending = false;
 
 	/**
 	 * <code>true</code> if the north side of this chunklet is
@@ -103,39 +107,18 @@ public class Chunklet
 
 	private boolean empty = true;
 
+	private boolean boundariesEmptyChecked = false;
+
 	/**
 	 * Stops us revisiting this chunklet when we flood-fill the view
 	 * frustum to find which chunklets to render
 	 */
 	public int drawFlag = 0;
 
-	private static ShapeBuilder opaqueVBOBuilder = new ShapeBuilder();
-
-	private static ShapeBuilder transVBOBuilder = new ShapeBuilder();
-
-	/**
-	 * The service where we generate geometry. Note that there's only
-	 * one worker thread: if you want more, you're going to have to use
-	 * separate {@link ShapeBuilder}s for each rather than the static
-	 * ones above in {@link #opaqueVBOBuilder} and
-	 * {@link #transVBOBuilder}
-	 */
-	private static ExecutorService geomGenService = Executors.newSingleThreadExecutor();
-
-	private static AtomicInteger queueSize = new AtomicInteger( 0 );
-
-	/**
-	 * @return The number of chunklets awaiting geometry generation
-	 */
-	public static int getChunkletQueueSize()
-	{
-		return queueSize.get();
-	}
-
 	/**
 	 * @param parent
 	 * @param y
-	 *           in world coordinates
+	 *           in chunk index coordinates
 	 */
 	public Chunklet( Chunk parent, int y )
 	{
@@ -182,21 +165,15 @@ public class Chunklet
 				}
 			}
 		}
-		// need to check the sides of neighbouring blocks too
-		for( int i = 0; i < 16 && empty; i++ )
-		{
-			for( int j = 0; j < 16 && empty; j++ )
-			{
-				empty &= blockType( -1, i, j ) == 0;
-				empty &= blockType( 16, i, j ) == 0;
+	}
 
-				empty &= blockType( i, j, -1 ) == 0;
-				empty &= blockType( i, j, 16 ) == 0;
-
-				empty &= blockType( i, -1, j ) == 0;
-				empty &= blockType( i, 16, j ) == 0;
-			}
-		}
+	/**
+	 * @return <code>true</code> if there is no solid geometry in this
+	 *         chunklet
+	 */
+	public boolean isEmpty()
+	{
+		return empty;
 	}
 
 	/**
@@ -222,6 +199,55 @@ public class Chunklet
 	public void geomDirty()
 	{
 		geomDirty = true;
+		boundariesEmptyChecked = false;
+	}
+
+	/**
+	 * Draws the solid geometry
+	 */
+	public void drawSolid()
+	{
+		generateGeometry();
+
+		if( pendingSolid != null )
+		{
+			if( solidVBO != null )
+			{
+				solidVBO.delete();
+			}
+			solidVBO = pendingSolid;
+			pendingSolid = null;
+		}
+
+		if( solidVBO != null )
+		{
+			solidVBO.state = BlockFactory.state;
+			solidVBO.draw();
+		}
+	}
+
+	/**
+	 * Draws the transparent geometry
+	 */
+	public void drawTransparent()
+	{
+		generateGeometry();
+
+		if( pendingTransparent != null )
+		{
+			if( transparentVBO != null )
+			{
+				transparentVBO.delete();
+			}
+			transparentVBO = pendingTransparent;
+			pendingTransparent = null;
+		}
+
+		if( transparentVBO != null )
+		{
+			transparentVBO.state = BlockFactory.state;
+			transparentVBO.draw();
+		}
 	}
 
 	/**
@@ -229,103 +255,68 @@ public class Chunklet
 	 */
 	public void generateGeometry()
 	{
-		if( empty )
+		if( empty && !boundariesEmptyChecked )
 		{
-			return;
+			// need to check the sides of neighbouring blocks too
+			for( int i = 0; i < 16 && empty; i++ )
+			{
+				for( int j = 0; j < 16 && empty; j++ )
+				{
+					empty &= blockType( -1, i, j ) == 0;
+					empty &= blockType( 16, i, j ) == 0;
+
+					empty &= blockType( i, -1, j ) == 0;
+					empty &= blockType( i, 16, j ) == 0;
+
+					empty &= blockType( i, j, -1 ) == 0;
+					empty &= blockType( i, j, 16 ) == 0;
+				}
+			}
+			boundariesEmptyChecked = true;
 		}
 
-		if( geomDirty && !geomPending )
+		if( !empty && geomDirty && !geomPending )
 		{
-			Runnable r = new Runnable() {
-				@Override
-				public void run()
-				{
-					for( int xi = 0; xi < 16; xi++ )
-					{
-						for( int yi = 0; yi < 16; yi++ )
-						{
-							for( int zi = 0; zi < 16; zi++ )
-							{
-								Block b = BlockFactory.getBlock( blockType( xi, yi, zi ) );
-								// lighting
-								int sl = parent.skyLight( xi, y + yi, zi );
-								int bl = parent.blockLight( xi, y + yi, zi );
-								int l = Math.max( sl, bl );
-
-								float light = ( float ) Math.pow( 0.8, 15 - l );
-
-								int colour = Colour.packFloat( light, light, light, 1 );
-
-								if( b == null || !b.opaque )
-								{
-									addFace( b, xi - 1, yi, zi, Face.South, colour,
-											opaqueVBOBuilder, transVBOBuilder );
-									addFace( b, xi + 1, yi, zi, Face.North, colour,
-											opaqueVBOBuilder, transVBOBuilder );
-									addFace( b, xi, yi, zi - 1, Face.West, colour,
-											opaqueVBOBuilder, transVBOBuilder );
-									addFace( b, xi, yi, zi + 1, Face.East, colour,
-											opaqueVBOBuilder, transVBOBuilder );
-									addFace( b, xi, yi + 1, zi, Face.Bottom, colour,
-											opaqueVBOBuilder, transVBOBuilder );
-									addFace( b, xi, yi - 1, zi, Face.Top, colour,
-											opaqueVBOBuilder, transVBOBuilder );
-								}
-							}
-						}
-					}
-
-					TexturedShape ts = opaqueVBOBuilder.compile();
-
-					if( ts != null )
-					{
-						ts.state = BlockFactory.state;
-						ts.translate( x, y, z );
-
-						solidVBO = new VBOShape( ts );
-					}
-
-					ts = transVBOBuilder.compile();
-					if( ts != null )
-					{
-						ts.state = BlockFactory.state;
-						ts.translate( x, y, z );
-
-						transparentVBO = new VBOShape( ts );
-					}
-
-					geomDirty = false;
-					geomPending = false;
-					queueSize.decrementAndGet();
-				}
-			};
-
 			geomPending = true;
-			queueSize.incrementAndGet();
-			geomGenService.submit( r );
+			GeometryGenerator.generate( this );
 		}
 	}
 
-	private void addFace( Block facing, int x, int y, int z, Face f, int colour,
-			ShapeBuilder opaque, ShapeBuilder transparent )
+	/**
+	 * @param solid
+	 * @param transparent
+	 */
+	public void geometryComplete( VBOShape solid, VBOShape transparent )
 	{
-		Block b = BlockFactory.getBlock( blockType( x, y, z ) );
-
-		if( b != null && b != facing )
-		{
-			b.face( f, x, y, z, colour, b.opaque ? opaque : transparent );
-		}
+		geomPending = false;
+		geomDirty = false;
+		pendingSolid = solid;
+		pendingTransparent = transparent;
 	}
 
 	/**
 	 * @param x
 	 * @param y
 	 * @param z
-	 * @return the so-indexed point
+	 * @return the so-indexed block
 	 */
-	private byte blockType( int x, int y, int z )
+	public byte blockType( int x, int y, int z )
 	{
 		return parent.blockType( x, this.y + y, z );
+	}
+
+	/**
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return The light value of the so-indexed block
+	 */
+	public float light( int x, int y, int z )
+	{
+		int sl = parent.skyLight( x, this.y + y, z );
+		int bl = parent.blockLight( x, this.y + y, z );
+		int l = Math.max( sl, bl );
+		return ( float ) Math.pow( 0.8, 15 - l );
 	}
 
 	/**
@@ -340,9 +331,9 @@ public class Chunklet
 	@Override
 	public String toString()
 	{
-		return "Chunklet @ " + x + ", " + y + ", " + z + "\n = " + x * 16 + ", " + y * 16
-				+ ", " + z * 16 + "\nsheets n " + northSheet + " s " + southSheet + "\n e "
-				+ eastSheet + " w " + westSheet + "\n t " + topSheet + " b " + bottomSheet;
+		return "Chunklet @ " + x + ", " + y + ", " + z + "\nsheets n " + northSheet + " s "
+				+ southSheet + "\n e " + eastSheet + " w " + westSheet + "\n t " + topSheet
+				+ " b " + bottomSheet;
 	}
 
 	/**
@@ -357,7 +348,8 @@ public class Chunklet
 			if( outline == null )
 			{
 				Shape s = WireUtil.unitCube();
-				s.scale( 16, 16, 16 );
+				s.scale( 15.5f, 15.5f, 15.5f );
+				s.translate( 0.25f, 0.25f, 0.25f );
 				s.translate( x, y, z );
 
 				outline = new ColouredShape( s, Colour.black, WireUtil.state );

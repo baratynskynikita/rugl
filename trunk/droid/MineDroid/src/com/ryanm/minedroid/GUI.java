@@ -3,6 +3,7 @@ package com.ryanm.minedroid;
 
 import static android.opengl.GLES10.GL_DEPTH_BUFFER_BIT;
 import static android.opengl.GLES10.glClear;
+import android.util.Log;
 
 import com.ryanm.droid.config.annote.Category;
 import com.ryanm.droid.config.annote.Summary;
@@ -10,6 +11,7 @@ import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.gl.GLUtil;
 import com.ryanm.droid.rugl.gl.StackedRenderer;
+import com.ryanm.droid.rugl.input.TapPad;
 import com.ryanm.droid.rugl.input.Touch;
 import com.ryanm.droid.rugl.input.TouchStickArea;
 import com.ryanm.droid.rugl.res.FontLoader;
@@ -31,19 +33,27 @@ public class GUI
 	private static final float radius = 100;
 
 	/***/
-	@Variable( "Left" )
-	@Category( "Sticks" )
+	@Variable( "Left stick" )
+	@Summary( "Controls motion" )
+	@Category( "Controls" )
 	public final TouchStickArea left = new TouchStickArea( 0, 0, 400, 480, radius );
 
 	/***/
-	@Variable( "Right" )
-	@Category( "Sticks" )
-	public final TouchStickArea right = new TouchStickArea( 400, 0, 400, 480, radius );
+	@Variable( "Right stick" )
+	@Summary( "Controls view direction" )
+	@Category( "Controls" )
+	public final TouchStickArea right = new TouchStickArea( 400, 0, 400, 350, radius );
 
 	/***/
-	@Variable( "Print queue sizes" )
-	@Summary( "Show the number of chunks awaiting loading and chunklets "
-			+ "awaiting geometry generation" )
+	@Variable( "Right tap pad" )
+	@Summary( "Tap to jump, long press to crouch" )
+	@Category( "Controls" )
+	public final TapPad rightTap = new TapPad( 400, 350, 400, 130 );
+
+	/***/
+	@Variable( "Chunklet info display" )
+	@Summary( "Show chunks awaiting loading, chunklets "
+			+ "awaiting geometry generation, and rendered chunklet count" )
 	public boolean printQueues = true;
 
 	private Readout loadQueue, geomQueue, chunkletCount;
@@ -61,6 +71,7 @@ public class GUI
 	{
 		Touch.addListener( left );
 		Touch.addListener( right );
+		Touch.addListener( rightTap );
 
 		ResourceLoader.load( new FontLoader( com.ryanm.droid.rugl.R.raw.font, false ) {
 			@Override
@@ -93,6 +104,7 @@ public class GUI
 	{
 		left.advance();
 		right.advance();
+		rightTap.advance();
 
 		notifyTime -= delta;
 		if( notifyTime < 0 )
@@ -112,6 +124,7 @@ public class GUI
 
 		left.draw( r );
 		right.draw( r );
+		rightTap.draw( r );
 
 		if( notification != null )
 		{
@@ -123,7 +136,7 @@ public class GUI
 			loadQueue.updateValue( ResourceLoader.queueSize() );
 			loadQueue.render( r );
 
-			geomQueue.updateValue( Chunklet.getChunkletQueueSize() );
+			geomQueue.updateValue( GeometryGenerator.getChunkletQueueSize() );
 			geomQueue.render( r );
 
 			chunkletCount.updateValue( World.renderedChunklets );
@@ -139,11 +152,12 @@ public class GUI
 	 */
 	public void notify( String string )
 	{
+		Log.i( Game.RUGL_TAG, "Notification: " + string );
 		if( font != null )
 		{
 			notification = font.buildTextShape( string, Colour.black );
-			notification.translate(
-					( Game.width - notification.getBounds().x.getSpan() ) / 2, 100, 0 );
+			notification.translate( ( 800 - notification.getBounds().x.getSpan() ) / 2, 100,
+					0 );
 			notifyTime = 1.5f;
 		}
 	}

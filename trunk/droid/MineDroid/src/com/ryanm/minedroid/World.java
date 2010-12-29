@@ -7,8 +7,12 @@ import java.util.Comparator;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import android.util.Log;
+
 import com.ryanm.droid.config.annote.Summary;
 import com.ryanm.droid.config.annote.Variable;
+import com.ryanm.droid.rugl.Game;
+import com.ryanm.droid.rugl.gl.GLUtil;
 import com.ryanm.droid.rugl.gl.MutableState;
 import com.ryanm.droid.rugl.gl.Renderer;
 import com.ryanm.droid.rugl.res.ResourceLoader;
@@ -96,7 +100,13 @@ public class World
 		chunkPosX = ( int ) startPosition.getX() / 16;
 		chunkPosZ = ( int ) startPosition.getZ() / 16;
 
-		fillChunks();
+		Game.addSurfaceLIstener( new Game.SurfaceListener() {
+			@Override
+			public void onSurfaceCreated()
+			{
+				setLoadRadius( loadradius );
+			};
+		} );
 	}
 
 	/**
@@ -141,6 +151,8 @@ public class World
 
 		if( chunksDirty )
 		{ // load new chunks
+			Log.i( Game.RUGL_TAG, "Entered chunk " + chunkPosX + ", " + chunkPosZ );
+
 			fillChunks();
 		}
 	}
@@ -338,36 +350,36 @@ public class World
 		}
 
 		renderedChunklets = 0;
-
-		// sort chunklets into ascending order of distance from the eye
-		cs.eye.set( eye );
-		QuickSort.sort( renderList, cs, 0, renderListSize - 1 );
-
-		// vbo
-		// solid stuff from near to far
-		for( int i = 0; i < renderListSize; i++ )
+		if( drawChunklets )
 		{
-			c = renderList[ i ];
-			c.generateGeometry();
+			// sort chunklets into ascending order of distance from the
+			// eye
+			cs.eye.set( eye );
+			QuickSort.sort( renderList, cs, 0, renderListSize - 1 );
 
-			if( c.solidVBO != null && drawChunklets )
+			GLUtil.checkGLError();
+
+			// vbo
+			// solid stuff from near to far
+			for( int i = 0; i < renderListSize; i++ )
 			{
-				c.solidVBO.state = BlockFactory.state;
-				c.solidVBO.draw();
+				renderList[ i ].drawSolid();
 
-				renderedChunklets++;
+				if( !renderList[ i ].isEmpty() )
+				{
+					renderedChunklets++;
+				}
 			}
-		}
 
-		// translucent stuff from far to near
-		for( int i = renderListSize - 1; i >= 0; i-- )
-		{
-			c = renderList[ i ];
-			if( c.transparentVBO != null && drawChunklets )
+			GLUtil.checkGLError();
+
+			// translucent stuff from far to near
+			for( int i = renderListSize - 1; i >= 0; i-- )
 			{
-				c.transparentVBO.state = BlockFactory.state;
-				c.transparentVBO.draw();
+				renderList[ i ].drawTransparent();
 			}
+
+			GLUtil.checkGLError();
 		}
 
 		if( drawOutlines )
@@ -512,10 +524,12 @@ public class World
 		{
 			for( int j = 0; j < chunks[ i ].length; j++ )
 			{
-				chunks[ i ][ j ].unload();
+				if( chunks[ i ][ j ] != null )
+				{
+					chunks[ i ][ j ].unload();
+				}
 			}
 		}
-
 		chunks = new Chunk[ 2 * chunkRadius + 1 ][ 2 * chunkRadius + 1 ];
 		fillChunks();
 	}
