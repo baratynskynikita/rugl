@@ -23,22 +23,44 @@ Controls:
 	
 	Tap at the top-right half of the screen to jump, long-press in the same area to 
 	start crouching, tap again to stop. Note that crouching is only cosmetic for 
-	now- you will still fall off blocks
+	now- you will still fall off blocks and move at full speed.
 	
 	The menu button will give an extensive tree of configuration options.
 	
+Glitchy controls?
+
+	If the touchstick controls are acting all glitchy and rubbish, you might be 
+	falling foul of the problem illustrated in this video:
+	
+	http://www.youtube.com/watch?v=hVlsRCMltDg
+	
+	It seems that some phones have screens that are good enough for pinch-to-zoom
+	style multitouch gestures, but can't actually track two touches reliably.
+	This is a hardware limitation, and there's not a lot that can be done to
+	rectify it in software. I can only suggest you place your thumbs in opposite 
+	corners of the screen - this should minimise any opportunities for the touches
+	to cross axes and the resulting glitchyness to manifest.
+	
 Getting the source:
-	You'll need the eclipse projects at
+
+	The source is organised in three Eclipse projects at
+	
 	http://code.google.com/p/rugl/source/browse/#svn/trunk/droid
 	
-	For those with an eclipse compiler setup as prissy as mine, the missing 
+	You'll need the Configuration, DroidRUGL and MineDroid projects.
+	For those with an Eclipse compiler setup as prissy as mine, the missing 
 	javadoc warnings are Google's fault.
+	
+	If you want to work on the OpenGLES 1.0 version, switch the MineDroid project 
+	to the branch at
+	
+	http://code.google.com/p/rugl/source/browse/#svn/trunk/droid/gles10
 
 What I plan to do next:
 
 	* Play around with interface options. Touch-screen stick emulations suck, how 
-		will you jump/crouch, left/right click? How will the inventory and crafting 
-		work? As a requirement of this:
+		will you left/right click? How will the inventory and crafting work?
+	As a requirement of this:
 	* Placing and breaking blocks
 	
 Stuff that should be done that I can't do
