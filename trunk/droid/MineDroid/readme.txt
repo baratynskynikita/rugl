@@ -79,7 +79,7 @@ Getting the source, step-by-step:
 	
 	http://code.google.com/p/rugl/source/browse/#svn/trunk/droid/gles10
 	
-	Right-click on the MineDroid project, "Team" - "Swict to another 
+	Right-click on the MineDroid project, "Team" - "Switch to another 
 	Branch/Tag/Revision...", enter the above URL
 
 What I plan to do next:
