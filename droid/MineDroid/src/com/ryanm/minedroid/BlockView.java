@@ -182,6 +182,7 @@ public class BlockView extends Phase
 		gui.advance( delta );
 
 		cam.advance( delta, gui.right.x, gui.right.y );
+
 		position.x += gui.left.y * delta * cam.forward.x * speed;
 		position.z += gui.left.y * delta * cam.forward.z * speed;
 
