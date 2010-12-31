@@ -51,10 +51,36 @@ Getting the source:
 	For those with an Eclipse compiler setup as prissy as mine, the missing 
 	javadoc warnings are Google's fault.
 	
+Getting the source, step-by-step:
+
+	1) Download and install "Eclipse IDE for Java Developers" from
+		http://www.eclipse.org/downloads/
+	2) Open Eclipse and create a new workspace
+	3) Install the subclipse SVN plugin for eclipse. Instructions at
+		http://subclipse.tigris.org/servlets/ProjectProcess?pageID=p4wYuA
+	4) Install the Android development tools and ADT eclipse plugin.
+		http://developer.android.com/sdk/installing.html
+	5) Add the RUGL repository to subclipse:
+		In Eclipse, "Window" menu - "Open Perspective" - "Other"
+		Choose "SVN Repository Exploring"
+		Right-click in the currently-blank "SVN Repositories" tab. "New" - 
+			"Repository Location..."
+		The URL is "http://rugl.googlecode.com/svn"
+	6) Check out the projects:
+		Click on the newly-added repository entry to open it
+		Click on "trunk" then "droid" when they appear
+		Right-click on "Configuration", choose "Checkout..."
+		You don't have to change anything in the dialog, just hit "Finish"
+		Do the same thing to check out "DroidRUGL" and "MineDroid"
+	7) You've now got local copies of the code - huzzah!
+		
 	If you want to work on the OpenGLES 1.0 version, switch the MineDroid project 
 	to the branch at
 	
 	http://code.google.com/p/rugl/source/browse/#svn/trunk/droid/gles10
+	
+	Right-click on the MineDroid project, "Team" - "Swict to another 
+	Branch/Tag/Revision...", enter the above URL
 
 What I plan to do next:
 
