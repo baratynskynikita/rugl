@@ -145,8 +145,30 @@ public class Game implements Renderer
 		Log.i( RUGL_TAG, "Surface created at " + new Date() );
 
 		String glVersionString = GLES10.glGetString( GLES10.GL_VERSION );
-		glVersion = GLVersion.findVersion( glVersionString );
+		String extensionsString = GLES10.glGetString( GLES10.GL_EXTENSIONS );
 
+		StringBuilder buff = new StringBuilder();
+		buff.append( "\tVendor = " ).append( GLES10.glGetString( GLES10.GL_VENDOR ) );
+		buff.append( "\n\tRenderer = " ).append( GLES10.glGetString( GLES10.GL_RENDERER ) );
+		buff.append( "\n\tVersion = " ).append( glVersionString );
+		buff.append( "\n\tExtensions" );
+		if( extensionsString != null )
+		{
+			for( String ex : extensionsString.split( " " ) )
+			{
+				buff.append( "\n\t\t" + ex );
+			}
+		}
+		else
+		{
+			buff.append( "null" );
+		}
+
+		ExceptionHandler.addLogInfo( "GLInfo", buff.toString() );
+
+		Log.i( RUGL_TAG, buff.toString() );
+
+		glVersion = GLVersion.findVersion( glVersionString );
 		if( requiredVersion != null && requiredVersion.ordinal() > glVersion.ordinal() )
 		{
 			// requirements fail!
@@ -154,19 +176,6 @@ public class Game implements Renderer
 					+ " but found version " + glVersion, true );
 			ga.finish();
 		}
-
-		StringBuilder buff = new StringBuilder();
-		buff.append( "\tVendor = " ).append( GLES10.glGetString( GLES10.GL_VENDOR ) );
-		buff.append( "\n\tRenderer = " ).append( GLES10.glGetString( GLES10.GL_RENDERER ) );
-		buff.append( "\n\tVersion = " ).append( glVersionString );
-		buff.append( "\n\tExtensions" );
-		for( String ex : GLES10.glGetString( GLES10.GL_EXTENSIONS ).split( " " ) )
-		{
-			buff.append( "\n\t\t" + ex );
-		}
-		ExceptionHandler.addLogInfo( "GLInfo", buff.toString() );
-
-		// Log.i( RUGL_TAG, buff.toString() );
 
 		GLUtil.enableVertexArrays();
 
