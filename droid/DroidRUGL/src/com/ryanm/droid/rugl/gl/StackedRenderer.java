@@ -4,7 +4,8 @@ package com.ryanm.droid.rugl.gl;
 import android.opengl.Matrix;
 
 /**
- * Adds opengl-style matrix operations
+ * Adds opengl-style matrix operations. Remember to reverse the
+ * desired order of transformations
  * 
  * @author ryanm
  */

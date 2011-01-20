@@ -124,7 +124,12 @@ public abstract class GameActivity extends Activity
 		{
 			if( gameView != null && gameView.game != null )
 			{
-				gameView.game.currentPhase().onKeyDown( keyCode, event );
+				Phase p = gameView.game.currentPhase();
+
+				if( p != null )
+				{
+					p.onKeyDown( keyCode, event );
+				}
 			}
 		}
 
@@ -136,7 +141,12 @@ public abstract class GameActivity extends Activity
 	{
 		if( gameView != null && gameView.game != null )
 		{
-			gameView.game.currentPhase().onKeyUp( keyCode, event );
+			Phase p = gameView.game.currentPhase();
+
+			if( p != null )
+			{
+				p.onKeyUp( keyCode, event );
+			}
 		}
 
 		return true;

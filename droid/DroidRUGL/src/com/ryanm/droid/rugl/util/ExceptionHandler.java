@@ -62,8 +62,8 @@ public class ExceptionHandler implements UncaughtExceptionHandler
 	 *           The context whose private file storage we write crash
 	 *           logs to
 	 * @param address
-	 *           A list of email address that the report should be sent
-	 *           to
+	 *           A list of email address that the reports should be
+	 *           sent to
 	 */
 	public static void register( Context context, String... address )
 	{
@@ -76,9 +76,6 @@ public class ExceptionHandler implements UncaughtExceptionHandler
 
 		if( ed.listFiles().length > 0 )
 		{
-			Intent i = new Intent( Intent.ACTION_SEND );
-			i.setType( "message/rfc822" );
-
 			StringBuilder subject = new StringBuilder();
 			StringBuilder body = new StringBuilder();
 
@@ -106,6 +103,8 @@ public class ExceptionHandler implements UncaughtExceptionHandler
 				f.delete();
 			}
 
+			Intent i = new Intent( Intent.ACTION_SEND );
+			i.setType( "message/rfc822" );
 			i.putExtra( Intent.EXTRA_EMAIL, address );
 			i.putExtra( Intent.EXTRA_SUBJECT, subject.toString() );
 			i.putExtra( Intent.EXTRA_TEXT, body.toString() );

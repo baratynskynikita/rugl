@@ -216,6 +216,13 @@ public class Game implements Renderer
 	@Override
 	public void onDrawFrame( GL10 gl )
 	{
+		if( currentPhase == null )
+		{ // time to quit
+			Log.i( RUGL_TAG, "Exiting" );
+			ga.finish();
+			return;
+		}
+
 		if( !phaseInited )
 		{
 			Log.i( RUGL_TAG, "Phase " + currentPhase + " initing" );
@@ -266,12 +273,6 @@ public class Game implements Renderer
 		}
 
 		GLUtil.checkGLError();
-
-		if( currentPhase == null )
-		{ // time to quit
-			Log.i( RUGL_TAG, "Exiting" );
-			ga.finish();
-		}
 	}
 
 	/**

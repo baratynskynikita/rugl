@@ -233,6 +233,7 @@ public class Renderer
 			{
 				System.arraycopy( verts, 3 * i, t, 0, 3 );
 				t[ 3 ] = 1;
+
 				Matrix.multiplyMV( t, 0, transform, 0, t, 0 );
 				vertices.put( t[ 0 ] );
 				vertices.put( t[ 1 ] );
