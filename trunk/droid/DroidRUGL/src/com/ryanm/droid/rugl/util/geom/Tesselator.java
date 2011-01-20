@@ -33,9 +33,12 @@ public class Tesselator
 			v[ vi++ ] = new Vector3f( verts[ i ], verts[ i + 1 ], 0 );
 		}
 
-		// make sure the vertices are in anti-clockwise order - ensures
-		// the triangle are front-facing
+		// make sure the vertices are in anti-clockwise order - needed
+		// for vertex concavity test and to produce front-facing
+		// triangles
 		Vector3f[] vList = buildCounterList( v );
+
+		// set to true when a vertex has been clipped from the shape
 		boolean[] used = new boolean[ vList.length ];
 		Arrays.fill( used, false );
 
@@ -67,12 +70,15 @@ public class Tesselator
 
 			if( isEar )
 			{ // we have found an ear!
+				// record the vertex indices
 				tris[ ti++ ] = previous;
 				tris[ ti++ ] = current;
 				tris[ ti++ ] = next;
 
+				// snip!
 				used[ current ] = true;
 
+				// consider the next vertex
 				current = next;
 				next = next( used, next );
 			}
@@ -105,17 +111,24 @@ public class Tesselator
 			index = ( short ) ( ( index + 1 ) % used.length );
 
 			count++;
-			assert count < used.length;
 		}
 		while( used[ index ] );
 
 		return index;
 	}
 
+	/**
+	 * Relies on abc being in anti-clockwise order
+	 * 
+	 * @param a
+	 * @param b
+	 * @param c
+	 * @param p
+	 * @return <code>true</code> if the triangle abc contains the point
+	 *         p
+	 */
 	private static boolean contains( Vector3f a, Vector3f b, Vector3f c, Vector3f p )
 	{
-		assert LineUtils.relativeCCW( a.x, a.y, b.x, b.y, c.x, c.y ) <= 0;
-
 		if( LineUtils.relativeCCW( a.x, a.y, b.x, b.y, p.x, p.y ) == -1 )
 		{
 			if( LineUtils.relativeCCW( b.x, b.y, c.x, c.y, p.x, p.y ) == -1 )
