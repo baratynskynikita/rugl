@@ -30,10 +30,8 @@ package com.ryanm.droid.rugl.gl;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
-import javax.microedition.khronos.opengles.GL10;
-import javax.microedition.khronos.opengles.GL11;
-
 import android.opengl.GLES10;
+import android.opengl.GLES11;
 import android.opengl.GLException;
 
 import com.ryanm.droid.rugl.gl.enums.ComparisonFunction;
@@ -104,26 +102,26 @@ public class GLUtil
 	public static void scaledOrtho( int desiredWidth, int desiredHeight, int screenWidth,
 			int screenHeight )
 	{
-		GLES10.glMatrixMode( GL10.GL_PROJECTION );
+		GLES10.glMatrixMode( GLES10.GL_PROJECTION );
 		GLES10.glLoadIdentity();
 		GLES10.glOrthof( 0, desiredWidth, 0, desiredHeight, -1, 1 );
 
-		GLES10.glMatrixMode( GL10.GL_MODELVIEW );
+		GLES10.glMatrixMode( GLES10.GL_MODELVIEW );
 		GLES10.glLoadIdentity();
 
 		GLES10.glViewport( 0, 0, screenWidth, screenHeight );
 	}
 
 	/**
-	 * Throws {@link GLException} if {@link GL11#glGetError()} returns
-	 * anything other than {@link GL11#GL_NO_ERROR}
+	 * Throws {@link GLException} if {@link GLES11#glGetError()}
+	 * returns anything other than {@link GLES10#GL_NO_ERROR}
 	 * 
 	 * @throws GLException
 	 */
 	public static void checkGLError() throws GLException
 	{
 		int err = GLES10.glGetError();
-		if( err != GL10.GL_NO_ERROR )
+		if( err != GLES10.GL_NO_ERROR )
 		{
 			throw new GLException( err );
 		}
