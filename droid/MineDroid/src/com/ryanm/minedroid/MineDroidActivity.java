@@ -15,6 +15,8 @@ import com.ryanm.droid.rugl.GameActivity;
 import com.ryanm.droid.rugl.gl.GLVersion;
 import com.ryanm.droid.rugl.res.ResourceLoader;
 import com.ryanm.droid.rugl.util.geom.Vector3f;
+import com.ryanm.minedroid.nbt.Tag;
+import com.ryanm.minedroid.nbt.TagLoader;
 
 /**
  * Entry point for application. Not much happens here, look to
@@ -24,6 +26,8 @@ import com.ryanm.droid.rugl.util.geom.Vector3f;
  */
 public class MineDroidActivity extends GameActivity
 {
+	private ProgressDialog loadDialog;
+
 	@Override
 	protected void onCreate( Bundle savedInstanceState )
 	{
@@ -54,6 +58,7 @@ public class MineDroidActivity extends GameActivity
 									MineDroidActivity.this.finish();
 								}
 							} );
+			loadDialog = pd;
 
 			final File world1Dir =
 					new File( Environment.getExternalStorageDirectory(),
@@ -86,7 +91,7 @@ public class MineDroidActivity extends GameActivity
 									Tag player = resource.findTagByName( "Player" );
 									Tag pos = player.findTagByName( "Pos" );
 
-									Tag[] tl = ( Tag[] ) pos.getValue();
+									Tag[] tl = ( com.ryanm.minedroid.nbt.Tag[] ) pos.getValue();
 									Vector3f p = new Vector3f();
 									p.x = ( ( Double ) tl[ 0 ].getValue() ).floatValue();
 									p.y = ( ( Double ) tl[ 1 ].getValue() ).floatValue();
@@ -95,8 +100,8 @@ public class MineDroidActivity extends GameActivity
 									World w = new World( world1Dir, p );
 
 									Game game =
-											new Game( MineDroidActivity.this, GLVersion.OnePointOne,
-													new BlockView( w ) );
+											new Game( MineDroidActivity.this,
+													GLVersion.OnePointZero, new BlockView( w ) );
 
 									pd.dismiss();
 
@@ -120,6 +125,17 @@ public class MineDroidActivity extends GameActivity
 			tl.selfCompleting = true;
 
 			ResourceLoader.load( tl );
+		}
+	}
+
+	@Override
+	protected void onPause()
+	{
+		super.onPause();
+
+		if( loadDialog != null )
+		{
+			loadDialog.dismiss();
 		}
 	}
 }

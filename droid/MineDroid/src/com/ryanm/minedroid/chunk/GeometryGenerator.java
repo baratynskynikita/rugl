@@ -1,13 +1,17 @@
 
-package com.ryanm.minedroid;
+package com.ryanm.minedroid.chunk;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.ryanm.droid.rugl.Game;
+import com.ryanm.droid.rugl.geom.CompiledShape;
 import com.ryanm.droid.rugl.geom.ShapeBuilder;
 import com.ryanm.droid.rugl.geom.TexturedShape;
+import com.ryanm.droid.rugl.gl.GLVersion;
 import com.ryanm.droid.rugl.gl.VBOShape;
 import com.ryanm.droid.rugl.util.Colour;
+import com.ryanm.minedroid.BlockFactory;
 import com.ryanm.minedroid.BlockFactory.Block;
 import com.ryanm.minedroid.BlockFactory.Face;
 
@@ -85,25 +89,52 @@ public class GeometryGenerator
 					}
 				}
 
-				VBOShape solid = null;
 				TexturedShape s = opaqueVBOBuilder.compile();
 				if( s != null )
 				{
 					s.state = BlockFactory.state;
 					s.translate( c.x, c.y, c.z );
-					solid = new VBOShape( s );
 				}
-
-				VBOShape transparent = null;
 				TexturedShape t = transVBOBuilder.compile();
 				if( t != null )
 				{
 					t.state = BlockFactory.state;
 					t.translate( c.x, c.y, c.z );
-					transparent = new VBOShape( t );
 				}
 
-				c.geometryComplete( solid, transparent );
+				if( Game.glVersion == GLVersion.OnePointOne )
+				{
+					VBOShape solid = null;
+					if( s != null )
+					{
+						solid = new VBOShape( s );
+					}
+
+					VBOShape transparent = null;
+					if( t != null )
+					{
+						transparent = new VBOShape( t );
+					}
+
+					c.geometryComplete( solid, transparent );
+				}
+				else
+				{
+					CompiledShape solid = null;
+					if( s != null )
+					{
+						solid = new CompiledShape( s );
+					}
+
+					CompiledShape transparent = null;
+					if( t != null )
+					{
+						transparent = new CompiledShape( t );
+					}
+
+					c.geometryComplete( solid, transparent );
+				}
+
 				queueSize--;
 			}
 		};

@@ -1,9 +1,12 @@
 
-package com.ryanm.minedroid;
+package com.ryanm.minedroid.chunk;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+
+import com.ryanm.minedroid.World;
+import com.ryanm.minedroid.nbt.Tag;
 
 /**
  * A 16x16x128 chunk of blocks
