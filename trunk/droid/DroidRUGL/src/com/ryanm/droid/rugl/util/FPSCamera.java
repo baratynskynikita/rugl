@@ -25,6 +25,8 @@ import com.ryanm.droid.rugl.util.math.Range;
 @Summary( "View and steering options" )
 public class FPSCamera
 {
+	private final Vector3f position = new Vector3f();
+
 	/**
 	 * Invert mode - i.e.: pull down to look up
 	 */
@@ -106,9 +108,8 @@ public class FPSCamera
 	/**
 	 * Handy for culling purposes
 	 */
-	public final Frustum frustum = new Frustum();
+	private final Frustum frustum = new Frustum();
 
-	/***/
 	private boolean frustumDirty = true;
 
 	/**
@@ -154,6 +155,11 @@ public class FPSCamera
 	 */
 	public void setPosition( float eyeX, float eyeY, float eyeZ )
 	{
+		if( position.x != eyeX || position.y != eyeY || position.z != eyeZ )
+		{
+			frustumDirty = true;
+		}
+
 		if( aspect == -1 )
 		{
 			aspect = ( float ) Game.width / Game.height;
@@ -168,12 +174,23 @@ public class FPSCamera
 
 		GLU.gluLookAt( eyeX, eyeY, eyeZ, eyeX + forward.x, eyeY + forward.y, eyeZ
 				+ forward.z, up.x, up.y, up.z );
+	}
 
+	/**
+	 * Updates the {@link Frustum} as necessary, so call this every
+	 * frame
+	 * 
+	 * @return The camera {@link Frustum}
+	 */
+	public Frustum getFrustum()
+	{
 		if( frustumDirty )
 		{
 			frustum.extractFromOGL();
 			frustumDirty = false;
 		}
+
+		return frustum;
 	}
 
 	@Override

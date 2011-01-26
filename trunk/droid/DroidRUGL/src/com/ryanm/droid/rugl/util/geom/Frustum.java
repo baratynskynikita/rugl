@@ -132,12 +132,12 @@ public class Frustum
 					modl[ 12 ] * proj[ 3 ] + modl[ 13 ] * proj[ 7 ] + modl[ 14 ] * proj[ 11 ]
 							+ modl[ 15 ] * proj[ 15 ];
 
-			/* Extract the numbers for the RIGHT plane */
+			// right
 			frustum[ 0 ][ 0 ] = clip[ 3 ] - clip[ 0 ];
 			frustum[ 0 ][ 1 ] = clip[ 7 ] - clip[ 4 ];
 			frustum[ 0 ][ 2 ] = clip[ 11 ] - clip[ 8 ];
 			frustum[ 0 ][ 3 ] = clip[ 15 ] - clip[ 12 ];
-			/* Normalize the result */
+			// normalise
 			float t =
 					1.0f / sqrt( frustum[ 0 ][ 0 ] * frustum[ 0 ][ 0 ] + frustum[ 0 ][ 1 ]
 							* frustum[ 0 ][ 1 ] + frustum[ 0 ][ 2 ] * frustum[ 0 ][ 2 ] );
@@ -145,12 +145,12 @@ public class Frustum
 			frustum[ 0 ][ 1 ] *= t;
 			frustum[ 0 ][ 2 ] *= t;
 			frustum[ 0 ][ 3 ] *= t;
-			/* Extract the numbers for the LEFT plane */
+			// left
 			frustum[ 1 ][ 0 ] = clip[ 3 ] + clip[ 0 ];
 			frustum[ 1 ][ 1 ] = clip[ 7 ] + clip[ 4 ];
 			frustum[ 1 ][ 2 ] = clip[ 11 ] + clip[ 8 ];
 			frustum[ 1 ][ 3 ] = clip[ 15 ] + clip[ 12 ];
-			/* Normalize the result */
+			// normalise
 			t =
 					1.0f / sqrt( frustum[ 1 ][ 0 ] * frustum[ 1 ][ 0 ] + frustum[ 1 ][ 1 ]
 							* frustum[ 1 ][ 1 ] + frustum[ 1 ][ 2 ] * frustum[ 1 ][ 2 ] );
@@ -158,12 +158,12 @@ public class Frustum
 			frustum[ 1 ][ 1 ] *= t;
 			frustum[ 1 ][ 2 ] *= t;
 			frustum[ 1 ][ 3 ] *= t;
-			/* Extract the BOTTOM plane */
+			// bottom
 			frustum[ 2 ][ 0 ] = clip[ 3 ] + clip[ 1 ];
 			frustum[ 2 ][ 1 ] = clip[ 7 ] + clip[ 5 ];
 			frustum[ 2 ][ 2 ] = clip[ 11 ] + clip[ 9 ];
 			frustum[ 2 ][ 3 ] = clip[ 15 ] + clip[ 13 ];
-			/* Normalize the result */
+			// normalise
 			t =
 					1.0f / sqrt( frustum[ 2 ][ 0 ] * frustum[ 2 ][ 0 ] + frustum[ 2 ][ 1 ]
 							* frustum[ 2 ][ 1 ] + frustum[ 2 ][ 2 ] * frustum[ 2 ][ 2 ] );
@@ -171,12 +171,12 @@ public class Frustum
 			frustum[ 2 ][ 1 ] *= t;
 			frustum[ 2 ][ 2 ] *= t;
 			frustum[ 2 ][ 3 ] *= t;
-			/* Extract the TOP plane */
+			// top
 			frustum[ 3 ][ 0 ] = clip[ 3 ] - clip[ 1 ];
 			frustum[ 3 ][ 1 ] = clip[ 7 ] - clip[ 5 ];
 			frustum[ 3 ][ 2 ] = clip[ 11 ] - clip[ 9 ];
 			frustum[ 3 ][ 3 ] = clip[ 15 ] - clip[ 13 ];
-			/* Normalize the result */
+			// normalise
 			t =
 					1.0f / sqrt( frustum[ 3 ][ 0 ] * frustum[ 3 ][ 0 ] + frustum[ 3 ][ 1 ]
 							* frustum[ 3 ][ 1 ] + frustum[ 3 ][ 2 ] * frustum[ 3 ][ 2 ] );
@@ -184,12 +184,12 @@ public class Frustum
 			frustum[ 3 ][ 1 ] *= t;
 			frustum[ 3 ][ 2 ] *= t;
 			frustum[ 3 ][ 3 ] *= t;
-			/* Extract the FAR plane */
+			// far
 			frustum[ 4 ][ 0 ] = clip[ 3 ] - clip[ 2 ];
 			frustum[ 4 ][ 1 ] = clip[ 7 ] - clip[ 6 ];
 			frustum[ 4 ][ 2 ] = clip[ 11 ] - clip[ 10 ];
 			frustum[ 4 ][ 3 ] = clip[ 15 ] - clip[ 14 ];
-			/* Normalize the result */
+			// normalise
 			t =
 					1.0f / sqrt( frustum[ 4 ][ 0 ] * frustum[ 4 ][ 0 ] + frustum[ 4 ][ 1 ]
 							* frustum[ 4 ][ 1 ] + frustum[ 4 ][ 2 ] * frustum[ 4 ][ 2 ] );
@@ -197,12 +197,12 @@ public class Frustum
 			frustum[ 4 ][ 1 ] *= t;
 			frustum[ 4 ][ 2 ] *= t;
 			frustum[ 4 ][ 3 ] *= t;
-			/* Extract the NEAR plane */
+			// near
 			frustum[ 5 ][ 0 ] = clip[ 3 ] + clip[ 2 ];
 			frustum[ 5 ][ 1 ] = clip[ 7 ] + clip[ 6 ];
 			frustum[ 5 ][ 2 ] = clip[ 11 ] + clip[ 10 ];
 			frustum[ 5 ][ 3 ] = clip[ 15 ] + clip[ 14 ];
-			/* Normalize the result */
+			// normalise
 			t =
 					1.0f / sqrt( frustum[ 5 ][ 0 ] * frustum[ 5 ][ 0 ] + frustum[ 5 ][ 1 ]
 							* frustum[ 5 ][ 1 ] + frustum[ 5 ][ 2 ] * frustum[ 5 ][ 2 ] );
@@ -219,8 +219,23 @@ public class Frustum
 			b.append( "\nfrustum.length = " ).append( frustum.length );
 			for( int i = 0; i < frustum.length; i++ )
 			{
-				b.append( "\n\tfrustum[ " ).append( i ).append( " ].length = " )
-						.append( frustum[ i ].length );
+				try
+				{
+					b.append( "\n\tfrustum[ " ).append( i ).append( " ].length = " );
+					if( frustum[ i ] != null )
+					{
+						b.append( frustum[ i ].length );
+					}
+					else
+					{
+						b.append( "null" );
+					}
+				}
+				catch( Exception omg )
+				{
+					throw new RuntimeException(
+							"Sweet jesus what is going on here? Exception on index " + i, omg );
+				}
 			}
 
 			throw new RuntimeException( b.toString(), e );

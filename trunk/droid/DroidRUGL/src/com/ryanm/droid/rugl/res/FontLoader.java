@@ -65,6 +65,6 @@ public abstract class FontLoader extends Loader<Font>
 	@Override
 	public String toString()
 	{
-		return "Font loader " + resourceID + " mimap = " + mipmap;
+		return "Font loader " + resourceID + " mipmap = " + mipmap;
 	}
 }

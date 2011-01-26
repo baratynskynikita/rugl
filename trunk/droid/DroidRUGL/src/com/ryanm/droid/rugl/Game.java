@@ -12,6 +12,7 @@ import android.opengl.GLSurfaceView.Renderer;
 import android.util.Log;
 
 import com.ryanm.droid.config.Configuration;
+import com.ryanm.droid.config.Persist;
 import com.ryanm.droid.config.annote.Summary;
 import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.gl.GLUtil;
@@ -96,6 +97,24 @@ public class Game implements Renderer
 		Configuration.configure( ga, confRoots );
 	}
 
+	/**
+	 * @return The names of saved configurations
+	 */
+	public String[] listSavedConfigurations()
+	{
+		return Persist.listSaves( ga );
+	}
+
+	/**
+	 * Loads a named configuration
+	 * 
+	 * @param name
+	 */
+	public void loadConfiguration( String name )
+	{
+		Persist.load( ga, name, confRoots );
+	}
+
 	private final GameActivity ga;
 
 	/**
@@ -169,6 +188,9 @@ public class Game implements Renderer
 		Log.i( RUGL_TAG, buff.toString() );
 
 		glVersion = GLVersion.findVersion( glVersionString );
+
+		Log.i( RUGL_TAG, "Detected " + glVersion );
+
 		if( requiredVersion != null && requiredVersion.ordinal() > glVersion.ordinal() )
 		{
 			// requirements fail!
@@ -201,7 +223,7 @@ public class Game implements Renderer
 		Game.width = width;
 		Game.height = height;
 
-		GLUtil.scaledOrtho( width, height, width, height );
+		GLUtil.scaledOrtho( width, height, width, height, -1, 1 );
 
 		Log.i( RUGL_TAG, "Surface changed " + width + " x " + height );
 

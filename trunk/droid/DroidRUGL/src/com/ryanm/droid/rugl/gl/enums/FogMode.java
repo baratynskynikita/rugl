@@ -1,7 +1,7 @@
 
 package com.ryanm.droid.rugl.gl.enums;
 
-import android.opengl.GLES11;
+import android.opengl.GLES10;
 
 /**
  * Fog modes
@@ -13,15 +13,15 @@ public enum FogMode
 	/**
 	 * f= (end-z)/(end-start)
 	 */
-	LINEAR( GLES11.GL_LINEAR ),
+	LINEAR( GLES10.GL_LINEAR ),
 	/**
 	 * f= e^(-(density-z))
 	 */
-	EXP( GLES11.GL_EXP ),
+	EXP( GLES10.GL_EXP ),
 	/**
 	 * f= e^(-(density-z)^2)
 	 */
-	EXP2( GLES11.GL_EXP2 );
+	EXP2( GLES10.GL_EXP2 );
 
 	/**
 	 * GL mode value

@@ -22,7 +22,7 @@ public class TapPad implements Touch.TouchListener
 	/***/
 	@Variable( "Draw" )
 	@Summary( "Outline the sensitive area" )
-	public boolean draw = false;
+	public boolean draw = true;
 
 	/***/
 	@Variable( "Max tap time" )
@@ -71,6 +71,34 @@ public class TapPad implements Touch.TouchListener
 	{
 		if( listener != null )
 		{
+			if( touch != null )
+			{
+				if( !pad.contains( touch.x, touch.y ) )
+				{
+					int horizontal = 0;
+					if( touch.x < pad.x.getMin() )
+					{
+						horizontal = -1;
+					}
+					else if( touch.x > pad.x.getMax() )
+					{
+						horizontal = 1;
+					}
+
+					int vertical = 0;
+					if( touch.y < pad.y.getMin() )
+					{
+						vertical = -1;
+					}
+					else if( touch.y > pad.y.getMax() )
+					{
+						vertical = 1;
+					}
+
+					listener.onFlick( this, horizontal, vertical );
+				}
+			}
+
 			if( tapped )
 			{
 				listener.onTap( this );
@@ -168,6 +196,22 @@ public class TapPad implements Touch.TouchListener
 		 *           The pad that has been tapped
 		 */
 		public abstract void onTap( TapPad pad );
+
+		/**
+		 * Called when a touch is made within, and then slid out of the
+		 * bounds of the pad before the touch become a long-press
+		 * 
+		 * @param pad
+		 *           The pad that has been flicked
+		 * @param horizontal
+		 *           1 if the touch is now to the right of the pad, -1
+		 *           if to the left, or 0 if still within bounds on the
+		 *           x-axis
+		 * @param vertical
+		 *           1 if the touch is now above the pad, -1 if below,
+		 *           or 0 if still within bounds on the y-axis
+		 */
+		public abstract void onFlick( TapPad pad, int horizontal, int vertical );
 
 		/**
 		 * Called when the pad has been held for longer than
