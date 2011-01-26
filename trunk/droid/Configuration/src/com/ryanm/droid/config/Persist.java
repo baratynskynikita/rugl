@@ -4,7 +4,6 @@ package com.ryanm.droid.config;
 import java.util.Arrays;
 import java.util.Set;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
@@ -101,14 +100,25 @@ public class Persist
 	static JSONObject load( Activity act, String owner, String savename )
 	{
 		SharedPreferences prefs = getPrefs( act, owner );
-		try
+		String json = prefs.getString( savename, null );
+
+		if( json != null )
 		{
-			return new JSONObject( prefs.getString( savename, null ) );
+			try
+			{
+				return new JSONObject( json );
+			}
+			catch( Exception e )
+			{
+				Log.e( Configuration.LOG_TAG, "Problem parsing save \"" + savename
+						+ "\". I'll delete it", e );
+				deleteSave( act, owner, savename );
+				return null;
+			}
 		}
-		catch( JSONException e )
+		else
 		{
-			Log.e( Configuration.LOG_TAG, "Problem parsing save. I'll delete it", e );
-			deleteSave( act, owner, savename );
+			Log.e( Configuration.LOG_TAG, "Requested save \"" + savename + "\" not found" );
 			return null;
 		}
 	}

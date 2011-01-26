@@ -3,6 +3,7 @@ package com.ryanm.droid.config;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -141,6 +142,7 @@ class Extract
 					conf = new JSONObject();
 					conf.put( Util.TYPE, f.getType().getName() );
 					conf.put( Util.VALUE, codec.encode( value ) );
+					conf.put( Util.READ_ONLY, Modifier.isFinal( f.getModifiers() ) );
 				}
 				else
 				{ // subconfigurable?
@@ -170,7 +172,7 @@ class Extract
 		{ // void or readonly
 			if( m.getParameterTypes().length > 0 )
 			{
-				throw new ConfigError( "Solely named method " + o.getClass() + "."
+				throw new ConfigError( "Uniquely annotated method " + o.getClass() + "."
 						+ m.getName() + " has arguments, it is not an action or a getter" );
 			}
 
@@ -191,8 +193,8 @@ class Extract
 						conf = new JSONObject();
 
 						conf.put( Util.TYPE, v.getClass().getName() );
-
 						conf.put( Util.VALUE, codec.encode( v ) );
+						conf.put( Util.READ_ONLY, true );
 
 						Util.getOptional( conf, m );
 

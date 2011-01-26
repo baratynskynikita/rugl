@@ -367,6 +367,11 @@ public class ConfigActivity extends PreferenceActivity
 		public final int order;
 
 		/**
+		 * <code>true</code> if the value cannot be changed
+		 */
+		public final boolean readonly;
+
+		/**
 		 * Variable description json. Store the value back in here.
 		 */
 		public final JSONObject json;
@@ -391,7 +396,8 @@ public class ConfigActivity extends PreferenceActivity
 				type = Util.getType( t );
 			}
 
-			order = json.optInt( "order", Preference.DEFAULT_ORDER );
+			order = json.optInt( Util.ORDER, Preference.DEFAULT_ORDER );
+			readonly = json.optBoolean( Util.READ_ONLY, false );
 		}
 	}
 }
