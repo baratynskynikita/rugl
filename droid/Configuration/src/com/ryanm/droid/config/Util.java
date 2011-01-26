@@ -55,6 +55,11 @@ class Util
 	 */
 	static final String VALUE = "value";
 
+	/**
+	 * JSON key for a boolean that indicates a variable is read-only
+	 */
+	static final String READ_ONLY = "readonly";
+
 	private Util()
 	{
 	}

@@ -79,11 +79,13 @@ public abstract class VariableType<T>
 	 */
 	final Preference getPreference( final Context context, final Variable var )
 	{
-		Preference p =
-				buildPreference( context, var.type, var.json.optString( Util.VALUE ) );
+		String value = var.json.optString( Util.VALUE );
+		Preference p = buildPreference( context, var.type, value );
 		p.setTitle( var.name );
 		p.setSummary( var.description );
 		p.setOrder( var.order );
+		p.setEnabled( !var.readonly );
+
 		// we store our values in the JSON, no need for the
 		// sharedPrefs
 		p.setPersistent( false );
@@ -92,6 +94,11 @@ public abstract class VariableType<T>
 		{
 			DialogPreference dp = ( DialogPreference ) p;
 			dp.setDialogTitle( var.name );
+
+			if( var.readonly )
+			{
+				p.setSummary( value );
+			}
 		}
 
 		p.setOnPreferenceChangeListener( new OnPreferenceChangeListener() {

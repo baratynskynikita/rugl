@@ -36,27 +36,30 @@ public abstract class CSVPrefType<T> extends VariableType<T>
 	 *           <code>true</code> to allow negative numbers
 	 * @param fractions
 	 *           <code>true</code> to allow fractional numbers
-	 * @param format
-	 *           expected input format e.g.: "x,y,z"
+	 * @param valueNames
+	 *           names of input value, e.g.: "x", "y", "z" or "width",
+	 *           "height"
 	 */
 	protected CSVPrefType( Class<? extends T> type, boolean negative, boolean fractions,
-			String format )
+			String... valueNames )
 	{
 		super( type );
-		this.format = format;
-		this.fractions = fractions;
-
-		int commas = 0;
-		for( int i = 0; i < format.length(); i++ )
+		if( valueNames.length == 0 )
 		{
-			if( format.charAt( i ) == ',' )
-			{
-				commas++;
-			}
+			throw new IllegalArgumentException( "At least one value name is required" );
 		}
-		valueCount = commas + 1;
 
-		StringBuffer buff = new StringBuffer( "01234567890, " );
+		StringBuilder buff = new StringBuilder( valueNames[ 0 ] );
+		for( int i = 1; i < valueNames.length; i++ )
+		{
+			buff.append( ", " ).append( valueNames[ i ] );
+		}
+
+		this.format = buff.toString();
+		this.fractions = fractions;
+		valueCount = valueNames.length;
+
+		buff = new StringBuilder( "01234567890, " );
 		if( negative )
 		{
 			inputType |= InputType.TYPE_NUMBER_FLAG_SIGNED;
