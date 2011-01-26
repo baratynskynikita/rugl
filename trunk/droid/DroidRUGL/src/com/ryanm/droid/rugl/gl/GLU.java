@@ -1,6 +1,8 @@
 
 package com.ryanm.droid.rugl.gl;
 
+import java.util.Arrays;
+
 import android.opengl.GLES10;
 import android.opengl.Matrix;
 
@@ -66,17 +68,18 @@ public class GLU
 	 *           up vector Y
 	 * @param upZ
 	 *           up vector Z
+	 * @param matrix
+	 *           an array in which to store the resultant matrix, if
+	 *           not <code>null</code>
 	 */
 	public static void gluLookAt( float eyeX, float eyeY, float eyeZ, float centerX,
-			float centerY, float centerZ, float upX, float upY, float upZ )
+			float centerY, float centerZ, float upX, float upY, float upZ, float[] matrix )
 	{
-		float[] scratch = sScratch;
-		synchronized( scratch )
-		{
-			setLookAtM( scratch, 0, eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY,
-					upZ );
-			GLES10.glMultMatrixf( scratch, 0 );
-		}
+		float[] scratch = matrix != null ? matrix : sScratch;
+
+		setLookAtM( scratch, 0, eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ );
+
+		GLES10.glMultMatrixf( scratch, 0 );
 	}
 
 	/**
@@ -102,20 +105,56 @@ public class GLU
 	 *           specifies the aspect ration that determins the field
 	 *           of view in the x direction. The aspect ratio is the
 	 *           ratio of x (width) to y (height).
-	 * @param zNear
+	 * @param near
 	 *           specifies the distance from the viewer to the near
 	 *           clipping plane (always positive).
-	 * @param zFar
+	 * @param far
 	 *           specifies the distance from the viewer to the far
 	 *           clipping plane (always positive).
+	 * @param matrix
+	 *           an array in which to store the resultant matrix, if
+	 *           not <code>null</code>
 	 */
-	public static void gluPerspective( float fovy, float aspect, float zNear, float zFar )
+	public static void gluPerspective( float fovy, float aspect, float near, float far,
+			float[] matrix )
 	{
-		float top = zNear * ( float ) Math.tan( fovy * Math.PI / 360.0 );
+		float top = near * ( float ) Math.tan( fovy * Math.PI / 360.0 );
 		float bottom = -top;
 		float left = bottom * aspect;
 		float right = top * aspect;
-		GLES10.glFrustumf( left, right, bottom, top, zNear, zFar );
+
+		if( matrix != null )
+		{
+			frustum( left, right, top, bottom, near, far, matrix );
+			GLES10.glMultMatrixf( matrix, 0 );
+		}
+		else
+		{
+			GLES10.glFrustumf( left, right, bottom, top, near, far );
+		}
+	}
+
+	private static void frustum( float left, float right, float top, float bottom,
+			float near, float far, float[] matrix )
+	{
+		float a = ( right + left ) / ( right - left );
+		float b = ( top + bottom ) / ( top - bottom );
+		float c = -( far + near ) / ( far - near );
+		float d = -( 2 * far * near ) / ( far - near );
+
+		// [ 0 4 8 12 ]
+		// [ 1 5 9 13 ]
+		// [ 2 6 10 14 ]
+		// [ 3 7 11 15 ]
+
+		Arrays.fill( matrix, 0 );
+		matrix[ 0 ] = 2 * near / ( right - left );
+		matrix[ 8 ] = a;
+		matrix[ 5 ] = 2 * near / ( top - bottom );
+		matrix[ 9 ] = b;
+		matrix[ 10 ] = c;
+		matrix[ 14 ] = d;
+		matrix[ 11 ] = -1;
 	}
 
 	/**
@@ -162,36 +201,34 @@ public class GLU
 			float[] win, int winOffset )
 	{
 		float[] scratch = sScratch;
-		synchronized( scratch )
+
+		final int M_OFFSET = 0; // 0..15
+		final int V_OFFSET = 16; // 16..19
+		final int V2_OFFSET = 20; // 20..23
+		Matrix.multiplyMM( scratch, M_OFFSET, project, projectOffset, model, modelOffset );
+
+		scratch[ V_OFFSET + 0 ] = objX;
+		scratch[ V_OFFSET + 1 ] = objY;
+		scratch[ V_OFFSET + 2 ] = objZ;
+		scratch[ V_OFFSET + 3 ] = 1.0f;
+
+		Matrix.multiplyMV( scratch, V2_OFFSET, scratch, M_OFFSET, scratch, V_OFFSET );
+
+		float w = scratch[ V2_OFFSET + 3 ];
+		if( w == 0.0f )
 		{
-			final int M_OFFSET = 0; // 0..15
-			final int V_OFFSET = 16; // 16..19
-			final int V2_OFFSET = 20; // 20..23
-			Matrix.multiplyMM( scratch, M_OFFSET, project, projectOffset, model, modelOffset );
-
-			scratch[ V_OFFSET + 0 ] = objX;
-			scratch[ V_OFFSET + 1 ] = objY;
-			scratch[ V_OFFSET + 2 ] = objZ;
-			scratch[ V_OFFSET + 3 ] = 1.0f;
-
-			Matrix.multiplyMV( scratch, V2_OFFSET, scratch, M_OFFSET, scratch, V_OFFSET );
-
-			float w = scratch[ V2_OFFSET + 3 ];
-			if( w == 0.0f )
-			{
-				return false;
-			}
-
-			float rw = 1.0f / w;
-
-			win[ winOffset ] =
-					view[ viewOffset ] + view[ viewOffset + 2 ]
-							* ( scratch[ V2_OFFSET + 0 ] * rw + 1.0f ) * 0.5f;
-			win[ winOffset + 1 ] =
-					view[ viewOffset + 1 ] + view[ viewOffset + 3 ]
-							* ( scratch[ V2_OFFSET + 1 ] * rw + 1.0f ) * 0.5f;
-			win[ winOffset + 2 ] = ( scratch[ V2_OFFSET + 2 ] * rw + 1.0f ) * 0.5f;
+			return false;
 		}
+
+		float rw = 1.0f / w;
+
+		win[ winOffset ] =
+				view[ viewOffset ] + view[ viewOffset + 2 ]
+						* ( scratch[ V2_OFFSET + 0 ] * rw + 1.0f ) * 0.5f;
+		win[ winOffset + 1 ] =
+				view[ viewOffset + 1 ] + view[ viewOffset + 3 ]
+						* ( scratch[ V2_OFFSET + 1 ] * rw + 1.0f ) * 0.5f;
+		win[ winOffset + 2 ] = ( scratch[ V2_OFFSET + 2 ] * rw + 1.0f ) * 0.5f;
 
 		return true;
 	}
@@ -239,28 +276,25 @@ public class GLU
 			float[] obj, int objOffset )
 	{
 		float[] scratch = sScratch;
-		synchronized( scratch )
+
+		final int PM_OFFSET = 0; // 0..15
+		final int INVPM_OFFSET = 16; // 16..31
+		final int V_OFFSET = 0; // 0..3 Reuses PM_OFFSET space
+		Matrix.multiplyMM( scratch, PM_OFFSET, project, projectOffset, model, modelOffset );
+
+		if( !Matrix.invertM( scratch, INVPM_OFFSET, scratch, PM_OFFSET ) )
 		{
-			final int PM_OFFSET = 0; // 0..15
-			final int INVPM_OFFSET = 16; // 16..31
-			final int V_OFFSET = 0; // 0..3 Reuses PM_OFFSET space
-			Matrix.multiplyMM( scratch, PM_OFFSET, project, projectOffset, model,
-					modelOffset );
-
-			if( !Matrix.invertM( scratch, INVPM_OFFSET, scratch, PM_OFFSET ) )
-			{
-				return false;
-			}
-
-			scratch[ V_OFFSET + 0 ] =
-					2.0f * ( winX - view[ viewOffset + 0 ] ) / view[ viewOffset + 2 ] - 1.0f;
-			scratch[ V_OFFSET + 1 ] =
-					2.0f * ( winY - view[ viewOffset + 1 ] ) / view[ viewOffset + 3 ] - 1.0f;
-			scratch[ V_OFFSET + 2 ] = 2.0f * winZ - 1.0f;
-			scratch[ V_OFFSET + 3 ] = 1.0f;
-
-			Matrix.multiplyMV( obj, objOffset, scratch, INVPM_OFFSET, scratch, V_OFFSET );
+			return false;
 		}
+
+		scratch[ V_OFFSET + 0 ] =
+				2.0f * ( winX - view[ viewOffset + 0 ] ) / view[ viewOffset + 2 ] - 1.0f;
+		scratch[ V_OFFSET + 1 ] =
+				2.0f * ( winY - view[ viewOffset + 1 ] ) / view[ viewOffset + 3 ] - 1.0f;
+		scratch[ V_OFFSET + 2 ] = 2.0f * winZ - 1.0f;
+		scratch[ V_OFFSET + 3 ] = 1.0f;
+
+		Matrix.multiplyMV( obj, objOffset, scratch, INVPM_OFFSET, scratch, V_OFFSET );
 
 		return true;
 	}

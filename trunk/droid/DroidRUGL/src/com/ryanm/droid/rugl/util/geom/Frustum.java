@@ -72,14 +72,30 @@ public class Frustum
 	}
 
 	/**
-	 * Extracts a frustum from OpenGL
+	 * Extracts a frustum from OpenGL. Beware PixelFlinger! It does not
+	 * implement glGetFloat!
 	 */
 	public void extractFromOGL()
 	{
+		glGetFloatv( GL_PROJECTION_MATRIX, proj, 0 );
+		glGetFloatv( GL_MODELVIEW_MATRIX, modl, 0 );
+
+		update( proj, modl );
+	}
+
+	/**
+	 * Updates the frustum planes from the supplied projection and
+	 * modelView matrices
+	 * 
+	 * @param projection
+	 * @param modelView
+	 */
+	public void update( float[] projection, float[] modelView )
+	{
+		float[] proj = projection;
+		float[] modl = modelView;
 		try
 		{
-			glGetFloatv( GL_PROJECTION_MATRIX, proj, 0 );
-			glGetFloatv( GL_MODELVIEW_MATRIX, modl, 0 );
 
 			// Combine the two matrices (multiply projection by
 			// modelview)
