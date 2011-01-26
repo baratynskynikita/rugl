@@ -112,6 +112,10 @@ public class FPSCamera
 
 	private boolean frustumDirty = true;
 
+	private float[] projectionMatrix = new float[ 16 ];
+
+	private float[] modelViewMatrix = new float[ 16 ];
+
 	/**
 	 * @param delta
 	 *           time delta
@@ -167,13 +171,13 @@ public class FPSCamera
 
 		GLES10.glMatrixMode( GLES10.GL_PROJECTION );
 		GLES10.glLoadIdentity();
-		GLU.gluPerspective( fov, aspect, near, far );
+		GLU.gluPerspective( fov, aspect, near, far, projectionMatrix );
 
 		GLES10.glMatrixMode( GLES10.GL_MODELVIEW );
 		GLES10.glLoadIdentity();
 
 		GLU.gluLookAt( eyeX, eyeY, eyeZ, eyeX + forward.x, eyeY + forward.y, eyeZ
-				+ forward.z, up.x, up.y, up.z );
+				+ forward.z, up.x, up.y, up.z, modelViewMatrix );
 	}
 
 	/**
@@ -186,7 +190,7 @@ public class FPSCamera
 	{
 		if( frustumDirty )
 		{
-			frustum.extractFromOGL();
+			frustum.update( projectionMatrix, modelViewMatrix );
 			frustumDirty = false;
 		}
 
