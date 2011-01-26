@@ -1,5 +1,5 @@
 
-package com.ryanm.minedroid;
+package com.ryanm.minedroid.nbt;
 
 import java.io.File;
 import java.io.FileInputStream;

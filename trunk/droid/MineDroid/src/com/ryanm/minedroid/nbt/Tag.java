@@ -1,5 +1,5 @@
 
-package com.ryanm.minedroid;
+package com.ryanm.minedroid.nbt;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -168,7 +168,7 @@ public class Tag
 					{
 						throw new IllegalArgumentException();
 					}
-					listType = ( ( Tag[] ) value )[ 0 ].getType();
+					listType = ( (com.ryanm.minedroid.nbt.Tag[] ) value )[ 0 ].getType();
 				}
 				break;
 			case TAG_Compound:
@@ -228,7 +228,7 @@ public class Tag
 		{
 			throw new RuntimeException();
 		}
-		Tag[] subtags = ( Tag[] ) value;
+		Tag[] subtags = (com.ryanm.minedroid.nbt.Tag[] ) value;
 		insertTag( tag, subtags.length );
 	}
 
@@ -245,7 +245,7 @@ public class Tag
 		{
 			throw new RuntimeException();
 		}
-		Tag[] subtags = ( Tag[] ) value;
+		Tag[] subtags = (com.ryanm.minedroid.nbt.Tag[] ) value;
 		if( subtags.length > 0 )
 		{
 			if( type == Type.TAG_List && tag.getType() != getListType() )
@@ -277,7 +277,7 @@ public class Tag
 		{
 			throw new RuntimeException();
 		}
-		Tag[] subtags = ( Tag[] ) value;
+		Tag[] subtags = (com.ryanm.minedroid.nbt.Tag[] ) value;
 		Tag victim = subtags[ index ];
 		Tag[] newValue = new Tag[ subtags.length - 1 ];
 		System.arraycopy( subtags, 0, newValue, 0, index );
@@ -304,7 +304,7 @@ public class Tag
 		{
 			return;
 		}
-		Tag[] subtags = ( Tag[] ) value;
+		Tag[] subtags = (com.ryanm.minedroid.nbt.Tag[] ) value;
 		for( int i = 0; i < subtags.length; i++ )
 		{
 			if( subtags[ i ] == tag )
@@ -354,7 +354,7 @@ public class Tag
 		{
 			return null;
 		}
-		Tag[] subtags = ( Tag[] ) value;
+		Tag[] subtags = (com.ryanm.minedroid.nbt.Tag[] ) value;
 		for( Tag subtag : subtags )
 		{
 			if( subtag.name == null && name == null || subtag.name != null
@@ -525,7 +525,7 @@ public class Tag
 				dos.writeUTF( ( String ) value );
 				break;
 			case TAG_List:
-				Tag[] list = ( Tag[] ) value;
+				Tag[] list = (com.ryanm.minedroid.nbt.Tag[] ) value;
 				dos.writeByte( getListType().ordinal() );
 				dos.writeInt( list.length );
 				for( Tag tt : list )
@@ -534,7 +534,7 @@ public class Tag
 				}
 				break;
 			case TAG_Compound:
-				Tag[] subtags = ( Tag[] ) value;
+				Tag[] subtags = (com.ryanm.minedroid.nbt.Tag[] ) value;
 				for( Tag st : subtags )
 				{
 					Tag subtag = st;
@@ -617,7 +617,7 @@ public class Tag
 		}
 		else if( type == Type.TAG_List )
 		{
-			Tag[] subtags = ( Tag[] ) t.getValue();
+			Tag[] subtags = (com.ryanm.minedroid.nbt.Tag[] ) t.getValue();
 			System.out.println( ": " + subtags.length + " entries of type "
 					+ getTypeString( t.getListType() ) );
 			for( Tag st : subtags )
@@ -629,7 +629,7 @@ public class Tag
 		}
 		else if( type == Type.TAG_Compound )
 		{
-			Tag[] subtags = ( Tag[] ) t.getValue();
+			Tag[] subtags = (com.ryanm.minedroid.nbt.Tag[] ) t.getValue();
 			System.out.println( ": " + ( subtags.length - 1 ) + " entries" );
 			indent( indent );
 			System.out.println( "{" );
@@ -655,7 +655,7 @@ public class Tag
 
 		if( type == Type.TAG_List )
 		{
-			Tag[] tl = ( Tag[] ) value;
+			Tag[] tl = (com.ryanm.minedroid.nbt.Tag[] ) value;
 			buff.append( listType ).append( " " ).append( tl.length );
 			buff.append( "\n[" );
 

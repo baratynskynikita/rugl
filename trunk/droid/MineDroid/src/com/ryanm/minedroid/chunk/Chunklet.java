@@ -1,7 +1,8 @@
 
-package com.ryanm.minedroid;
+package com.ryanm.minedroid.chunk;
 
 import com.ryanm.droid.rugl.geom.ColouredShape;
+import com.ryanm.droid.rugl.geom.CompiledShape;
 import com.ryanm.droid.rugl.geom.Shape;
 import com.ryanm.droid.rugl.geom.WireUtil;
 import com.ryanm.droid.rugl.gl.Renderer;
@@ -9,6 +10,7 @@ import com.ryanm.droid.rugl.gl.VBOShape;
 import com.ryanm.droid.rugl.util.Colour;
 import com.ryanm.droid.rugl.util.geom.Frustum;
 import com.ryanm.droid.rugl.util.geom.Frustum.Result;
+import com.ryanm.minedroid.BlockFactory;
 
 /**
  * A 16 * 16 * 16 cube of a {@link Chunk}
@@ -40,6 +42,16 @@ public class Chunklet
 	private ColouredShape outline = null;
 
 	private boolean geomDirty = true;
+
+	/**
+	 * Solid geometry for GL1.0 users
+	 */
+	private CompiledShape solidVA;
+
+	/**
+	 * Transparent geometry for GL1.0 users
+	 */
+	private CompiledShape transparentVA;
 
 	/**
 	 * Solid geometry
@@ -204,8 +216,11 @@ public class Chunklet
 
 	/**
 	 * Draws the solid geometry
+	 * 
+	 * @param r
+	 *           Renderer to use if we are in gl1.0
 	 */
-	public void drawSolid()
+	public void drawSolid( Renderer r )
 	{
 		generateGeometry();
 
@@ -221,15 +236,22 @@ public class Chunklet
 
 		if( solidVBO != null )
 		{
-			solidVBO.state = BlockFactory.state;
 			solidVBO.draw();
+		}
+
+		if( solidVA != null )
+		{
+			solidVA.render( r );
 		}
 	}
 
 	/**
 	 * Draws the transparent geometry
+	 * 
+	 * @param r
+	 *           Renderer to use if we are in gl1.0
 	 */
-	public void drawTransparent()
+	public void drawTransparent( Renderer r )
 	{
 		generateGeometry();
 
@@ -245,8 +267,12 @@ public class Chunklet
 
 		if( transparentVBO != null )
 		{
-			transparentVBO.state = BlockFactory.state;
 			transparentVBO.draw();
+		}
+
+		if( transparentVA != null )
+		{
+			transparentVA.render( r );
 		}
 	}
 
@@ -292,6 +318,18 @@ public class Chunklet
 		geomDirty = false;
 		pendingSolid = solid;
 		pendingTransparent = transparent;
+	}
+
+	/**
+	 * @param solid
+	 * @param transparent
+	 */
+	public void geometryComplete( CompiledShape solid, CompiledShape transparent )
+	{
+		geomPending = false;
+		geomDirty = false;
+		solidVA = solid;
+		transparentVA = transparent;
 	}
 
 	/**

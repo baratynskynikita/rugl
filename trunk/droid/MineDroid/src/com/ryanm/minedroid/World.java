@@ -21,6 +21,10 @@ import com.ryanm.droid.rugl.util.geom.Frustum;
 import com.ryanm.droid.rugl.util.geom.Frustum.Result;
 import com.ryanm.droid.rugl.util.geom.ReadableVector3f;
 import com.ryanm.droid.rugl.util.geom.Vector3f;
+import com.ryanm.droid.rugl.util.math.Range;
+import com.ryanm.minedroid.chunk.Chunk;
+import com.ryanm.minedroid.chunk.ChunkLoader;
+import com.ryanm.minedroid.chunk.Chunklet;
 
 /**
  * Manages loading chunks, decides which chunklets to render
@@ -53,7 +57,7 @@ public class World
 	 */
 	public final File dir;
 
-	private int loadradius = 4;
+	private int loadradius = 2;
 
 	/**
 	 * 1st index = x, 2nd = z
@@ -350,20 +354,19 @@ public class World
 		}
 
 		renderedChunklets = 0;
+		// sort chunklets into ascending order of distance from the
+		// eye
+		cs.eye.set( eye );
+		QuickSort.sort( renderList, cs, 0, renderListSize - 1 );
+
+		GLUtil.checkGLError();
+
 		if( drawChunklets )
 		{
-			// sort chunklets into ascending order of distance from the
-			// eye
-			cs.eye.set( eye );
-			QuickSort.sort( renderList, cs, 0, renderListSize - 1 );
-
-			GLUtil.checkGLError();
-
-			// vbo
 			// solid stuff from near to far
 			for( int i = 0; i < renderListSize; i++ )
 			{
-				renderList[ i ].drawSolid();
+				renderList[ i ].drawSolid( renderer );
 
 				if( !renderList[ i ].isEmpty() )
 				{
@@ -376,7 +379,7 @@ public class World
 			// translucent stuff from far to near
 			for( int i = renderListSize - 1; i >= 0; i-- )
 			{
-				renderList[ i ].drawTransparent();
+				renderList[ i ].drawTransparent( renderer );
 			}
 
 			GLUtil.checkGLError();
@@ -388,8 +391,10 @@ public class World
 			{
 				renderList[ i ].drawOutline( renderer );
 			}
-			renderer.render();
+			GLUtil.checkGLError();
 		}
+
+		renderer.render();
 
 		Arrays.fill( renderList, null );
 		renderListSize = 0;
@@ -412,7 +417,8 @@ public class World
 						@Override
 						public void complete()
 						{
-							if( resource != null )
+							if( resource != null && Range.inRange( caix, 0, chunks.length - 1 )
+									&& Range.inRange( caiz, 0, chunks[ caix ].length - 1 ) )
 							{
 								chunks[ caix ][ caiz ] = resource;
 
@@ -492,7 +498,8 @@ public class World
 	 * @param x
 	 * @param y
 	 * @param z
-	 * @return The type of the block that contains the point
+	 * @return The type of the block that contains the point, or 0 if
+	 *         the chunk is not loaded yet
 	 */
 	public byte blockType( float x, float y, float z )
 	{
@@ -519,6 +526,8 @@ public class World
 		// properly, so brace yourself for the Madagascan strategy:
 
 		// RELOAD. EVERYTHING.
+		// except the chunk we're in
+		Chunk center = chunks[ chunks.length / 2 ][ chunks.length / 2 ];
 
 		for( int i = 0; i < chunks.length; i++ )
 		{
@@ -531,6 +540,8 @@ public class World
 			}
 		}
 		chunks = new Chunk[ 2 * chunkRadius + 1 ][ 2 * chunkRadius + 1 ];
+		chunks[ chunks.length / 2 ][ chunks.length / 2 ] = center;
+
 		fillChunks();
 	}
 

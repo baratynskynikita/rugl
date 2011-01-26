@@ -1,5 +1,5 @@
 
-package com.ryanm.minedroid;
+package com.ryanm.minedroid.chunk;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,6 +9,7 @@ import android.util.Log;
 import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.res.ResourceLoader.Loader;
 import com.ryanm.droid.rugl.util.math.Range;
+import com.ryanm.minedroid.World;
 
 /**
  * This is packaged up like this so it can happen on the resource

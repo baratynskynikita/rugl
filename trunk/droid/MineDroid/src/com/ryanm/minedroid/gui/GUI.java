@@ -1,5 +1,5 @@
 
-package com.ryanm.minedroid;
+package com.ryanm.minedroid.gui;
 
 import static android.opengl.GLES10.GL_DEPTH_BUFFER_BIT;
 import static android.opengl.GLES10.glClear;
@@ -11,6 +11,7 @@ import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.gl.GLUtil;
 import com.ryanm.droid.rugl.gl.StackedRenderer;
+import com.ryanm.droid.rugl.input.AbstractTouchStick.ClickListener;
 import com.ryanm.droid.rugl.input.TapPad;
 import com.ryanm.droid.rugl.input.Touch;
 import com.ryanm.droid.rugl.input.TouchStickArea;
@@ -20,6 +21,9 @@ import com.ryanm.droid.rugl.text.Font;
 import com.ryanm.droid.rugl.text.Readout;
 import com.ryanm.droid.rugl.text.TextShape;
 import com.ryanm.droid.rugl.util.Colour;
+import com.ryanm.minedroid.Player;
+import com.ryanm.minedroid.World;
+import com.ryanm.minedroid.chunk.GeometryGenerator;
 
 /**
  * Holds the touchsticks
@@ -30,31 +34,43 @@ import com.ryanm.droid.rugl.util.Colour;
 @Summary( "GUI options" )
 public class GUI
 {
-	private static final float radius = 100;
+	private static final float radius = 50;
+
+	private static final float size = 150;
 
 	/***/
 	@Variable( "Left stick" )
 	@Summary( "Controls motion" )
 	@Category( "Controls" )
-	public final TouchStickArea left = new TouchStickArea( 0, 0, 400, 480, radius );
+	public final TouchStickArea left = new TouchStickArea( 0, 0, size, size, radius );
 
 	/***/
 	@Variable( "Right stick" )
 	@Summary( "Controls view direction" )
 	@Category( "Controls" )
-	public final TouchStickArea right = new TouchStickArea( 400, 0, 400, 350, radius );
+	public final TouchStickArea right = new TouchStickArea( 800 - size, 0, size, size,
+			radius );
 
 	/***/
 	@Variable( "Right tap pad" )
 	@Summary( "Tap to jump, long press to crouch" )
 	@Category( "Controls" )
-	public final TapPad rightTap = new TapPad( 400, 350, 400, 130 );
+	public final TapPad rightTap = new TapPad( 800 - size, right.pad.y.getMax(), size,
+			size / 2 );
 
 	/***/
 	@Variable( "Chunklet info display" )
 	@Summary( "Show chunks awaiting loading, chunklets "
 			+ "awaiting geometry generation, and rendered chunklet count" )
 	public boolean printQueues = true;
+
+	/***/
+	@Variable
+	public final Hotbar hotbar;
+
+	/***/
+	@Variable
+	public final Hand hand;
 
 	private Readout loadQueue, geomQueue, chunkletCount;
 
@@ -66,12 +82,31 @@ public class GUI
 
 	private Font font;
 
-	/***/
-	public GUI()
+	/**
+	 * @param player
+	 */
+	public GUI( Player player )
 	{
+		hotbar = new Hotbar( player );
+		hand = new Hand( player );
+		rightTap.listener = player.jumpCrouchListener;
+
 		Touch.addListener( left );
 		Touch.addListener( right );
 		Touch.addListener( rightTap );
+
+		ClickListener strikey = new ClickListener() {
+			@Override
+			public void onClick()
+			{
+				hand.strike();
+			}
+		};
+
+		right.listener = strikey;
+		left.listener = strikey;
+
+		Touch.setScreenSize( 800, 480, Game.width, Game.height );
 
 		ResourceLoader.load( new FontLoader( com.ryanm.droid.rugl.R.raw.font, false ) {
 			@Override
@@ -93,8 +128,6 @@ public class GUI
 
 			}
 		} );
-
-		Touch.setScreenSize( 800, 480, Game.width, Game.height );
 	}
 
 	/**
@@ -105,6 +138,9 @@ public class GUI
 		left.advance();
 		right.advance();
 		rightTap.advance();
+
+		hotbar.advance( delta );
+		hand.advance( delta );
 
 		notifyTime -= delta;
 		if( notifyTime < 0 )
@@ -119,12 +155,18 @@ public class GUI
 	 */
 	public void draw()
 	{
-		GLUtil.scaledOrtho( 800, 480, Game.width, Game.height );
+		GLUtil.scaledOrtho( 800, 480, Game.width, Game.height, -1, 1 );
 		glClear( GL_DEPTH_BUFFER_BIT );
+
+		hand.draw( r );
+
+		r.render();
 
 		left.draw( r );
 		right.draw( r );
 		rightTap.draw( r );
+
+		hotbar.draw( r );
 
 		if( notification != null )
 		{

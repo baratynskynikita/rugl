@@ -1,18 +1,21 @@
 
 package com.ryanm.minedroid;
 
+import com.ryanm.droid.rugl.geom.ColouredShape;
+import com.ryanm.droid.rugl.geom.Shape;
 import com.ryanm.droid.rugl.geom.ShapeBuilder;
+import com.ryanm.droid.rugl.geom.ShapeUtil;
+import com.ryanm.droid.rugl.geom.TexturedShape;
 import com.ryanm.droid.rugl.gl.GLUtil;
 import com.ryanm.droid.rugl.gl.State;
-import com.ryanm.droid.rugl.gl.enums.FogMode;
 import com.ryanm.droid.rugl.gl.enums.MagFilter;
 import com.ryanm.droid.rugl.gl.enums.MinFilter;
-import com.ryanm.droid.rugl.gl.facets.Fog;
 import com.ryanm.droid.rugl.res.BitmapLoader;
 import com.ryanm.droid.rugl.res.ResourceLoader;
 import com.ryanm.droid.rugl.texture.Texture;
 import com.ryanm.droid.rugl.texture.TextureFactory;
 import com.ryanm.droid.rugl.util.Colour;
+import com.ryanm.droid.rugl.util.Trig;
 
 /**
  * Defines block data, can add face geometry to {@link ShapeBuilder}s
@@ -39,6 +42,64 @@ public class BlockFactory
 
 	private static final float sxtn = 1.0f / 16;
 
+	private static final ColouredShape itemShape;
+	static
+	{
+		float[] hexVerts = new float[ 2 * 7 ];
+		hexVerts[ 0 ] = 0;
+		hexVerts[ 1 ] = 0;
+
+		float[] angles = new float[] { 30, 90, 150, 210, 270, 330 };
+		for( int i = 0; i < angles.length; i++ )
+		{
+			hexVerts[ 2 * ( i + 1 ) ] = 0.5f * Trig.cos( Trig.toRadians( angles[ i ] ) );
+			hexVerts[ 2 * ( i + 1 ) + 1 ] = 0.5f * Trig.sin( Trig.toRadians( angles[ i ] ) );
+		}
+
+		float[] itemCoords = new float[ 36 ];
+		int i = 0;
+		// top
+		addVert( itemCoords, i++, hexVerts, 0 );
+		addVert( itemCoords, i++, hexVerts, 3 );
+		addVert( itemCoords, i++, hexVerts, 1 );
+		addVert( itemCoords, i++, hexVerts, 2 );
+
+		// left
+		addVert( itemCoords, i++, hexVerts, 4 );
+		addVert( itemCoords, i++, hexVerts, 3 );
+		addVert( itemCoords, i++, hexVerts, 5 );
+		addVert( itemCoords, i++, hexVerts, 0 );
+
+		// right
+		addVert( itemCoords, i++, hexVerts, 5 );
+		addVert( itemCoords, i++, hexVerts, 0 );
+		addVert( itemCoords, i++, hexVerts, 6 );
+		addVert( itemCoords, i++, hexVerts, 1 );
+
+		short[] tris = ShapeUtil.makeQuads( 12, 0, null, 0 );
+
+		int[] colours = new int[ 12 ];
+		int top = Colour.packFloat( 1, 1, 1, 1 );
+		int left = Colour.packFloat( 0.75f, 0.75f, 0.75f, 1 );
+		int right = Colour.packFloat( 0.5f, 0.5f, 0.5f, 1 );
+		for( i = 0; i < 4; i++ )
+		{
+			colours[ i ] = top;
+			colours[ i + 4 ] = left;
+			colours[ i + 8 ] = right;
+		}
+
+		itemShape = new ColouredShape( new Shape( itemCoords, tris ), colours, null );
+	}
+
+	private static void addVert( float[] itemVerts, int index, float[] hexCoords,
+			int vertIndex )
+	{
+		itemVerts[ 3 * index ] = hexCoords[ 2 * vertIndex ];
+		itemVerts[ 3 * index + 1 ] = hexCoords[ 2 * vertIndex + 1 ];
+		itemVerts[ 3 * index + 2 ] = 0;
+	}
+
 	/**
 	 * The terrain.png texture
 	 */
@@ -48,7 +109,8 @@ public class BlockFactory
 	 * Rendering state for blocks. Texture filtering is for wimps
 	 */
 	public static State state = GLUtil.typicalState.with( MinFilter.NEAREST,
-			MagFilter.NEAREST ).with( new Fog( FogMode.LINEAR, 1, 60f, 80f, Colour.white ) );
+			MagFilter.NEAREST );// .with( new Fog( FogMode.LINEAR, 1,
+										// 60f, 80f, Colour.white ) );
 
 	/**
 	 * Synchronously loads the terrain texture
@@ -65,6 +127,10 @@ public class BlockFactory
 				if( texture != null )
 				{
 					state = texture.applyTo( state );
+					for( Block b : Block.values() )
+					{
+						b.blockItemShape.state = state;
+					}
 				}
 			}
 		} );
@@ -227,8 +293,16 @@ public class BlockFactory
 		/***/
 		public final boolean opaque;
 
-		/***/
+		/**
+		 * Sides then top, then bottom
+		 */
 		public final int[] texCoords;
+
+		/**
+		 * Shape with which to draw this block in the gui. It's 1 unit
+		 * high and centered on the origin
+		 */
+		public final TexturedShape blockItemShape;
 
 		/**
 		 * @param id
@@ -270,6 +344,31 @@ public class BlockFactory
 				// all sides distinct
 				texCoords = tc;
 			}
+
+			float[] itc = new float[ 3 * 4 * 2 ];
+			faceTexCoords( Face.Top, itc, 0 );
+			faceTexCoords( Face.North, itc, 8 );
+			faceTexCoords( Face.West, itc, 16 );
+
+			blockItemShape = new TexturedShape( BlockFactory.itemShape, itc, texture );
+		}
+
+		private void faceTexCoords( Face face, float[] tc, int index )
+		{
+			int txco = 2 * face.ordinal();
+			float bu = sxtn * texCoords[ txco ];
+			float bv = sxtn * ( texCoords[ txco + 1 ] + 1 );
+			float tu = sxtn * ( texCoords[ txco ] + 1 );
+			float tv = sxtn * texCoords[ txco + 1 ];
+
+			tc[ index++ ] = bu;
+			tc[ index++ ] = bv;
+			tc[ index++ ] = bu;
+			tc[ index++ ] = tv;
+			tc[ index++ ] = tu;
+			tc[ index++ ] = bv;
+			tc[ index++ ] = tu;
+			tc[ index++ ] = tv;
 		}
 
 		/**
