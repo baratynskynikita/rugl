@@ -31,7 +31,6 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import android.opengl.GLES10;
-import android.opengl.GLES11;
 import android.opengl.GLException;
 
 import com.ryanm.droid.rugl.gl.enums.ComparisonFunction;
@@ -98,13 +97,17 @@ public class GLUtil
 	 * @param desiredHeight
 	 * @param screenWidth
 	 * @param screenHeight
+	 * @param near
+	 *           distance to near clip plane
+	 * @param far
+	 *           distance to far clip plane
 	 */
 	public static void scaledOrtho( int desiredWidth, int desiredHeight, int screenWidth,
-			int screenHeight )
+			int screenHeight, float near, float far )
 	{
 		GLES10.glMatrixMode( GLES10.GL_PROJECTION );
 		GLES10.glLoadIdentity();
-		GLES10.glOrthof( 0, desiredWidth, 0, desiredHeight, -1, 1 );
+		GLES10.glOrthof( 0, desiredWidth, 0, desiredHeight, near, far );
 
 		GLES10.glMatrixMode( GLES10.GL_MODELVIEW );
 		GLES10.glLoadIdentity();
@@ -113,7 +116,7 @@ public class GLUtil
 	}
 
 	/**
-	 * Throws {@link GLException} if {@link GLES11#glGetError()}
+	 * Throws {@link GLException} if {@link GLES10#glGetError()}
 	 * returns anything other than {@link GLES10#GL_NO_ERROR}
 	 * 
 	 * @throws GLException

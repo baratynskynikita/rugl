@@ -13,7 +13,7 @@ public class Vector2fVarType extends CSVPrefType<Vector2f>
 	/***/
 	public Vector2fVarType()
 	{
-		super( Vector2f.class, true, true, "x,y" );
+		super( Vector2f.class, true, true, "x", "y" );
 	}
 
 	@Override

@@ -13,7 +13,7 @@ public class BoundingRectVarType extends CSVPrefType<BoundingRectangle>
 	/***/
 	public BoundingRectVarType()
 	{
-		super( BoundingRectangle.class, true, true, "x,y,width,height" );
+		super( BoundingRectangle.class, true, true, "x", "y", "width", "height" );
 	}
 
 	@Override

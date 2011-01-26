@@ -19,7 +19,7 @@ public class ColourVarType extends CSVPrefType<Colour>
 	/***/
 	public ColourVarType()
 	{
-		super( Colour.class, false, false, "r,g,b,a" );
+		super( Colour.class, false, false, "r", "g", "b", "a" );
 	}
 
 	@Override

@@ -13,7 +13,7 @@ public class RangeVarType extends CSVPrefType<Range>
 	/***/
 	public RangeVarType()
 	{
-		super( Range.class, true, true, "min,max" );
+		super( Range.class, true, true, "min", "max" );
 	}
 
 	@Override

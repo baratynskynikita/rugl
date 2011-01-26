@@ -1,6 +1,7 @@
 
 package com.ryanm.droid.rugl.input;
 
+import com.ryanm.droid.config.annote.DirtyFlag;
 import com.ryanm.droid.config.annote.Summary;
 import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.geom.ColouredShape;
@@ -25,9 +26,12 @@ public class TouchStickArea extends AbstractTouchStick
 	/***/
 	@Variable( "Draw" )
 	@Summary( "Outline the sensitive area" )
-	public boolean draw = false;
+	public boolean draw = true;
 
-	private final BoundingRectangle pad = new BoundingRectangle();
+	/***/
+	@Variable( "Pad area" )
+	@Summary( "Position and size of sensitive area" )
+	public BoundingRectangle pad = new BoundingRectangle();
 
 	/***/
 	@Variable
@@ -112,24 +116,10 @@ public class TouchStickArea extends AbstractTouchStick
 		}
 	}
 
-	/**
-	 * @return the sensitive pad area
-	 */
-	@Variable( "Pad area" )
-	@Summary( "Position and size of sensitive area" )
-	public BoundingRectangle getPad()
+	/***/
+	@DirtyFlag
+	public void oulineDirty()
 	{
-		return pad;
-	}
-
-	/**
-	 * @param pad
-	 *           The new sensitive pad area
-	 */
-	@Variable( "Pad area" )
-	public void setPad( BoundingRectangle pad )
-	{
-		this.pad.set( pad );
 		outline = null;
 	}
 }

@@ -179,7 +179,8 @@ public class ExceptionHandler implements UncaughtExceptionHandler
 		catch( Exception e )
 		{
 			// oh the irony...
-			Log.e( "ExceptionHandler", "Oh dear", e );
+			Log.e( "ExceptionHandler", "Oh dear. encountered a " + e.getMessage()
+					+ " while trying to save a log for:", ex );
 		}
 
 		if( defaultHandler != null )

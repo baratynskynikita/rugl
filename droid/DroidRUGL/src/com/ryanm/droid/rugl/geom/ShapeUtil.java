@@ -10,7 +10,6 @@ import com.ryanm.droid.rugl.util.geom.Vector2f;
 import com.ryanm.droid.rugl.util.geom.Vector3f;
 import com.ryanm.droid.rugl.util.geom.VectorUtils;
 
-
 /**
  * Utility for constructing various {@link Shape}s
  * 
@@ -999,6 +998,25 @@ public class ShapeUtil
 			tc[ b + o++ ] = 1;
 			tc[ b + o++ ] = 1;
 		}
+		return tc;
+	}
+
+	/**
+	 * Vertically flips a series of quad tex-coords
+	 * 
+	 * @param tc
+	 * @return The input array
+	 */
+	public static float[] vertFlipQuadTexCoords( float[] tc )
+	{
+		float swap = 0;
+		for( int i = 1; i < tc.length - 2; i += 4 )
+		{
+			swap = tc[ i ];
+			tc[ i ] = tc[ i + 2 ];
+			tc[ i + 2 ] = swap;
+		}
+
 		return tc;
 	}
 

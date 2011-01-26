@@ -398,4 +398,47 @@ public class Range
 		min *= s;
 		max *= s;
 	}
+
+	/**
+	 * Smooth interpolation between min and max. Copy the following
+	 * into gnuplot to see the difference between
+	 * {@link #smooth(float, float, float)} and
+	 * {@link #smooth2(float, float, float)} <br>
+	 * set xrange [0:1] <br>
+	 * set yrange [0:1] <br>
+	 * plot (x**2*(3-2*x)) title "smooth", x**3*(10+x*(-15+6*x)) title
+	 * "smooth2"
+	 * 
+	 * @param ratio
+	 *           in range 0-1
+	 * @param min
+	 *           minimum output value
+	 * @param max
+	 *           maximum output value
+	 * @return first-order continuous graduation between min and max
+	 * @see #smooth2(float, float, float)
+	 */
+	public static final float smooth( float ratio, float min, float max )
+	{
+		return toValue( ratio * ratio * ( 3.0f - ( ratio + ratio ) ), min, max );
+	}
+
+	/**
+	 * Smooth interpolation between min and max
+	 * 
+	 * @param ratio
+	 *           in range 0-1
+	 * @param min
+	 *           minimum output value
+	 * @param max
+	 *           maximum output value
+	 * @return all-derivation continuous graduation between min and max
+	 * @see Range#smooth(float, float, float)
+	 */
+	public static final float smooth2( float ratio, float min, float max )
+	{
+		float t3 = ratio * ratio * ratio;
+
+		return toValue( t3 * ( 10.f + ratio * ( -15.f + 6.f * ratio ) ), min, max );
+	}
 }
