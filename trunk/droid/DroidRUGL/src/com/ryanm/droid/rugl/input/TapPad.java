@@ -97,21 +97,19 @@ public class TapPad implements Touch.TouchListener
 
 					listener.onFlick( this, horizontal, vertical );
 				}
-			}
 
-			if( tapped )
-			{
-				listener.onTap( this );
-				tapped = false;
-			}
-			else if( touch != null )
-			{
 				long delta = System.currentTimeMillis() - downTime;
 				if( delta > longPressTime * 1000 && !longPressed )
 				{
 					listener.onLongPress( this );
 					longPressed = true;
 				}
+			}
+
+			if( tapped )
+			{
+				listener.onTap( this );
+				tapped = false;
 			}
 		}
 	}
