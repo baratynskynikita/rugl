@@ -1,10 +1,10 @@
 
 package com.ryanm.droid.rugl.input;
 
-import com.ryanm.droid.config.annote.Summary;
-import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.gl.StackedRenderer;
 import com.ryanm.droid.rugl.input.Touch.TouchListener;
+import com.ryanm.preflect.annote.Summary;
+import com.ryanm.preflect.annote.Variable;
 
 /**
  * Remember to register these with

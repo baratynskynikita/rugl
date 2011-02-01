@@ -3,9 +3,9 @@ package com.ryanm.droid.rugl.gl.facets;
 
 import javax.microedition.khronos.opengles.GL11;
 
-import com.ryanm.droid.rugl.gl.Facet;
-
 import android.opengl.GLES10;
+
+import com.ryanm.droid.rugl.gl.Facet;
 
 /**
  * Controls polygon offset

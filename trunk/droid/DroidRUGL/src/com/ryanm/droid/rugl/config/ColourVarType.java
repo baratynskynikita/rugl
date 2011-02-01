@@ -6,10 +6,10 @@ import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.util.Log;
 
-import com.ryanm.droid.config.Configuration;
-import com.ryanm.droid.config.ParseException;
-import com.ryanm.droid.config.imp.CSVPrefType;
 import com.ryanm.droid.rugl.util.Colour;
+import com.ryanm.preflect.ParseException;
+import com.ryanm.preflect.Preflect;
+import com.ryanm.preflect.imp.CSVPrefType;
 
 /**
  * @author ryanm
@@ -52,16 +52,14 @@ public class ColourVarType extends CSVPrefType<Colour>
 	@Override
 	public String encode( Colour value )
 	{
-		Log.e( Configuration.LOG_TAG,
-				"ColourVarType.encode() - This should never be called!" );
+		Log.e( Preflect.LOG_TAG, "ColourVarType.encode() - This should never be called!" );
 		return "";
 	}
 
 	@Override
 	public Colour decode( String encoded, Class runtimeType ) throws ParseException
 	{
-		Log.e( Configuration.LOG_TAG,
-				"ColourVarType.decode() - This should never be called!" );
+		Log.e( Preflect.LOG_TAG, "ColourVarType.decode() - This should never be called!" );
 		return null;
 	}
 }

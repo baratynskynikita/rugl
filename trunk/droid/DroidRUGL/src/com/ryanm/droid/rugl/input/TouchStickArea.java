@@ -1,9 +1,6 @@
 
 package com.ryanm.droid.rugl.input;
 
-import com.ryanm.droid.config.annote.DirtyFlag;
-import com.ryanm.droid.config.annote.Summary;
-import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.geom.ColouredShape;
 import com.ryanm.droid.rugl.geom.ShapeUtil;
 import com.ryanm.droid.rugl.gl.GLUtil;
@@ -11,6 +8,10 @@ import com.ryanm.droid.rugl.gl.StackedRenderer;
 import com.ryanm.droid.rugl.input.Touch.Pointer;
 import com.ryanm.droid.rugl.util.Colour;
 import com.ryanm.droid.rugl.util.geom.BoundingRectangle;
+import com.ryanm.preflect.annote.DirtyFlag;
+import com.ryanm.preflect.annote.Summary;
+import com.ryanm.preflect.annote.Variable;
+import com.ryanm.preflect.annote.WidgetHint;
 
 /**
  * An area that causes a {@link TouchStick} to appear when and where a
@@ -32,6 +33,12 @@ public class TouchStickArea extends AbstractTouchStick
 	@Variable( "Pad area" )
 	@Summary( "Position and size of sensitive area" )
 	public BoundingRectangle pad = new BoundingRectangle();
+
+	/***/
+	@Variable( "Bounds colour" )
+	@Summary( "Colour of pad area outline" )
+	@WidgetHint( Colour.class )
+	public int boundsColour = Colour.packFloat( 1, 1, 1, 0.3f );
 
 	/***/
 	@Variable
@@ -69,7 +76,7 @@ public class TouchStickArea extends AbstractTouchStick
 	}
 
 	@Override
-	public void pointerAdded( Pointer p )
+	public boolean pointerAdded( Pointer p )
 	{
 		if( pad.contains( p.x, p.y ) )
 		{
@@ -78,7 +85,11 @@ public class TouchStickArea extends AbstractTouchStick
 			stick.setPosition( p.x, p.y );
 
 			stick.pointerAdded( p );
+
+			return true;
 		}
+
+		return false;
 	}
 
 	@Override
@@ -108,8 +119,8 @@ public class TouchStickArea extends AbstractTouchStick
 			{
 				outline =
 						new ColouredShape( ShapeUtil.innerQuad( pad.x.getMin(), pad.y.getMin(),
-								pad.x.getMax(), pad.y.getMax(), 5, 0 ), Colour.packFloat( 1, 1,
-								1, 0.25f ), GLUtil.typicalState );
+								pad.x.getMax(), pad.y.getMax(), 5, 0 ), boundsColour,
+								GLUtil.typicalState );
 			}
 
 			outline.render( sr );
@@ -118,7 +129,7 @@ public class TouchStickArea extends AbstractTouchStick
 
 	/***/
 	@DirtyFlag
-	public void oulineDirty()
+	public void outLineDirty()
 	{
 		outline = null;
 	}

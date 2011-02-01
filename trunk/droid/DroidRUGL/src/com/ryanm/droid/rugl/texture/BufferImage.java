@@ -9,10 +9,10 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
+import android.opengl.GLES10;
+
 import com.ryanm.droid.rugl.gl.BufferUtils;
 import com.ryanm.droid.rugl.gl.GLUtil;
-
-import android.opengl.GLES10;
 
 /**
  * An image based on a bytebuffer

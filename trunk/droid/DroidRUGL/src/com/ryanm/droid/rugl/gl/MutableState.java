@@ -27,9 +27,8 @@
 
 package com.ryanm.droid.rugl.gl;
 
-import com.ryanm.droid.config.Configuration;
-import com.ryanm.droid.config.annote.DirtyFlag;
-import com.ryanm.droid.config.annote.Variable;
+import android.content.res.Configuration;
+
 import com.ryanm.droid.rugl.gl.enums.DrawMode;
 import com.ryanm.droid.rugl.gl.facets.mutable.MutAlphaTest;
 import com.ryanm.droid.rugl.gl.facets.mutable.MutBlend;
@@ -37,6 +36,8 @@ import com.ryanm.droid.rugl.gl.facets.mutable.MutDepthTest;
 import com.ryanm.droid.rugl.gl.facets.mutable.MutFog;
 import com.ryanm.droid.rugl.gl.facets.mutable.MutPolygonOffset;
 import com.ryanm.droid.rugl.gl.facets.mutable.MutTextureState;
+import com.ryanm.preflect.annote.DirtyFlag;
+import com.ryanm.preflect.annote.Variable;
 
 /**
  * Represents a mutable rendering state

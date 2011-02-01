@@ -1,10 +1,10 @@
 
 package com.ryanm.droid.rugl.gl.facets;
 
+import android.opengl.GLES10;
+
 import com.ryanm.droid.rugl.gl.Facet;
 import com.ryanm.droid.rugl.gl.enums.ComparisonFunction;
-
-import android.opengl.GLES10;
 
 /**
  * Controls the alpha test

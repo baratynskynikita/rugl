@@ -1,9 +1,9 @@
 
 package com.ryanm.droid.rugl.gl.facets.mutable;
 
-import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.gl.enums.ComparisonFunction;
 import com.ryanm.droid.rugl.gl.facets.DepthTest;
+import com.ryanm.preflect.annote.Variable;
 
 /**
  * Controls the depth test

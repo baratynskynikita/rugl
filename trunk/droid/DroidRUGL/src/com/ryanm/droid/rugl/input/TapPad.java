@@ -1,8 +1,6 @@
 
 package com.ryanm.droid.rugl.input;
 
-import com.ryanm.droid.config.annote.Summary;
-import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.geom.ColouredShape;
 import com.ryanm.droid.rugl.geom.ShapeUtil;
 import com.ryanm.droid.rugl.gl.GLUtil;
@@ -10,9 +8,13 @@ import com.ryanm.droid.rugl.gl.StackedRenderer;
 import com.ryanm.droid.rugl.input.Touch.Pointer;
 import com.ryanm.droid.rugl.util.Colour;
 import com.ryanm.droid.rugl.util.geom.BoundingRectangle;
+import com.ryanm.preflect.annote.DirtyFlag;
+import com.ryanm.preflect.annote.Summary;
+import com.ryanm.preflect.annote.Variable;
+import com.ryanm.preflect.annote.WidgetHint;
 
 /**
- * A tapable rectangle on the screen
+ * A tapable, flickable rectangle on the screen
  * 
  * @author ryanm
  */
@@ -32,9 +34,14 @@ public class TapPad implements Touch.TouchListener
 
 	/***/
 	@Variable( "Long press time" )
-	@Summary( "The time between press and release "
-			+ "for a long press to be registered, in seconds" )
+	@Summary( "Minimum touch time for a long press to be registered, in seconds" )
 	public float longPressTime = 0.5f;
+
+	/***/
+	@Variable( "Bounds colour" )
+	@Summary( "Colour of pad area outline" )
+	@WidgetHint( Colour.class )
+	public int boundsColour = Colour.packFloat( 1, 1, 1, 0.3f );
 
 	private BoundingRectangle pad = new BoundingRectangle();
 
@@ -115,13 +122,16 @@ public class TapPad implements Touch.TouchListener
 	}
 
 	@Override
-	public void pointerAdded( Pointer p )
+	public boolean pointerAdded( Pointer p )
 	{
 		if( pad.contains( p.x, p.y ) )
 		{
 			touch = p;
 			downTime = System.currentTimeMillis();
+
+			return true;
 		}
+		return false;
 	}
 
 	@Override
@@ -173,12 +183,19 @@ public class TapPad implements Touch.TouchListener
 			{
 				outline =
 						new ColouredShape( ShapeUtil.innerQuad( pad.x.getMin(), pad.y.getMin(),
-								pad.x.getMax(), pad.y.getMax(), 5, 0 ), Colour.packFloat( 1, 1,
-								1, 0.25f ), GLUtil.typicalState );
+								pad.x.getMax(), pad.y.getMax(), 5, 0 ), boundsColour,
+								GLUtil.typicalState );
 			}
 
 			outline.render( sr );
 		}
+	}
+
+	/***/
+	@DirtyFlag
+	public void outLineDirty()
+	{
+		outline = null;
 	}
 
 	/**

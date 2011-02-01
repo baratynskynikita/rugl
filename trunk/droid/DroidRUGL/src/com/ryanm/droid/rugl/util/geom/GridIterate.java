@@ -1,8 +1,6 @@
 
 package com.ryanm.droid.rugl.util.geom;
 
-import android.graphics.Point;
-
 /**
  * Allows us to iterate over a unit-grid over a line segment
  * 
@@ -12,167 +10,75 @@ public class GridIterate
 {
 	private enum Move
 	{
-		LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, 1 ), DOWN( 0, -1 ), COMPLETE( 0, 0 );
+		/***/
+		X_LOW( -1, 0, 0 ),
+		/***/
+		X_HIGH( 1, 0, 0 ),
+		/***/
+		Y_LOW( 0, -1, 0 ),
+		/***/
+		Y_HIGH( 0, 1, 0 ),
+		/***/
+		Z_LOW( 0, 0, -1 ),
+		/***/
+		Z_HIGH( 0, 0, 1 ),
+		/***/
+		COMPLETE( 0, 0, 0 );
 
 		private final int x;
 
 		private final int y;
 
-		private Move( int x, int y )
+		private final int z;
+
+		private Move( int x, int y, int z )
 		{
 			this.x = x;
 			this.y = y;
+			this.z = z;
 		}
 	}
 
-	private enum Direction
-	{
-		UP_RIGHT
-		{
-			@Override
-			public Move validate( Move m )
-			{
-				switch( m )
-				{
-					case DOWN:
-						return Move.RIGHT;
-					case LEFT:
-						return Move.UP;
-					default:
-						return m;
-				}
-			}
-		},
-		UP_LEFT
-		{
-			@Override
-			public Move validate( Move m )
-			{
-				switch( m )
-				{
-					case DOWN:
-						return Move.LEFT;
-					case RIGHT:
-						return Move.UP;
-					default:
-						return m;
-				}
-			}
-		},
-		DOWN_RIGHT
-		{
-			@Override
-			public Move validate( Move m )
-			{
-				switch( m )
-				{
-					case UP:
-						return Move.RIGHT;
-					case LEFT:
-						return Move.DOWN;
-					default:
-						return m;
-				}
-			}
-		},
-		DOWN_LEFT
-		{
-			@Override
-			public Move validate( Move m )
-			{
-				switch( m )
-				{
-					case UP:
-						return Move.LEFT;
-					case RIGHT:
-						return Move.DOWN;
-					default:
-						return m;
-				}
-			}
-		};
+	private final Vector3f start = new Vector3f(), end = new Vector3f(),
+			p = new Vector3f(), q = new Vector3f();
 
-		/**
-		 * Solves a really hideous corner-case problem. Literally a
-		 * corner case : next move gets confused when the line exactly
-		 * hits the corner of a box
-		 * 
-		 * @param m
-		 * @return The correct next direction move
-		 */
-		public abstract Move validate( Move m );
-	}
+	private Move xDir, yDir, zDir;
 
-	private final Vector2f start = new Vector2f(), end = new Vector2f(),
-			p = new Vector2f(), q = new Vector2f();
+	private BoundingCuboid segBounds = new BoundingCuboid( 0, 0, 0, 0, 0, 0 );
 
-	private final Vector2f min = new Vector2f(), max = new Vector2f();
-
-	private Direction dir;
+	private BoundingCuboid gridBounds = new BoundingCuboid( 0, 0, 0, 0, 0, 0 );
 
 	/**
 	 * The coordinates of the last grid square
 	 */
-	public Point lastGridCoords = null;
+	public Vector3f lastGridCoords = new Vector3f();
 
 	private Move lastGridExit = null;
 
 	private boolean done = false;
 
-	private final float invGridSize;
-
-	/**
-	 * @param gridSize
-	 * @param minX
-	 * @param minY
-	 * @param maxX
-	 * @param maxY
-	 */
-	public GridIterate( float gridSize, float minX, float minY, float maxX, float maxY )
-	{
-		invGridSize = 1.0f / gridSize;
-		min.set( minX, minY );
-		max.set( maxX, maxY );
-	}
-
 	/**
 	 * @param startx
 	 * @param starty
+	 * @param startz
 	 * @param endx
 	 * @param endy
+	 * @param endz
 	 */
-	public void setSeg( float startx, float starty, float endx, float endy )
+	public void setSeg( float startx, float starty, float startz, float endx, float endy,
+			float endz )
 	{
-		start.set( startx, starty );
-		end.set( endx, endy );
+		start.set( startx, starty, startz );
+		end.set( endx, endy, endz );
 
-		start.scale( invGridSize );
-		end.scale( invGridSize );
+		xDir = startx < endx ? Move.X_HIGH : Move.X_LOW;
+		yDir = starty < endy ? Move.Y_HIGH : Move.Y_LOW;
+		zDir = startz < endz ? Move.Z_HIGH : Move.Z_LOW;
 
-		if( start.x < end.x )
-		{
-			if( start.y < end.y )
-			{
-				dir = Direction.UP_RIGHT;
-			}
-			else
-			{
-				dir = Direction.DOWN_RIGHT;
-			}
-		}
-		else
-		{
-			if( start.y < end.y )
-			{
-				dir = Direction.UP_LEFT;
-			}
-			else
-			{
-				dir = Direction.DOWN_LEFT;
-			}
-		}
+		segBounds.x.set( startx, endx );
+		segBounds.y.set( starty, endy );
+		segBounds.z.set( startz, endz );
 
-		lastGridCoords = null;
 		lastGridExit = null;
 		done = false;
 	}
@@ -194,140 +100,118 @@ public class GridIterate
 	{
 		if( lastGridCoords == null )
 		{
-			lastGridCoords = new Point( ( int ) start.x, ( int ) start.y );
+			lastGridCoords.set( ( int ) start.x, ( int ) start.y, ( int ) start.z );
 		}
 		else
 		{
 			lastGridCoords.x = lastGridCoords.x + lastGridExit.x;
 			lastGridCoords.y = lastGridCoords.y + lastGridExit.y;
+			lastGridCoords.z = lastGridCoords.z + lastGridExit.z;
 		}
+
+		gridBounds.x.set( lastGridCoords.x, lastGridCoords.x + 1 );
+		gridBounds.y.set( lastGridCoords.y, lastGridCoords.y + 1 );
+		gridBounds.z.set( lastGridCoords.z, lastGridCoords.z + 1 );
 
 		p.set( start );
 		q.set( end );
 
 		// clip to grid
-		lastGridExit = clip( p, q, lastGridCoords.x, lastGridCoords.y );
+		lastGridExit =
+				clip( p, q, ( int ) lastGridCoords.x, ( int ) lastGridCoords.y,
+						( int ) lastGridCoords.z );
 
-		lastGridExit = dir.validate( lastGridExit );
+		if( lastGridExit.x != 0 && lastGridExit.x != xDir.x )
+		{
+			lastGridExit = yDir;
+		}
+		if( lastGridExit.y != 0 && lastGridExit.y != yDir.y )
+		{
+			lastGridExit = zDir;
+		}
+		if( lastGridExit.z != 0 && lastGridExit.z != zDir.z )
+		{
+			lastGridExit = xDir;
+		}
 
-		if( lastGridExit == Move.COMPLETE || lastGridCoords.x < min.x
-				|| lastGridCoords.y < min.y || lastGridCoords.x > max.x
-				|| lastGridCoords.y > max.y )
+		if( lastGridExit == Move.COMPLETE || !segBounds.intersects( gridBounds ) )
 		{
 			done = true;
 		}
 	}
 
-	private Move clip( Vector2f p, Vector2f q, int x, int y )
+	private Move clip( Vector3f p, Vector3f q, int x, int y, int z )
 	{
-		clipPoint( p, q, x, y );
-		Move exit = clipPoint( q, p, x, y );
-
+		clipPoint( p, q, x, y, z );
+		Move exit = clipPoint( q, p, x, y, z );
 		return exit;
 	}
 
-	private Move clipPoint( Vector2f p, Vector2f q, int x, int y )
+	private Move clipPoint( Vector3f p, Vector3f q, int x, int y, int z )
 	{
 		Move m = Move.COMPLETE;
 
 		if( p.x < x )
 		{
-			p.y = p.y + ( q.y - p.y ) * ( x - p.x ) / ( q.x - p.x );
+			float d = ( x - p.x ) / ( q.x - p.x );
+			p.y += ( q.y - p.y ) * d;
+			p.z += ( q.z - p.z ) * d;
 			p.x = x;
 
-			m = Move.LEFT;
+			m = Move.X_LOW;
 		}
 
 		if( p.x > x + 1 )
 		{
-			p.y = p.y + ( q.y - p.y ) * ( x + 1 - p.x ) / ( q.x - p.x );
+			float d = ( x + 1 - p.x ) / ( q.x - p.x );
+			p.y += ( q.y - p.y ) * d;
+			p.z += ( q.z - p.z ) * d;
 			p.x = x + 1;
 
-			m = Move.RIGHT;
+			m = Move.X_HIGH;
 		}
 
 		if( p.y < y )
 		{
-			p.x = p.x + ( q.x - p.x ) * ( y - p.y ) / ( q.y - p.y );
+			float d = ( y - p.y ) / ( q.y - p.y );
+			p.x += ( q.x - p.x ) * d;
+			p.z += ( q.z - p.z ) * d;
 			p.y = y;
 
-			m = Move.DOWN;
+			m = Move.Y_LOW;
 		}
 
 		if( p.y > y + 1 )
 		{
-			p.x = p.x + ( q.x - p.x ) * ( y + 1 - p.y ) / ( q.y - p.y );
+			float d = ( y + 1 - p.y ) / ( q.y - p.y );
+			p.x += ( q.x - p.x ) * d;
+			p.z += ( q.z - p.z ) * d;
 			p.y = y + 1;
 
-			m = Move.UP;
+			m = Move.Y_HIGH;
+		}
+
+		if( p.z < z )
+		{
+			float d = ( z - p.z ) / ( q.z - p.z );
+			p.x += ( q.x - p.x ) * d;
+			p.y += ( q.y - p.y ) * d;
+			p.z = z;
+
+			m = Move.Z_LOW;
+		}
+
+		if( p.z > z + 1 )
+		{
+			float d = ( z + 1 - p.z ) / ( q.z - p.z );
+			p.x += ( q.x - p.x ) * d;
+			p.y += ( q.y - p.y ) * d;
+			p.z = z + 1;
+
+			m = Move.Z_HIGH;
 		}
 
 		return m;
 	}
 
-	// /**
-	// * @param args
-	// */
-	// public static void main( String[] args )
-	// {
-	// int size = 500;
-	// float box = 50;
-	//
-	// BufferedImage bi = new BufferedImage( size, size,
-	// BufferedImage.TYPE_INT_ARGB );
-	// Graphics2D g = bi.createGraphics();
-	// g.setColor( Color.white );
-	// g.fillRect( 0, 0, bi.getWidth(), bi.getHeight() );
-	//
-	// g.setColor( Color.black );
-	//
-	// for( int i = 0; i < 500; i += box )
-	// {
-	// g.drawLine( i, 0, i, bi.getHeight() );
-	// g.drawLine( 0, i, bi.getWidth(), i );
-	// }
-	//
-	// Random rng = new Random();
-	//
-	// Vector2f start = new Vector2f( size * rng.nextFloat(), size *
-	// rng.nextFloat() );
-	// Vector2f end = new Vector2f( size * rng.nextFloat(), size *
-	// rng.nextFloat() );
-	//
-	// g.setColor( Color.red );
-	// // g.setStroke( new BasicStroke( 5, BasicStroke.CAP_ROUND,
-	// // BasicStroke.JOIN_MITER ) );
-	// g.drawLine( ( int ) start.x, ( int ) start.y, ( int ) end.x, (
-	// int ) end.y );
-	//
-	// g.setColor( new Color( 0, 0, 0, 128 ) );
-	//
-	// System.out.println( start + " to " + end );
-	//
-	// GridIterate gi = new GridIterate( box );
-	// gi.setSeg( start.x, start.y, end.x, end.y );
-	//
-	// while( !gi.isDone() )
-	// {
-	// gi.next();
-	//
-	// System.out.println( "( " + gi.lastGridCoords.x + ", " +
-	// gi.lastGridCoords.y + " )\t" );
-	//
-	// g.fillRect( ( int ) ( gi.lastGridCoords.x * box ), ( int ) (
-	// gi.lastGridCoords.y * box ),
-	// ( int ) box, ( int ) box );
-	// }
-	//
-	// try
-	// {
-	// ImageIO.write( bi, "png", new File( "grid.png" ) );
-	// }
-	// catch( IOException e )
-	// {
-	// e.printStackTrace();
-	// }
-	//
-	// System.out.println( "done" );
-	// }
 }

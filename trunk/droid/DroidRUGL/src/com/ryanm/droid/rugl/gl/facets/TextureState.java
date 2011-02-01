@@ -1,12 +1,12 @@
 
 package com.ryanm.droid.rugl.gl.facets;
 
+import android.opengl.GLES10;
+
 import com.ryanm.droid.rugl.gl.Facet;
 import com.ryanm.droid.rugl.gl.enums.MagFilter;
 import com.ryanm.droid.rugl.gl.enums.MinFilter;
 import com.ryanm.droid.rugl.gl.enums.TextureWrap;
-
-import android.opengl.GLES10;
 
 /**
  * Controls the bound texture and parameters
