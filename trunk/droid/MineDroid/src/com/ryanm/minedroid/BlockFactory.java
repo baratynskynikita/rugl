@@ -285,7 +285,11 @@ public class BlockFactory
 		/***/
 		Oven( ( byte ) 61, true, 13, 2, 13, 2, 13, 2, 12, 2, 1, 0, 1, 0 ),
 		/***/
-		WorkBench( ( byte ) 58, true, 11, 3, 12, 3, 11, 3, 12, 3, 11, 2, 11, 2 );
+		WorkBench( ( byte ) 58, true, 11, 3, 12, 3, 11, 3, 12, 3, 11, 2, 11, 2 ),
+		/***/
+		HalfBlock( ( byte ) 44, false, 5, 0, 6, 0 ),
+		/***/
+		DoubleHalfBlock( ( byte ) 43, true, 5, 0, 6, 0 );
 
 		/***/
 		public final byte id;
@@ -349,7 +353,6 @@ public class BlockFactory
 			faceTexCoords( Face.Top, itc, 0 );
 			faceTexCoords( Face.North, itc, 8 );
 			faceTexCoords( Face.West, itc, 16 );
-
 			blockItemShape = new TexturedShape( BlockFactory.itemShape, itc, texture );
 		}
 
@@ -410,6 +413,26 @@ public class BlockFactory
 			float bv = sxtn * ( texCoords[ txco + 1 ] + 1 );
 			float tu = sxtn * ( texCoords[ txco ] + 1 );
 			float tv = sxtn * texCoords[ txco + 1 ];
+
+			if( id == 44 && f != Face.Bottom )
+			{ // half block
+				if( f == Face.Top )
+				{ // shift all down
+					sb.vertices[ sb.vertexOffset - 2 ] -= 0.5f;
+					sb.vertices[ sb.vertexOffset - 5 ] -= 0.5f;
+					sb.vertices[ sb.vertexOffset - 8 ] -= 0.5f;
+					sb.vertices[ sb.vertexOffset - 11 ] -= 0.5f;
+				}
+				else
+				{ // shift top down
+					sb.vertices[ sb.vertexOffset - 2 ] -= 0.5f;
+					sb.vertices[ sb.vertexOffset - 8 ] -= 0.5f;
+
+					// half texcoords
+					bv *= 0.5f;
+					tv *= 0.5f;
+				}
+			}
 
 			sb.texCoords[ sb.texCoordOffset++ ] = bu;
 			sb.texCoords[ sb.texCoordOffset++ ] = bv;

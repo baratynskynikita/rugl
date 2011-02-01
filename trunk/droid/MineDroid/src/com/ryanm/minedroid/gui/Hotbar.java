@@ -3,21 +3,20 @@ package com.ryanm.minedroid.gui;
 
 import java.util.Arrays;
 
-import com.ryanm.droid.config.annote.DirtyFlag;
-import com.ryanm.droid.config.annote.Summary;
-import com.ryanm.droid.config.annote.Variable;
-import com.ryanm.droid.config.annote.WidgetHint;
 import com.ryanm.droid.rugl.geom.ColouredShape;
 import com.ryanm.droid.rugl.geom.Shape;
 import com.ryanm.droid.rugl.geom.ShapeUtil;
 import com.ryanm.droid.rugl.gl.StackedRenderer;
-import com.ryanm.droid.rugl.input.Touch;
 import com.ryanm.droid.rugl.input.Touch.Pointer;
 import com.ryanm.droid.rugl.input.Touch.TouchListener;
 import com.ryanm.droid.rugl.util.Colour;
 import com.ryanm.droid.rugl.util.geom.BoundingRectangle;
 import com.ryanm.droid.rugl.util.math.Range;
 import com.ryanm.minedroid.Player;
+import com.ryanm.preflect.annote.DirtyFlag;
+import com.ryanm.preflect.annote.Summary;
+import com.ryanm.preflect.annote.Variable;
+import com.ryanm.preflect.annote.WidgetHint;
 
 /**
  * On-screen inventory
@@ -26,7 +25,7 @@ import com.ryanm.minedroid.Player;
  */
 @Variable( "Hotbar" )
 @Summary( "Controls for size, placement and zoom behaviour" )
-public class Hotbar
+public class Hotbar implements TouchListener
 {
 	private final Player player;
 
@@ -50,7 +49,7 @@ public class Hotbar
 
 	/***/
 	@Variable
-	@Summary( "Zoom duration" )
+	@Summary( "Zoom duration in seconds" )
 	public float zoomTime = 0.15f;
 
 	private float[] currentZooms = new float[ 9 ];
@@ -61,37 +60,12 @@ public class Hotbar
 
 	private int selection;
 
-	private TouchListener touchListener = new TouchListener() {
-		@Override
-		public void pointerAdded( Pointer p )
-		{
-			if( touch == null && bounds.contains( p.x, p.y ) )
-			{
-				touch = p;
-			}
-		}
-
-		@Override
-		public void pointerRemoved( Pointer p )
-		{
-			if( touch == p )
-			{
-				touch = null;
-				if( Range.inRange( selection, 0, player.hotbar.length - 1 ) )
-				{
-					player.inHand = player.hotbar[ selection ];
-				}
-			}
-		}
-	};
-
 	/**
 	 * @param player
 	 */
 	public Hotbar( Player player )
 	{
 		this.player = player;
-		Touch.addListener( touchListener );
 	}
 
 	/**
@@ -109,6 +83,7 @@ public class Hotbar
 			d *= 9;
 			selection = ( int ) d;
 			targetZooms[ selection ] = 1;
+			player.inHand = player.hotbar[ selection ];
 		}
 
 		// lerp zooms
@@ -171,5 +146,27 @@ public class Hotbar
 	public void boundsDirty()
 	{
 		boundsShape = null;
+	}
+
+	@Override
+	public boolean pointerAdded( Pointer p )
+	{
+		if( touch == null && bounds.contains( p.x, p.y ) )
+		{
+			touch = p;
+
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public void pointerRemoved( Pointer p )
+	{
+		if( touch == p )
+		{
+			touch = null;
+		}
 	}
 }

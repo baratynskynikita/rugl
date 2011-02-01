@@ -5,15 +5,14 @@ import static android.opengl.GLES10.GL_DEPTH_BUFFER_BIT;
 import static android.opengl.GLES10.glClear;
 import android.util.Log;
 
-import com.ryanm.droid.config.annote.Category;
-import com.ryanm.droid.config.annote.Summary;
-import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.gl.GLUtil;
 import com.ryanm.droid.rugl.gl.StackedRenderer;
 import com.ryanm.droid.rugl.input.AbstractTouchStick.ClickListener;
 import com.ryanm.droid.rugl.input.TapPad;
 import com.ryanm.droid.rugl.input.Touch;
+import com.ryanm.droid.rugl.input.Touch.Pointer;
+import com.ryanm.droid.rugl.input.Touch.TouchListener;
 import com.ryanm.droid.rugl.input.TouchStickArea;
 import com.ryanm.droid.rugl.res.FontLoader;
 import com.ryanm.droid.rugl.res.ResourceLoader;
@@ -24,6 +23,9 @@ import com.ryanm.droid.rugl.util.Colour;
 import com.ryanm.minedroid.Player;
 import com.ryanm.minedroid.World;
 import com.ryanm.minedroid.chunk.GeometryGenerator;
+import com.ryanm.preflect.annote.Category;
+import com.ryanm.preflect.annote.Summary;
+import com.ryanm.preflect.annote.Variable;
 
 /**
  * Holds the touchsticks
@@ -82,6 +84,38 @@ public class GUI
 
 	private Font font;
 
+	private TouchListener[] widgets;
+
+	private TouchListener touchListener = new TouchListener() {
+		@Override
+		public void pointerRemoved( Pointer p )
+		{
+			for( int i = 0; i < widgets.length; i++ )
+			{
+				widgets[ i ].pointerRemoved( p );
+			}
+
+			// place block?
+		}
+
+		@Override
+		public boolean pointerAdded( Pointer p )
+		{
+			boolean eaten = false;
+			for( int i = 0; i < widgets.length && !eaten; i++ )
+			{
+				eaten |= widgets[ i ].pointerAdded( p );
+			}
+
+			if( !eaten )
+			{
+				// start swinging? block placement preview?
+			}
+
+			return false;
+		}
+	};
+
 	/**
 	 * @param player
 	 */
@@ -91,9 +125,9 @@ public class GUI
 		hand = new Hand( player );
 		rightTap.listener = player.jumpCrouchListener;
 
-		Touch.addListener( left );
-		Touch.addListener( right );
-		Touch.addListener( rightTap );
+		widgets = new TouchListener[] { left, right, rightTap, hotbar };
+
+		Touch.addListener( touchListener );
 
 		ClickListener strikey = new ClickListener() {
 			@Override
@@ -125,7 +159,6 @@ public class GUI
 				chunkletCount = new Readout( font, Colour.black, "Chunklets = ", false, 3, 0 );
 				chunkletCount.translate( 10, Game.height - 40 - 3
 						* chunkletCount.getBounds().y.getSpan(), 0 );
-
 			}
 		} );
 	}

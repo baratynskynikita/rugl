@@ -3,9 +3,6 @@ package com.ryanm.minedroid;
 
 import android.util.FloatMath;
 
-import com.ryanm.droid.config.annote.Category;
-import com.ryanm.droid.config.annote.Summary;
-import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.input.TapPad;
 import com.ryanm.droid.rugl.util.FPSCamera;
 import com.ryanm.droid.rugl.util.geom.BoundingCuboid;
@@ -13,6 +10,9 @@ import com.ryanm.droid.rugl.util.geom.Vector3f;
 import com.ryanm.minedroid.BlockFactory.Block;
 import com.ryanm.minedroid.ItemFactory.Item;
 import com.ryanm.minedroid.gui.GUI;
+import com.ryanm.preflect.annote.Category;
+import com.ryanm.preflect.annote.Summary;
+import com.ryanm.preflect.annote.Variable;
 
 /**
  * @author ryanm
@@ -270,18 +270,14 @@ public class Player
 			z = FloatMath.floor( z );
 			blockBounds.set( x, y, z, x + 1, y + 1, z + 1 );
 
+			if( b == Block.HalfBlock )
+			{
+				blockBounds.y.set( y, y + 0.5f );
+			}
+
 			if( playerBounds.intersection( blockBounds, intersection ) )
 			{
 				correction( intersection, collideCorrection );
-
-				// Log.i( Game.RUGL_TAG, "Eye at " + position );
-				// Log.i( Game.RUGL_TAG, "Player bounds " + player );
-				// Log.i( Game.RUGL_TAG, "Block " + blockBounds.toString()
-				// );
-				// Log.i( Game.RUGL_TAG, "intersection " +
-				// intersection.toString() );
-				// Log.i( Game.RUGL_TAG, "Correction " +
-				// collideCorrection.toString() );
 			}
 		}
 	}
@@ -299,7 +295,12 @@ public class Player
 		float my = intersection.y.getSpan();
 		float mz = intersection.z.getSpan();
 
-		if( mx < my && mx < mz )
+		if( my < 0.51f )
+		{
+			correction.set( 0, intersection.y.toValue( 0.5f ) < position.y ? my : -my, 0 );
+			correction.y *= 0.5f;
+		}
+		else if( mx < my && mx < mz )
 		{
 			correction.set( intersection.x.toValue( 0.5f ) < position.x ? mx : -mx, 0, 0 );
 		}

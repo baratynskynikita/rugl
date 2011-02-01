@@ -4,6 +4,6 @@
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="src" path="DroidRUGL_src"/>
-	<classpathentry kind="src" path="Configuration_src"/>
+	<classpathentry kind="src" path="Preflect_src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
