@@ -1,10 +1,10 @@
 
 package com.ryanm.droid.rugl.gl.facets.mutable;
 
-import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.gl.enums.DestinationFactor;
 import com.ryanm.droid.rugl.gl.enums.SourceFactor;
 import com.ryanm.droid.rugl.gl.facets.Blend;
+import com.ryanm.preflect.annote.Variable;
 
 /**
  * Controls the blending function

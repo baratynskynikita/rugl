@@ -11,16 +11,16 @@ import android.opengl.GLES10;
 import android.opengl.GLSurfaceView.Renderer;
 import android.util.Log;
 
-import com.ryanm.droid.config.Configuration;
-import com.ryanm.droid.config.Persist;
-import com.ryanm.droid.config.annote.Summary;
-import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.gl.GLUtil;
 import com.ryanm.droid.rugl.gl.GLVersion;
 import com.ryanm.droid.rugl.res.ResourceLoader;
 import com.ryanm.droid.rugl.util.CodeTimer;
 import com.ryanm.droid.rugl.util.CodeTimer.Output;
 import com.ryanm.droid.rugl.util.ExceptionHandler;
+import com.ryanm.preflect.Persist;
+import com.ryanm.preflect.Preflect;
+import com.ryanm.preflect.annote.Summary;
+import com.ryanm.preflect.annote.Variable;
 
 /**
  * A convenient {@link Phase}-based game model
@@ -94,7 +94,7 @@ public class Game implements Renderer
 	 */
 	public void launchConfiguration()
 	{
-		Configuration.configure( ga, confRoots );
+		Preflect.configure( ga, confRoots );
 	}
 
 	/**
@@ -255,7 +255,7 @@ public class Game implements Renderer
 
 		if( confRoots != null )
 		{
-			Configuration.applyDeferredConfigurations( confRoots );
+			Preflect.applyDeferredConfigurations( confRoots );
 		}
 
 		ResourceLoader.checkCompletion();

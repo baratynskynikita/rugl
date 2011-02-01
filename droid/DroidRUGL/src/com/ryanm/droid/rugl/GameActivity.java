@@ -6,8 +6,6 @@ import android.content.Intent;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
-import com.ryanm.droid.config.Configuration;
-import com.ryanm.droid.config.VariableType;
 import com.ryanm.droid.rugl.config.BoundingRectVarType;
 import com.ryanm.droid.rugl.config.ColourVarType;
 import com.ryanm.droid.rugl.config.RangeVarType;
@@ -15,6 +13,8 @@ import com.ryanm.droid.rugl.config.Vector2fVarType;
 import com.ryanm.droid.rugl.config.Vector3fVarType;
 import com.ryanm.droid.rugl.res.ResourceLoader;
 import com.ryanm.droid.rugl.util.ExceptionHandler;
+import com.ryanm.preflect.Preflect;
+import com.ryanm.preflect.VariableType;
 
 /**
  * Handy activity that can be simply subclassed. Just remember to call
@@ -104,7 +104,7 @@ public abstract class GameActivity extends Activity
 	{
 		// launched from Game.launchConfiguration(). We need to defer
 		// application till we're on the OpenGL thread
-		Configuration.deferActivityResult( requestCode, resultCode, data );
+		Preflect.deferActivityResult( requestCode, resultCode, data );
 	}
 
 	@Override

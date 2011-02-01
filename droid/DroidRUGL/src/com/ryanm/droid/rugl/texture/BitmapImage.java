@@ -1,11 +1,11 @@
 
 package com.ryanm.droid.rugl.texture;
 
-import com.ryanm.droid.rugl.gl.GLUtil;
-
 import android.graphics.Bitmap;
 import android.opengl.GLES10;
 import android.opengl.GLUtils;
+
+import com.ryanm.droid.rugl.gl.GLUtil;
 
 /**
  * An image based on a {@link Bitmap}

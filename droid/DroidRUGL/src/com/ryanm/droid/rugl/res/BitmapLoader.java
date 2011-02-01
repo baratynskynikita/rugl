@@ -1,12 +1,12 @@
 
 package com.ryanm.droid.rugl.res;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
 import com.ryanm.droid.rugl.res.ResourceLoader.Loader;
 import com.ryanm.droid.rugl.texture.BitmapImage;
 import com.ryanm.droid.rugl.texture.Image;
-
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 
 /**
  * Loads a {@link BitmapImage}

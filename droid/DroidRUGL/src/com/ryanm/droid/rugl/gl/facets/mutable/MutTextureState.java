@@ -1,14 +1,14 @@
 
 package com.ryanm.droid.rugl.gl.facets.mutable;
 
-import com.ryanm.droid.config.annote.Summary;
-import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.gl.enums.MagFilter;
 import com.ryanm.droid.rugl.gl.enums.MinFilter;
 import com.ryanm.droid.rugl.gl.enums.TextureWrap;
 import com.ryanm.droid.rugl.gl.facets.TextureState;
 import com.ryanm.droid.rugl.gl.facets.TextureState.Filters;
 import com.ryanm.droid.rugl.gl.facets.TextureState.WrapParameters;
+import com.ryanm.preflect.annote.Summary;
+import com.ryanm.preflect.annote.Variable;
 
 /**
  * Controls the bound texture and parameters

@@ -3,10 +3,10 @@ package com.ryanm.droid.rugl.input;
 
 import java.util.ArrayList;
 
-import com.ryanm.droid.rugl.Game;
-
 import android.os.Build;
 import android.view.MotionEvent;
+
+import com.ryanm.droid.rugl.Game;
 
 /**
  * Provides a polling-style interface to multitouch pointers. Note
@@ -102,9 +102,10 @@ public class Touch
 
 		pointers = pointerList.toArray( new Pointer[ pointerList.size() ] );
 
-		for( int j = 0; j < listeners.size(); j++ )
+		boolean eaten = false;
+		for( int j = 0; j < listeners.size() && !eaten; j++ )
 		{
-			listeners.get( j ).pointerAdded( p );
+			eaten |= listeners.get( j ).pointerAdded( p );
 		}
 	}
 
@@ -125,9 +126,10 @@ public class Touch
 
 		pointers = pointerList.toArray( new Pointer[ pointerList.size() ] );
 
-		for( int j = 0; j < listeners.size(); j++ )
+		boolean eaten = false;
+		for( int j = 0; j < listeners.size() && !eaten; j++ )
 		{
-			listeners.get( j ).pointerAdded( p );
+			eaten |= listeners.get( j ).pointerAdded( p );
 		}
 	}
 
@@ -254,8 +256,10 @@ public class Touch
 		 * @param p
 		 *           This object's fields will be updated as the pointer
 		 *           changes
+		 * @return <code>true</code> if the touch should be consumed. No
+		 *         other listeners will be notified
 		 */
-		public void pointerAdded( Pointer p );
+		public boolean pointerAdded( Pointer p );
 
 		/**
 		 * Called when a pointer is removed from the screen

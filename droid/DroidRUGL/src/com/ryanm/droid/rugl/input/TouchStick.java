@@ -3,8 +3,6 @@ package com.ryanm.droid.rugl.input;
 
 import android.util.FloatMath;
 
-import com.ryanm.droid.config.annote.Summary;
-import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.geom.ColouredShape;
 import com.ryanm.droid.rugl.geom.ShapeUtil;
 import com.ryanm.droid.rugl.gl.StackedRenderer;
@@ -12,6 +10,8 @@ import com.ryanm.droid.rugl.input.Touch.Pointer;
 import com.ryanm.droid.rugl.util.Colour;
 import com.ryanm.droid.rugl.util.Trig;
 import com.ryanm.droid.rugl.util.math.Range;
+import com.ryanm.preflect.annote.Summary;
+import com.ryanm.preflect.annote.Variable;
 
 /**
  * Simulates a thumbstick
@@ -143,13 +143,17 @@ public class TouchStick extends AbstractTouchStick
 	}
 
 	@Override
-	public void pointerAdded( Pointer p )
+	public boolean pointerAdded( Pointer p )
 	{
 		if( touch == null && Math.hypot( p.x - xPos, p.y - yPos ) < radius )
 		{
 			touch = p;
 			touchTime = System.currentTimeMillis();
+
+			return true;
 		}
+
+		return false;
 	}
 
 	/**

@@ -2,11 +2,8 @@
 package com.ryanm.droid.rugl.util;
 
 import android.opengl.GLES10;
+import android.util.Log;
 
-import com.ryanm.droid.config.annote.Category;
-import com.ryanm.droid.config.annote.Order;
-import com.ryanm.droid.config.annote.Summary;
-import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.gl.GLU;
 import com.ryanm.droid.rugl.util.geom.Frustum;
@@ -14,6 +11,10 @@ import com.ryanm.droid.rugl.util.geom.Matrix4f;
 import com.ryanm.droid.rugl.util.geom.Vector3f;
 import com.ryanm.droid.rugl.util.geom.Vector4f;
 import com.ryanm.droid.rugl.util.math.Range;
+import com.ryanm.preflect.annote.Category;
+import com.ryanm.preflect.annote.Order;
+import com.ryanm.preflect.annote.Summary;
+import com.ryanm.preflect.annote.Variable;
 
 /**
  * A camera suitable for first-person stuff, assumes that the x-z
@@ -84,7 +85,7 @@ public class FPSCamera
 	/**
 	 * Field of view, in degrees
 	 */
-	@Variable( "Field of view" )
+	@Variable( "Field of vertical view" )
 	@Summary( "In degrees" )
 	@Category( "Frustum control" )
 	public float fov = 70;
@@ -153,6 +154,8 @@ public class FPSCamera
 	}
 
 	/**
+	 * Moves and applies the camera
+	 * 
 	 * @param eyeX
 	 * @param eyeY
 	 * @param eyeZ
@@ -195,6 +198,50 @@ public class FPSCamera
 		}
 
 		return frustum;
+	}
+
+	/**
+	 * @param x
+	 *           x coordinate of point, in range -1 (for extreme left
+	 *           of view) to 1 (extreme right)
+	 * @param y
+	 *           y coordinate of point, in range -1 (for bottom of
+	 *           view) to 1 (top of view)
+	 * @param dest
+	 *           destination vector to store the result, or null for a
+	 *           new {@link Vector3f}
+	 * @return A unit vector pointing in the tapped direction
+	 */
+	public Vector3f unProject( float x, float y, Vector3f dest )
+	{
+		Log.i( Game.RUGL_TAG, "-" );
+		Log.i( Game.RUGL_TAG, "unProject " + x + ", " + y );
+
+		v4f.set( forward.x, forward.y, forward.z, 0 );
+
+		Log.i( Game.RUGL_TAG, v4f.toString() );
+
+		float yAngle = -y * fov / 2;
+		float xAngle = -x * aspect * fov / 2;
+
+		Log.i( Game.RUGL_TAG, xAngle + ", " + yAngle );
+
+		m.setIdentity();
+		m.rotate( Trig.toRadians( yAngle ), right.x, right.y, right.z );
+		m.rotate( Trig.toRadians( xAngle ), 0, 1, 0 );
+
+		Matrix4f.transform( m, v4f, v4f );
+
+		if( dest == null )
+		{
+			dest = new Vector3f();
+		}
+
+		dest.set( v4f );
+
+		Log.i( Game.RUGL_TAG, dest.toString() );
+
+		return dest;
 	}
 
 	@Override

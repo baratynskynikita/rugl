@@ -1,11 +1,11 @@
 
 package com.ryanm.droid.rugl.gl.facets.mutable;
 
-import com.ryanm.droid.config.annote.Variable;
-import com.ryanm.droid.config.annote.WidgetHint;
 import com.ryanm.droid.rugl.gl.enums.FogMode;
 import com.ryanm.droid.rugl.gl.facets.Fog;
 import com.ryanm.droid.rugl.util.Colour;
+import com.ryanm.preflect.annote.Variable;
+import com.ryanm.preflect.annote.WidgetHint;
 
 /**
  * Controls fog

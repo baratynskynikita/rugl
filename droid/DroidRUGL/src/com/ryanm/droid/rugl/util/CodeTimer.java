@@ -8,9 +8,9 @@ import java.util.Collections;
 
 import android.util.Log;
 
-import com.ryanm.droid.config.annote.Category;
-import com.ryanm.droid.config.annote.Summary;
-import com.ryanm.droid.config.annote.Variable;
+import com.ryanm.preflect.annote.Category;
+import com.ryanm.preflect.annote.Summary;
+import com.ryanm.preflect.annote.Variable;
 
 /**
  * A convenience class to do code profiling.

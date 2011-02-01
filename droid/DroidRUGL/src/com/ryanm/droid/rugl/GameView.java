@@ -34,7 +34,6 @@ final class GameView extends GLSurfaceView
 		this.game = game;
 
 		setEGLConfigChooser( new GLSurfaceView.EGLConfigChooser() {
-
 			@Override
 			public EGLConfig chooseConfig( EGL10 egl, EGLDisplay display )
 			{

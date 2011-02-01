@@ -3,9 +3,9 @@ package com.ryanm.droid.rugl.gl.facets.mutable;
 
 import javax.microedition.khronos.opengles.GL11;
 
-import com.ryanm.droid.config.annote.Summary;
-import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.gl.facets.PolygonOffset;
+import com.ryanm.preflect.annote.Summary;
+import com.ryanm.preflect.annote.Variable;
 
 /**
  * Controls polygon offset

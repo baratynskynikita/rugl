@@ -1,9 +1,9 @@
 
 package com.ryanm.droid.rugl.config;
 
-import com.ryanm.droid.config.ParseException;
-import com.ryanm.droid.config.imp.CSVPrefType;
 import com.ryanm.droid.rugl.util.geom.BoundingRectangle;
+import com.ryanm.preflect.ParseException;
+import com.ryanm.preflect.imp.CSVPrefType;
 
 /**
  * @author ryanm
