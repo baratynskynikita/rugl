@@ -1,5 +1,7 @@
-Credits for the block texture go to rhodox. Go to http://painterlypack.net/
-and fling some ducats at him.
+Thanks to:
+	Credits for the block texture go to rhodox. Go to http://painterlypack.net/
+	and fling some ducats at him.
+	Richard Invent for the help debugging on OpenGLES1.0 devices
 
 Installation:
 
@@ -47,7 +49,11 @@ Getting the source:
 	
 	http://code.google.com/p/rugl/source/browse/#svn/trunk/droid
 	
-	You'll need the Configuration, DroidRUGL and MineDroid projects.
+	You'll need the DroidRUGL and MineDroid projects from that repository, 
+	and also the Preflect project from
+	
+	http://code.google.com/p/preflect
+	
 	For those with an Eclipse compiler setup as prissy as mine, the missing 
 	javadoc warnings are Google's fault.
 	

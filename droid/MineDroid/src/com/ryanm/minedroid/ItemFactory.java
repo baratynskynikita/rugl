@@ -62,6 +62,8 @@ public class ItemFactory
 		/***/
 		DiamondSword( 3, 4 ),
 		/***/
+		DiamondAxe( 3, 7 ),
+		/***/
 		Grass( Block.Grass ),
 		/***/
 		Cobble( Block.Cobble ),

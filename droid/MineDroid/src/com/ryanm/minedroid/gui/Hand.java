@@ -1,12 +1,12 @@
 
 package com.ryanm.minedroid.gui;
 
-import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.gl.StackedRenderer;
 import com.ryanm.droid.rugl.util.Trig;
 import com.ryanm.droid.rugl.util.geom.Vector2f;
 import com.ryanm.droid.rugl.util.math.Range;
 import com.ryanm.minedroid.Player;
+import com.ryanm.preflect.annote.Variable;
 
 /**
  * Draws the currently-held item

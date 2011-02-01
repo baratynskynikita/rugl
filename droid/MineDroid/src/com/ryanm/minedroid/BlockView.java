@@ -7,15 +7,19 @@ import static android.opengl.GLES10.glClear;
 import android.opengl.GLES10;
 import android.view.KeyEvent;
 
-import com.ryanm.droid.config.annote.Summary;
-import com.ryanm.droid.config.annote.Variable;
-import com.ryanm.droid.config.annote.WidgetHint;
 import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.Phase;
+import com.ryanm.droid.rugl.input.Touch;
+import com.ryanm.droid.rugl.input.Touch.Pointer;
+import com.ryanm.droid.rugl.input.Touch.TouchListener;
 import com.ryanm.droid.rugl.util.Colour;
 import com.ryanm.droid.rugl.util.FPSCamera;
+import com.ryanm.droid.rugl.util.math.Range;
 import com.ryanm.minedroid.ItemFactory.Item;
 import com.ryanm.minedroid.gui.GUI;
+import com.ryanm.preflect.annote.Summary;
+import com.ryanm.preflect.annote.Variable;
+import com.ryanm.preflect.annote.WidgetHint;
 
 /**
  * @author ryanm
@@ -74,18 +78,37 @@ public class BlockView extends Phase
 		BlockFactory.loadTexture();
 		ItemFactory.loadTexture();
 
-		player.hotbar[ 0 ] = Item.DiamondPick;
-		player.hotbar[ 1 ] = Item.DiamondShovel;
-		player.hotbar[ 2 ] = Item.DiamondSword;
-		player.hotbar[ 3 ] = Item.Grass;
-		player.hotbar[ 4 ] = Item.Cobble;
-		player.hotbar[ 5 ] = Item.Dirt;
-		player.hotbar[ 6 ] = Item.Log;
-		player.hotbar[ 7 ] = Item.Wood;
-		player.hotbar[ 8 ] = Item.Glass;
+		int i = 0;
+		player.hotbar[ i++ ] = Item.DiamondPick;
+		player.hotbar[ i++ ] = Item.DiamondShovel;
+		player.hotbar[ i++ ] = Item.DiamondSword;
+		player.hotbar[ i++ ] = Item.DiamondAxe;
+		player.hotbar[ i++ ] = Item.Grass;
+		player.hotbar[ i++ ] = Item.Cobble;
+		player.hotbar[ i++ ] = Item.Log;
+		player.hotbar[ i++ ] = Item.Wood;
+		player.hotbar[ i++ ] = Item.Glass;
 
 		// load default config
 		game.loadConfiguration( "default" );
+
+		Touch.addListener( new TouchListener() {
+
+			@Override
+			public void pointerRemoved( Pointer p )
+			{
+				float x = Range.toRatio( p.x, 0, Game.width ) * 2 - 1;
+				float y = Range.toRatio( p.y, 0, Game.height ) * 2 - 1;
+
+				cam.unProject( x, y, null );
+			}
+
+			@Override
+			public boolean pointerAdded( Pointer p )
+			{
+				return false;
+			}
+		} );
 	}
 
 	@Override

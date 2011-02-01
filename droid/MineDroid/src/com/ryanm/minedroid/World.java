@@ -9,8 +9,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import android.util.Log;
 
-import com.ryanm.droid.config.annote.Summary;
-import com.ryanm.droid.config.annote.Variable;
 import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.gl.GLUtil;
 import com.ryanm.droid.rugl.gl.MutableState;
@@ -25,6 +23,8 @@ import com.ryanm.droid.rugl.util.math.Range;
 import com.ryanm.minedroid.chunk.Chunk;
 import com.ryanm.minedroid.chunk.ChunkLoader;
 import com.ryanm.minedroid.chunk.Chunklet;
+import com.ryanm.preflect.annote.Summary;
+import com.ryanm.preflect.annote.Variable;
 
 /**
  * Manages loading chunks, decides which chunklets to render
@@ -509,6 +509,10 @@ public class World
 		{
 			return c.parent.blockTypeForPosition( x, y, z );
 		}
+		else
+		{
+			Log.i( Game.RUGL_TAG, "Colliding with null chunklet" );
+		}
 
 		return 0;
 	}
@@ -526,8 +530,6 @@ public class World
 		// properly, so brace yourself for the Madagascan strategy:
 
 		// RELOAD. EVERYTHING.
-		// except the chunk we're in
-		Chunk center = chunks[ chunks.length / 2 ][ chunks.length / 2 ];
 
 		for( int i = 0; i < chunks.length; i++ )
 		{
@@ -540,7 +542,6 @@ public class World
 			}
 		}
 		chunks = new Chunk[ 2 * chunkRadius + 1 ][ 2 * chunkRadius + 1 ];
-		chunks[ chunks.length / 2 ][ chunks.length / 2 ] = center;
 
 		fillChunks();
 	}
