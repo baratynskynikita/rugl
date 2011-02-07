@@ -2,7 +2,6 @@
 package com.ryanm.droid.rugl.util;
 
 import android.opengl.GLES10;
-import android.util.Log;
 
 import com.ryanm.droid.rugl.Game;
 import com.ryanm.droid.rugl.gl.GLU;
@@ -214,17 +213,10 @@ public class FPSCamera
 	 */
 	public Vector3f unProject( float x, float y, Vector3f dest )
 	{
-		Log.i( Game.RUGL_TAG, "-" );
-		Log.i( Game.RUGL_TAG, "unProject " + x + ", " + y );
-
 		v4f.set( forward.x, forward.y, forward.z, 0 );
-
-		Log.i( Game.RUGL_TAG, v4f.toString() );
 
 		float yAngle = -y * fov / 2;
 		float xAngle = -x * aspect * fov / 2;
-
-		Log.i( Game.RUGL_TAG, xAngle + ", " + yAngle );
 
 		m.setIdentity();
 		m.rotate( Trig.toRadians( yAngle ), right.x, right.y, right.z );
@@ -238,8 +230,6 @@ public class FPSCamera
 		}
 
 		dest.set( v4f );
-
-		Log.i( Game.RUGL_TAG, dest.toString() );
 
 		return dest;
 	}

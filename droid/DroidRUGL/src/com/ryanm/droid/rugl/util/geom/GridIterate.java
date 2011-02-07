@@ -51,9 +51,12 @@ public class GridIterate
 	/**
 	 * The coordinates of the last grid square
 	 */
-	public Vector3f lastGridCoords = new Vector3f();
+	public Vector3i lastGridCoords = new Vector3i();
 
-	private Move lastGridExit = null;
+	/**
+	 * The direction of the last move
+	 */
+	public Move lastGridExit = null;
 
 	private boolean done = false;
 
@@ -70,6 +73,9 @@ public class GridIterate
 	{
 		start.set( startx, starty, startz );
 		end.set( endx, endy, endz );
+
+		lastGridCoords.set( ( int ) Math.floor( start.x ), ( int ) Math.floor( start.y ),
+				( int ) Math.floor( start.z ) );
 
 		xDir = startx < endx ? Move.X_HIGH : Move.X_LOW;
 		yDir = starty < endy ? Move.Y_HIGH : Move.Y_LOW;
@@ -98,17 +104,6 @@ public class GridIterate
 	 */
 	public void next()
 	{
-		if( lastGridCoords == null )
-		{
-			lastGridCoords.set( ( int ) start.x, ( int ) start.y, ( int ) start.z );
-		}
-		else
-		{
-			lastGridCoords.x = lastGridCoords.x + lastGridExit.x;
-			lastGridCoords.y = lastGridCoords.y + lastGridExit.y;
-			lastGridCoords.z = lastGridCoords.z + lastGridExit.z;
-		}
-
 		gridBounds.x.set( lastGridCoords.x, lastGridCoords.x + 1 );
 		gridBounds.y.set( lastGridCoords.y, lastGridCoords.y + 1 );
 		gridBounds.z.set( lastGridCoords.z, lastGridCoords.z + 1 );
@@ -117,9 +112,7 @@ public class GridIterate
 		q.set( end );
 
 		// clip to grid
-		lastGridExit =
-				clip( p, q, ( int ) lastGridCoords.x, ( int ) lastGridCoords.y,
-						( int ) lastGridCoords.z );
+		lastGridExit = clip( p, q, lastGridCoords.x, lastGridCoords.y, lastGridCoords.z );
 
 		if( lastGridExit.x != 0 && lastGridExit.x != xDir.x )
 		{
@@ -137,6 +130,12 @@ public class GridIterate
 		if( lastGridExit == Move.COMPLETE || !segBounds.intersects( gridBounds ) )
 		{
 			done = true;
+		}
+		else
+		{
+			lastGridCoords.x += lastGridExit.x;
+			lastGridCoords.y += lastGridExit.y;
+			lastGridCoords.z += lastGridExit.z;
 		}
 	}
 
