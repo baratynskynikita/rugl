@@ -89,7 +89,10 @@ public class Player
 	// handy data structures for collision detection
 	private Vector3f collideCorrection = new Vector3f();
 
-	private BoundingCuboid playerBounds = new BoundingCuboid( 0, 0, 0, 0, 0, 0 );
+	/**
+	 * Bounding box of the player
+	 */
+	public BoundingCuboid playerBounds = new BoundingCuboid( 0, 0, 0, 0, 0, 0 );
 
 	private BoundingCuboid blockBounds = new BoundingCuboid( 0, 0, 0, 0, 0, 0 );
 
@@ -295,10 +298,14 @@ public class Player
 		float my = intersection.y.getSpan();
 		float mz = intersection.z.getSpan();
 
-		if( my < 0.51f )
+		float midpoint = playerBounds.y.toValue( 0.5f );
+
+		if( my < 0.51f && intersection.y.toValue( 0.5f ) < midpoint )
 		{
-			correction.set( 0, intersection.y.toValue( 0.5f ) < position.y ? my : -my, 0 );
-			correction.y *= 0.5f;
+			correction.set( 0, my, 0 );
+
+			// smooth it out a little
+			correction.y *= 0.3f;
 		}
 		else if( mx < my && mx < mz )
 		{
@@ -306,7 +313,7 @@ public class Player
 		}
 		else if( my < mz )
 		{
-			correction.set( 0, intersection.y.toValue( 0.5f ) < position.y ? my : -my, 0 );
+			correction.set( 0, intersection.y.toValue( 0.5f ) < midpoint ? my : -my, 0 );
 		}
 		else
 		{

@@ -56,13 +56,35 @@ public class ItemFactory
 	public enum Item
 	{
 		/***/
-		DiamondPick( 3, 6 ),
+		DiamondPick( 3, 6 )
+		{
+			@Override
+			public boolean isAppropriateTool( Block b )
+			{
+				return Block.Cobble == b || Block.Stone == b;
+			}
+		},
 		/***/
-		DiamondShovel( 3, 5 ),
+		DiamondShovel( 3, 5 )
+		{
+			@Override
+			public boolean isAppropriateTool( Block b )
+			{
+				return Block.Dirt == b || Block.Grass == b || Block.Sand == b
+						|| Block.Gravel == b;
+			}
+		},
 		/***/
 		DiamondSword( 3, 4 ),
 		/***/
-		DiamondAxe( 3, 7 ),
+		DiamondAxe( 3, 7 )
+		{
+			@Override
+			public boolean isAppropriateTool( Block b )
+			{
+				return Block.Wood == b || Block.Log == b;
+			}
+		},
 		/***/
 		Grass( Block.Grass ),
 		/***/
@@ -82,6 +104,11 @@ public class ItemFactory
 		 */
 		public final TexturedShape itemShape;
 
+		/**
+		 * The block type represented by this item
+		 */
+		public final Block block;
+
 		private Item( int s, int t )
 		{
 			float[] texCoords =
@@ -98,11 +125,23 @@ public class ItemFactory
 			Shape shape = ShapeUtil.filledQuad( -0.5f, -0.5f, 0.5f, 0.5f, 0 );
 			ColouredShape cs = new ColouredShape( shape, Colour.white, itemState );
 			itemShape = new TexturedShape( cs, texCoords, itemTexture );
+			block = null;
 		}
 
 		private Item( Block block )
 		{
 			itemShape = block.blockItemShape;
+			this.block = block;
+		}
+
+		/**
+		 * @param b
+		 * @return <code>true</code> if this tool is appropriate to
+		 *         break the given block
+		 */
+		public boolean isAppropriateTool( Block b )
+		{
+			return false;
 		}
 	}
 }

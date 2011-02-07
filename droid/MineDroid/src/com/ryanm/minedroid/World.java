@@ -10,15 +10,19 @@ import java.util.concurrent.ArrayBlockingQueue;
 import android.util.Log;
 
 import com.ryanm.droid.rugl.Game;
+import com.ryanm.droid.rugl.geom.ColouredShape;
+import com.ryanm.droid.rugl.geom.WireUtil;
 import com.ryanm.droid.rugl.gl.GLUtil;
 import com.ryanm.droid.rugl.gl.MutableState;
-import com.ryanm.droid.rugl.gl.Renderer;
+import com.ryanm.droid.rugl.gl.StackedRenderer;
 import com.ryanm.droid.rugl.res.ResourceLoader;
+import com.ryanm.droid.rugl.util.Colour;
 import com.ryanm.droid.rugl.util.QuickSort;
 import com.ryanm.droid.rugl.util.geom.Frustum;
 import com.ryanm.droid.rugl.util.geom.Frustum.Result;
 import com.ryanm.droid.rugl.util.geom.ReadableVector3f;
 import com.ryanm.droid.rugl.util.geom.Vector3f;
+import com.ryanm.droid.rugl.util.geom.Vector3i;
 import com.ryanm.droid.rugl.util.math.Range;
 import com.ryanm.minedroid.chunk.Chunk;
 import com.ryanm.minedroid.chunk.ChunkLoader;
@@ -50,7 +54,7 @@ public class World
 	/**
 	 * For drawing the wireframes
 	 */
-	private Renderer renderer = new Renderer();
+	private StackedRenderer renderer = new StackedRenderer();
 
 	/**
 	 * The world save directory
@@ -72,8 +76,6 @@ public class World
 
 	private Queue<Chunklet> floodQueue = new ArrayBlockingQueue<Chunklet>( 50 );
 
-	// we're not using ArrayList here because Collections.sort creates
-	// garbage. Hopefully Arrays.sort does not
 	private Chunklet[] renderList = new Chunklet[ 64 ];
 
 	private int renderListSize = 0;
@@ -91,6 +93,12 @@ public class World
 	public final ReadableVector3f startPosition;
 
 	private static final ChunkSorter cs = new ChunkSorter();
+
+	private boolean blockPreview = false;
+
+	private Vector3i blockPreviewLocation = new Vector3i();
+
+	private ColouredShape blockPreviewShape;
 
 	/**
 	 * @param dir
@@ -111,6 +119,21 @@ public class World
 				setLoadRadius( loadradius );
 			};
 		} );
+
+		blockPreviewShape =
+				new ColouredShape( WireUtil.unitCube(), Colour.black, WireUtil.state );
+	}
+
+	/**
+	 * @param active
+	 * @param x
+	 * @param y
+	 * @param z
+	 */
+	public void setBlockPlacePreview( boolean active, int x, int y, int z )
+	{
+		blockPreview = active;
+		blockPreviewLocation.set( x, y, z );
 	}
 
 	/**
@@ -392,6 +415,15 @@ public class World
 				renderList[ i ].drawOutline( renderer );
 			}
 			GLUtil.checkGLError();
+		}
+
+		if( blockPreview )
+		{
+			renderer.pushMatrix();
+			renderer.translate( blockPreviewLocation.x, blockPreviewLocation.y,
+					blockPreviewLocation.z );
+			blockPreviewShape.render( renderer );
+			renderer.popMatrix();
 		}
 
 		renderer.render();

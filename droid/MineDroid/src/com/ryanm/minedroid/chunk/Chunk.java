@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import android.util.Log;
+
+import com.ryanm.droid.rugl.Game;
 import com.ryanm.minedroid.World;
 import com.ryanm.minedroid.nbt.Tag;
 
@@ -112,6 +115,51 @@ public class Chunk
 		return blockData[ by + bz * 128 + bx * 2048 ];
 	}
 
+	private void setBlockType( int bx, int by, int bz, byte blockType )
+	{
+		if( bx < 0 )
+		{
+			Chunk north = world.getChunk( chunkX - 1, chunkZ );
+			if( north != null )
+			{
+				north.setBlockType( bx + 16, by, bz, blockType );
+			}
+		}
+		else if( bx >= 16 )
+		{
+			Chunk south = world.getChunk( chunkX + 1, chunkZ );
+			if( south != null )
+			{
+				south.setBlockType( bx - 16, by, bz, blockType );
+			}
+		}
+		else if( bz < 0 )
+		{
+			Chunk east = world.getChunk( chunkX, chunkZ - 1 );
+			if( east != null )
+			{
+				east.setBlockType( bx, by, bz + 16, blockType );
+			}
+		}
+		else if( bz >= 16 )
+		{
+			Chunk west = world.getChunk( chunkX, chunkZ + 1 );
+			if( west != null )
+			{
+				west.setBlockType( bx, by, bz - 16, blockType );
+			}
+		}
+		else if( by < 0 || by >= 128 )
+		{
+			return;
+		}
+
+		blockData[ by + bz * 128 + bx * 2048 ] = blockType;
+
+		chunklets[ by / 16 ].geomDirty();
+		chunklets[ by / 16 ].generateGeometry( true );
+	}
+
 	/**
 	 * @param x
 	 * @param y
@@ -122,6 +170,20 @@ public class Chunk
 	{
 		return blockType( ( int ) Math.floor( x - chunkX * 16 ), ( int ) Math.floor( y ),
 				( int ) Math.floor( z - chunkZ * 16 ) );
+	}
+
+	/**
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param blockType
+	 */
+	public void setBlockTypeForPosition( float x, float y, float z, byte blockType )
+	{
+		Log.i( Game.RUGL_TAG, "set block " + x + ", " + y + ", " + z );
+
+		setBlockType( ( int ) Math.floor( x - chunkX * 16 ), ( int ) Math.floor( y ),
+				( int ) Math.floor( z - chunkZ * 16 ), blockType );
 	}
 
 	/**
