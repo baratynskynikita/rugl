@@ -222,7 +222,7 @@ public class Chunklet
 	 */
 	public void drawSolid( Renderer r )
 	{
-		generateGeometry();
+		generateGeometry( false );
 
 		if( pendingSolid != null )
 		{
@@ -253,7 +253,7 @@ public class Chunklet
 	 */
 	public void drawTransparent( Renderer r )
 	{
-		generateGeometry();
+		generateGeometry( false );
 
 		if( pendingTransparent != null )
 		{
@@ -277,9 +277,12 @@ public class Chunklet
 	}
 
 	/**
-	 * 
+	 * @param synchronous
+	 *           <code>true</code> to generate right now, before doing
+	 *           anything else, <code>false</code> to do it in another
+	 *           thread
 	 */
-	public void generateGeometry()
+	public void generateGeometry( boolean synchronous )
 	{
 		if( empty && !boundariesEmptyChecked )
 		{
@@ -304,7 +307,7 @@ public class Chunklet
 		if( !empty && geomDirty && !geomPending )
 		{
 			geomPending = true;
-			GeometryGenerator.generate( this );
+			GeometryGenerator.generate( this, synchronous );
 		}
 	}
 

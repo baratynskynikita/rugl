@@ -60,12 +60,17 @@ public class Hotbar implements TouchListener
 
 	private int selection;
 
+	// to notify when we drag from the hotbar
+	private final Interaction interaction;
+
 	/**
 	 * @param player
+	 * @param interaction
 	 */
-	public Hotbar( Player player )
+	public Hotbar( Player player, Interaction interaction )
 	{
 		this.player = player;
+		this.interaction = interaction;
 	}
 
 	/**
@@ -75,7 +80,6 @@ public class Hotbar implements TouchListener
 	{
 		// set target zooms
 		Arrays.fill( targetZooms, 0 );
-		selection = -1;
 		if( touch != null )
 		{
 			float d = bounds.x.toRatio( touch.x );
@@ -83,7 +87,13 @@ public class Hotbar implements TouchListener
 			d *= 9;
 			selection = ( int ) d;
 			targetZooms[ selection ] = 1;
-			player.inHand = player.hotbar[ selection ];
+
+			// check for swipe off
+			if( !bounds.contains( touch.x, touch.y ) )
+			{
+				interaction.swipeFromHotBar( player.hotbar[ selection ], touch );
+				touch = null;
+			}
 		}
 
 		// lerp zooms
@@ -167,6 +177,8 @@ public class Hotbar implements TouchListener
 		if( touch == p )
 		{
 			touch = null;
+
+			player.inHand = player.hotbar[ selection ];
 		}
 	}
 }

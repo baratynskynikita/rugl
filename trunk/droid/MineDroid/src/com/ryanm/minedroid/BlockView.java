@@ -51,6 +51,8 @@ public class BlockView extends Phase
 
 	private Game game;
 
+	private boolean defaultConfigLoaded = false;
+
 	/**
 	 * @param world
 	 */
@@ -72,7 +74,7 @@ public class BlockView extends Phase
 
 		if( gui == null )
 		{
-			gui = new GUI( player );
+			gui = new GUI( player, world, cam );
 		}
 
 		BlockFactory.loadTexture();
@@ -88,9 +90,6 @@ public class BlockView extends Phase
 		player.hotbar[ i++ ] = Item.Log;
 		player.hotbar[ i++ ] = Item.Wood;
 		player.hotbar[ i++ ] = Item.Glass;
-
-		// load default config
-		game.loadConfiguration( "default" );
 
 		Touch.addListener( new TouchListener() {
 
@@ -121,6 +120,7 @@ public class BlockView extends Phase
 	@Override
 	public void advance( float delta )
 	{
+
 		gui.advance( delta );
 
 		cam.advance( delta, gui.right.x, gui.right.y );
@@ -140,6 +140,13 @@ public class BlockView extends Phase
 		world.draw( player.position, cam.getFrustum() );
 
 		gui.draw();
+
+		if( !defaultConfigLoaded )
+		{ // have to wait to do this now to make sure all objects are
+			// there
+			game.loadConfiguration( "default" );
+			defaultConfigLoaded = true;
+		}
 	}
 
 	@Override

@@ -20,6 +20,7 @@ import com.ryanm.droid.rugl.text.Font;
 import com.ryanm.droid.rugl.text.Readout;
 import com.ryanm.droid.rugl.text.TextShape;
 import com.ryanm.droid.rugl.util.Colour;
+import com.ryanm.droid.rugl.util.FPSCamera;
 import com.ryanm.minedroid.Player;
 import com.ryanm.minedroid.World;
 import com.ryanm.minedroid.chunk.GeometryGenerator;
@@ -74,6 +75,10 @@ public class GUI
 	@Variable
 	public final Hand hand;
 
+	/***/
+	@Variable
+	public final Interaction interaction;
+
 	private Readout loadQueue, geomQueue, chunkletCount;
 
 	private StackedRenderer r = new StackedRenderer();
@@ -94,8 +99,6 @@ public class GUI
 			{
 				widgets[ i ].pointerRemoved( p );
 			}
-
-			// place block?
 		}
 
 		@Override
@@ -107,25 +110,24 @@ public class GUI
 				eaten |= widgets[ i ].pointerAdded( p );
 			}
 
-			if( !eaten )
-			{
-				// start swinging? block placement preview?
-			}
-
 			return false;
 		}
 	};
 
 	/**
 	 * @param player
+	 * @param world
+	 * @param camera
 	 */
-	public GUI( Player player )
+	public GUI( final Player player, World world, FPSCamera camera )
 	{
-		hotbar = new Hotbar( player );
 		hand = new Hand( player );
+		interaction = new Interaction( player, world, camera, hand );
+		hotbar = new Hotbar( player, interaction );
+
 		rightTap.listener = player.jumpCrouchListener;
 
-		widgets = new TouchListener[] { left, right, rightTap, hotbar };
+		widgets = new TouchListener[] { left, right, rightTap, hotbar, interaction };
 
 		Touch.addListener( touchListener );
 
@@ -133,7 +135,7 @@ public class GUI
 			@Override
 			public void onClick()
 			{
-				hand.strike();
+				interaction.action( player.inHand, Game.width / 2, Game.height / 2 );
 			}
 		};
 
@@ -174,6 +176,8 @@ public class GUI
 
 		hotbar.advance( delta );
 		hand.advance( delta );
+
+		interaction.advance( delta );
 
 		notifyTime -= delta;
 		if( notifyTime < 0 )

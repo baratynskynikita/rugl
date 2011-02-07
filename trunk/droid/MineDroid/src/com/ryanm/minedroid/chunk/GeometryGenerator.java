@@ -47,8 +47,9 @@ public class GeometryGenerator
 	 * Generates geometry for a {@link Chunklet}
 	 * 
 	 * @param c
+	 * @param synchronous
 	 */
-	public static void generate( final Chunklet c )
+	public static void generate( final Chunklet c, boolean synchronous )
 	{
 		Runnable r = new Runnable() {
 			@Override
@@ -146,7 +147,14 @@ public class GeometryGenerator
 		};
 
 		queueSize++;
-		geomGenService.submit( r );
+		if( synchronous )
+		{
+			r.run();
+		}
+		else
+		{
+			geomGenService.submit( r );
+		}
 	}
 
 	private static void addFace( Chunklet c, Block facing, int x, int y, int z, Face f,

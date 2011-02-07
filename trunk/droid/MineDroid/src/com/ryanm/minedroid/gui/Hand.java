@@ -49,7 +49,9 @@ public class Hand
 	private float strikeCycle = 0;
 
 	/***/
-	public boolean swing = false;
+	private boolean swing = false;
+
+	private float currentStrikeTime = missTime;
 
 	/**
 	 * @param player
@@ -61,13 +63,37 @@ public class Hand
 
 	/**
 	 * Initiates a single strike if we are not already striking
+	 * 
+	 * @param fast
+	 *           <code>true</code> to do a fast strike,
+	 *           <code>false</code> for slow
 	 */
-	public void strike()
+	public void strike( boolean fast )
 	{
 		if( strikeCycle == 0 )
 		{
+			currentStrikeTime = fast ? hitTime : missTime;
 			strikeCycle = Float.MIN_VALUE;
 		}
+	}
+
+	/**
+	 * Starts repeated striking
+	 * 
+	 * @param fast
+	 */
+	public void repeatedStrike( boolean fast )
+	{
+		swing = true;
+		currentStrikeTime = fast ? hitTime : missTime;
+	}
+
+	/**
+	 * Stops repeated striking
+	 */
+	public void stopStriking()
+	{
+		swing = false;
 	}
 
 	/**
@@ -77,7 +103,7 @@ public class Hand
 	{
 		if( swing || strikeCycle != 0 )
 		{
-			strikeCycle += Trig.TWO_PI * delta / missTime;
+			strikeCycle += Trig.TWO_PI * delta / currentStrikeTime;
 		}
 
 		if( strikeCycle > Trig.TWO_PI )
