@@ -1,5 +1,5 @@
 
-package com.ryanm.minedroid.gui;
+package com.ryanm.minedroid.ui;
 
 import static android.opengl.GLES10.GL_DEPTH_BUFFER_BIT;
 import static android.opengl.GLES10.glClear;
@@ -56,7 +56,7 @@ public class GUI
 
 	/***/
 	@Variable( "Right tap pad" )
-	@Summary( "Tap to jump, long press to crouch" )
+	@Summary( "Jump and crouch" )
 	@Category( "Controls" )
 	public final TapPad rightTap = new TapPad( 800 - size, right.pad.y.getMax(), size,
 			size / 2 );
@@ -112,6 +112,15 @@ public class GUI
 
 			return false;
 		}
+
+		@Override
+		public void reset()
+		{
+			for( int i = 0; i < widgets.length; i++ )
+			{
+				widgets[ i ].reset();
+			}
+		};
 	};
 
 	/**
@@ -136,6 +145,12 @@ public class GUI
 			public void onClick()
 			{
 				interaction.action( player.inHand, Game.width / 2, Game.height / 2 );
+			}
+
+			@Override
+			public void onClickHold( boolean active )
+			{
+				interaction.touchSticksHeld = active;
 			}
 		};
 

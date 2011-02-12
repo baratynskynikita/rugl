@@ -44,10 +44,6 @@ public class World
 	public MutableState muState;
 
 	/***/
-	@Variable( "Draw chunklets" )
-	public boolean drawChunklets = true;
-
-	/***/
 	@Variable( "Outline chunklets" )
 	public boolean drawOutlines = false;
 
@@ -384,29 +380,26 @@ public class World
 
 		GLUtil.checkGLError();
 
-		if( drawChunklets )
+		// solid stuff from near to far
+		for( int i = 0; i < renderListSize; i++ )
 		{
-			// solid stuff from near to far
-			for( int i = 0; i < renderListSize; i++ )
+			renderList[ i ].drawSolid( renderer );
+
+			if( !renderList[ i ].isEmpty() )
 			{
-				renderList[ i ].drawSolid( renderer );
-
-				if( !renderList[ i ].isEmpty() )
-				{
-					renderedChunklets++;
-				}
+				renderedChunklets++;
 			}
-
-			GLUtil.checkGLError();
-
-			// translucent stuff from far to near
-			for( int i = renderListSize - 1; i >= 0; i-- )
-			{
-				renderList[ i ].drawTransparent( renderer );
-			}
-
-			GLUtil.checkGLError();
 		}
+
+		GLUtil.checkGLError();
+
+		// translucent stuff from far to near
+		for( int i = renderListSize - 1; i >= 0; i-- )
+		{
+			renderList[ i ].drawTransparent( renderer );
+		}
+
+		GLUtil.checkGLError();
 
 		if( drawOutlines )
 		{

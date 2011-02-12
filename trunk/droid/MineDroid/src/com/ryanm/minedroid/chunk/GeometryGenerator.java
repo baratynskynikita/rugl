@@ -20,17 +20,14 @@ import com.ryanm.minedroid.BlockFactory.Face;
  */
 public class GeometryGenerator
 {
-	private static ShapeBuilder opaqueVBOBuilder = new ShapeBuilder();
+	private static ShapeBuilder queuedOpaqueVBOBuilder = new ShapeBuilder();
 
-	private static ShapeBuilder transVBOBuilder = new ShapeBuilder();
+	private static ShapeBuilder queuedTransVBOBuilder = new ShapeBuilder();
 
-	/**
-	 * The service where we generate geometry. Note that there's only
-	 * one worker thread: if you want more, you're going to have to use
-	 * separate {@link ShapeBuilder}s for each rather than the static
-	 * ones above in {@link #opaqueVBOBuilder} and
-	 * {@link #transVBOBuilder}
-	 */
+	private static ShapeBuilder immediateOpaqueVBOBuilder = new ShapeBuilder();
+
+	private static ShapeBuilder immediateTransVBOBuilder = new ShapeBuilder();
+
 	private static ExecutorService geomGenService = Executors.newSingleThreadExecutor();
 
 	private static int queueSize = 0;
@@ -49,12 +46,17 @@ public class GeometryGenerator
 	 * @param c
 	 * @param synchronous
 	 */
-	public static void generate( final Chunklet c, boolean synchronous )
+	public static void generate( final Chunklet c, final boolean synchronous )
 	{
 		Runnable r = new Runnable() {
 			@Override
 			public void run()
 			{
+				ShapeBuilder opaqueVBOBuilder =
+						synchronous ? immediateOpaqueVBOBuilder : queuedOpaqueVBOBuilder;
+				ShapeBuilder transVBOBuilder =
+						synchronous ? immediateTransVBOBuilder : queuedTransVBOBuilder;
+
 				// not sure why this is needed, but it is
 				opaqueVBOBuilder.clear();
 				transVBOBuilder.clear();

@@ -1,5 +1,5 @@
 
-package com.ryanm.minedroid.gui;
+package com.ryanm.minedroid.ui;
 
 import java.util.Arrays;
 
@@ -180,5 +180,11 @@ public class Hotbar implements TouchListener
 
 			player.inHand = player.hotbar[ selection ];
 		}
+	}
+
+	@Override
+	public void reset()
+	{
+		touch = null;
 	}
 }
