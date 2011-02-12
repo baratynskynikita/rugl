@@ -4,6 +4,7 @@ package com.ryanm.droid.rugl.input;
 import java.util.ArrayList;
 
 import android.os.Build;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import com.ryanm.droid.rugl.Game;
@@ -135,34 +136,45 @@ public class Touch
 
 	private static void removePrimary( MotionEvent me )
 	{
-		assert pointerList.size() == 1;
-
-		Pointer p = pointerList.remove( 0 );
-
-		pointers = pointerList.toArray( new Pointer[ pointerList.size() ] );
-
-		for( int j = 0; j < listeners.size(); j++ )
+		if( pointerList.size() == 1 )
 		{
-			listeners.get( j ).pointerRemoved( p );
+			Pointer p = pointerList.remove( 0 );
+
+			pointers = pointerList.toArray( new Pointer[ pointerList.size() ] );
+
+			for( int j = 0; j < listeners.size(); j++ )
+			{
+				listeners.get( j ).pointerRemoved( p );
+			}
+		}
+		else
+		{
+			Log.e( Game.RUGL_TAG, "Touch.removePrimary() no primary to remove!" );
 		}
 	}
 
 	private static void removeSecondary( MotionEvent me )
 	{
-		assert pointerList.size() > 1;
-
 		final int pointerIndex =
 				( me.getAction() & MotionEvent.ACTION_POINTER_ID_MASK ) >> MotionEvent.ACTION_POINTER_ID_SHIFT;
 
-		Pointer p = pointerList.remove( pointerIndex );
-
-		pointers = pointerList.toArray( new Pointer[ pointerList.size() ] );
-
-		assert p.id == me.getPointerId( pointerIndex );
-
-		for( int j = 0; j < listeners.size(); j++ )
+		if( pointerList.size() > pointerIndex )
 		{
-			listeners.get( j ).pointerRemoved( p );
+			Pointer p = pointerList.remove( pointerIndex );
+
+			pointers = pointerList.toArray( new Pointer[ pointerList.size() ] );
+
+			assert p.id == me.getPointerId( pointerIndex );
+
+			for( int j = 0; j < listeners.size(); j++ )
+			{
+				listeners.get( j ).pointerRemoved( p );
+			}
+		}
+		else
+		{
+			Log.e( Game.RUGL_TAG,
+					"Touch.removeSecondary() no pointer to remove! from index " + pointerIndex );
 		}
 	}
 
@@ -268,6 +280,11 @@ public class Touch
 		 *           This object will no longer be updated
 		 */
 		public void pointerRemoved( Pointer p );
+
+		/**
+		 * Called when the Touch system is initiated
+		 */
+		public void reset();
 	}
 
 	/**
@@ -287,6 +304,20 @@ public class Touch
 		private static final int getPointerCount( MotionEvent me )
 		{
 			return me.getPointerCount();
+		}
+	}
+
+	/**
+	 * Called at startup
+	 */
+	public static void reset()
+	{
+		pointerList.clear();
+		pointers = new Pointer[ 0 ];
+
+		for( TouchListener l : listeners )
+		{
+			l.reset();
 		}
 	}
 }

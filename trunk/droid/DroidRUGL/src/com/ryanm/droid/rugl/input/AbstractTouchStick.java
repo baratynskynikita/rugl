@@ -3,6 +3,7 @@ package com.ryanm.droid.rugl.input;
 
 import com.ryanm.droid.rugl.gl.StackedRenderer;
 import com.ryanm.droid.rugl.input.Touch.TouchListener;
+import com.ryanm.preflect.annote.Category;
 import com.ryanm.preflect.annote.Summary;
 import com.ryanm.preflect.annote.Variable;
 
@@ -30,7 +31,16 @@ public abstract class AbstractTouchStick implements Touch.TouchListener
 	 */
 	@Variable( "Tap time" )
 	@Summary( "The maximum touch time for a click to be registered, in milliseconds" )
+	@Category( "Interaction" )
 	public long tapTime = 150;
+
+	/**
+	 * 
+	 */
+	@Variable( "Tap-hold delay" )
+	@Summary( "The maximum delay between a tap and a long hold, in milliseconds" )
+	@Category( "Interaction" )
+	public long clickHoldDelay = 150;
 
 	/**
 	 * Use this to track the current touch
@@ -51,6 +61,15 @@ public abstract class AbstractTouchStick implements Touch.TouchListener
 		 * The stick has been tapped
 		 */
 		public abstract void onClick();
+
+		/**
+		 * The stick has been clicked, and then long-held
+		 * 
+		 * @param active
+		 *           <code>true</code> when we start the click-hold,
+		 *           <code>false</code> when we end it
+		 */
+		public abstract void onClickHold( boolean active );
 	}
 
 	/**

@@ -43,9 +43,19 @@ public class TouchStick extends AbstractTouchStick
 	/**
 	 * Indicates that the touch has been lifted
 	 */
-	boolean touchLeft = false;
+	private boolean touchLeft = false;
 
-	long touchTime = -1;
+	/**
+	 * The time at which a touch was added
+	 */
+	private long touchTime = -1;
+
+	/**
+	 * The time of the last click event
+	 */
+	private long clickTime = -1;
+
+	private boolean clickHoldPrimed = false, clickHoldActive = false;
 
 	/**
 	 * @param x
@@ -98,21 +108,46 @@ public class TouchStick extends AbstractTouchStick
 	@Override
 	public void advance()
 	{
+		long now = System.currentTimeMillis();
+
 		if( touchLeft )
 		{
 			touch = null;
 			touchLeft = false;
 
-			long tapDuration = System.currentTimeMillis() - touchTime;
+			long tapDuration = now - touchTime;
 
 			if( tapDuration < tapTime && listener != null )
 			{
 				listener.onClick();
+				clickTime = now;
+			}
+
+			if( clickHoldActive )
+			{
+				clickHoldActive = false;
+				listener.onClickHold( clickHoldActive );
 			}
 		}
 
 		if( touch != null )
 		{
+			long chd = now - clickTime;
+			clickHoldPrimed = chd < clickHoldDelay;
+
+			if( clickHoldPrimed )
+			{
+				// keep it active till we get the long-hold
+				clickTime = now;
+			}
+
+			if( clickHoldPrimed && now - touchTime > tapTime && !clickHoldActive )
+			{
+				clickHoldPrimed = false;
+				clickHoldActive = true;
+				listener.onClickHold( clickHoldActive );
+			}
+
 			float dx = touch.x - xPos;
 			float dy = touch.y - yPos;
 
@@ -139,6 +174,7 @@ public class TouchStick extends AbstractTouchStick
 		if( p == touch )
 		{
 			touchLeft = true;
+			touch = null;
 		}
 	}
 
@@ -154,6 +190,12 @@ public class TouchStick extends AbstractTouchStick
 		}
 
 		return false;
+	}
+
+	@Override
+	public void reset()
+	{
+		touch = null;
 	}
 
 	/**

@@ -8,6 +8,7 @@ import com.ryanm.droid.rugl.gl.StackedRenderer;
 import com.ryanm.droid.rugl.input.Touch.Pointer;
 import com.ryanm.droid.rugl.util.Colour;
 import com.ryanm.droid.rugl.util.geom.BoundingRectangle;
+import com.ryanm.preflect.annote.Category;
 import com.ryanm.preflect.annote.DirtyFlag;
 import com.ryanm.preflect.annote.Summary;
 import com.ryanm.preflect.annote.Variable;
@@ -24,23 +25,27 @@ public class TapPad implements Touch.TouchListener
 	/***/
 	@Variable( "Draw" )
 	@Summary( "Outline the sensitive area" )
+	@Category( "Appearance" )
 	public boolean draw = true;
 
 	/***/
 	@Variable( "Max tap time" )
 	@Summary( "The maximum time between press and release "
 			+ "for a tap to be registered, in seconds" )
+	@Category( "Interaction" )
 	public float tapTime = 0.15f;
 
 	/***/
 	@Variable( "Long press time" )
 	@Summary( "Minimum touch time for a long press to be registered, in seconds" )
+	@Category( "Interaction" )
 	public float longPressTime = 0.5f;
 
 	/***/
 	@Variable( "Bounds colour" )
 	@Summary( "Colour of pad area outline" )
 	@WidgetHint( Colour.class )
+	@Category( "Appearance" )
 	public int boundsColour = Colour.packFloat( 1, 1, 1, 0.3f );
 
 	private BoundingRectangle pad = new BoundingRectangle();
@@ -149,6 +154,12 @@ public class TapPad implements Touch.TouchListener
 
 			longPressed = false;
 		}
+	}
+
+	@Override
+	public void reset()
+	{
+		touch = null;
 	}
 
 	/**

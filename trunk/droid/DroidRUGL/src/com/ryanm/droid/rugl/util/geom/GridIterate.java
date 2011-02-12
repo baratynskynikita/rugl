@@ -114,6 +114,7 @@ public class GridIterate
 		// clip to grid
 		lastGridExit = clip( p, q, lastGridCoords.x, lastGridCoords.y, lastGridCoords.z );
 
+		// watch for corner-case confusion
 		if( lastGridExit.x != 0 && lastGridExit.x != xDir.x )
 		{
 			lastGridExit = yDir;

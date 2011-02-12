@@ -40,6 +40,18 @@ public class Vector3i
 	}
 
 	@Override
+	public boolean equals( Object o )
+	{
+		if( o instanceof Vector3i )
+		{
+			Vector3i v = ( Vector3i ) o;
+			return x == v.x && y == v.y && z == v.z;
+		}
+
+		return false;
+	}
+
+	@Override
 	public String toString()
 	{
 		return "( " + x + ", " + y + ", " + z + " )";
