@@ -38,9 +38,8 @@ final class GameView extends GLSurfaceView
 			public EGLConfig chooseConfig( EGL10 egl, EGLDisplay display )
 			{
 				// Ensure that we get a 16bit framebuffer. Otherwise,
-				// we'll fall back to Pixelflinger on some device (read:
+				// we'll fall back to Pixelflinger on some devices (e.g.:
 				// Samsung I7500)
-
 				int[] attributes = new int[] { EGL10.EGL_DEPTH_SIZE, 16, EGL10.EGL_NONE };
 
 				EGLConfig[] configs = new EGLConfig[ 1 ];
@@ -54,6 +53,8 @@ final class GameView extends GLSurfaceView
 		} );
 
 		setRenderer( game );
+
+		Touch.reset();
 	}
 
 	@Override

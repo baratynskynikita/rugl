@@ -503,22 +503,13 @@ public final class Font
 		dim = Math.max( 2, dim );
 
 		Point d = new Point( dim / 2, dim );
-		boolean growWidth = true;
 
 		boolean success = false;
 
 		do
 		{
-			// alternate expanding horizontally and vertically
-			if( growWidth )
-			{
-				d.x *= 2;
-			}
-			else
-			{
-				d.y *= 2;
-			}
-			growWidth = !growWidth;
+			d.x *= 2;
+			d.y *= 2;
 
 			RectanglePacker<GlyphImage> packer =
 					new RectanglePacker<GlyphImage>( d.x, d.y, 1 );

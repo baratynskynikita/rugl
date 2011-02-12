@@ -8,6 +8,7 @@ import com.ryanm.droid.rugl.gl.StackedRenderer;
 import com.ryanm.droid.rugl.input.Touch.Pointer;
 import com.ryanm.droid.rugl.util.Colour;
 import com.ryanm.droid.rugl.util.geom.BoundingRectangle;
+import com.ryanm.preflect.annote.Category;
 import com.ryanm.preflect.annote.DirtyFlag;
 import com.ryanm.preflect.annote.Summary;
 import com.ryanm.preflect.annote.Variable;
@@ -24,10 +25,6 @@ import com.ryanm.preflect.annote.WidgetHint;
 @Variable( "Touchstick area" )
 public class TouchStickArea extends AbstractTouchStick
 {
-	/***/
-	@Variable( "Draw" )
-	@Summary( "Outline the sensitive area" )
-	public boolean draw = true;
 
 	/***/
 	@Variable( "Pad area" )
@@ -35,13 +32,21 @@ public class TouchStickArea extends AbstractTouchStick
 	public BoundingRectangle pad = new BoundingRectangle();
 
 	/***/
+	@Variable( "Draw" )
+	@Summary( "Outline the sensitive area" )
+	@Category( "Appearance" )
+	public boolean draw = true;
+
+	/***/
 	@Variable( "Bounds colour" )
 	@Summary( "Colour of pad area outline" )
 	@WidgetHint( Colour.class )
+	@Category( "Appearance" )
 	public int boundsColour = Colour.packFloat( 1, 1, 1, 0.3f );
 
 	/***/
 	@Variable
+	@Category( "Interaction" )
 	public final TouchStick stick;
 
 	private ColouredShape outline;
@@ -72,6 +77,15 @@ public class TouchStickArea extends AbstractTouchStick
 					listener.onClick();
 				}
 			}
+
+			@Override
+			public void onClickHold( boolean active )
+			{
+				if( listener != null )
+				{
+					listener.onClickHold( active );
+				}
+			};
 		};
 	}
 
@@ -100,6 +114,12 @@ public class TouchStickArea extends AbstractTouchStick
 			stick.pointerRemoved( p );
 			touch = null;
 		}
+	}
+
+	@Override
+	public void reset()
+	{
+		touch = null;
 	}
 
 	@Override

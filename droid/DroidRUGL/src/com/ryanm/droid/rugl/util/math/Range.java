@@ -237,7 +237,8 @@ public class Range
 	}
 
 	/**
-	 * Wraps a value into a range, in a modular arithmetic style
+	 * Wraps a value into a range, in a modular arithmetic style (but
+	 * it works for negatives too)
 	 * 
 	 * @param v
 	 * @param min

@@ -43,7 +43,7 @@ public class Shape implements Cloneable
 			if( indices[ i ] < 0 || indices[ i ] >= vertexCount() )
 			{
 				throw new IllegalArgumentException( "triangle index error : " + indices[ i ]
-						+ "\n" + toString() );
+						+ "\n" + shortString() );
 			}
 		}
 	}

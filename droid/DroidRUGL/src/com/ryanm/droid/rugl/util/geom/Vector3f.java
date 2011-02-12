@@ -209,14 +209,13 @@ public class Vector3f extends Vector implements ReadableVector3f, WritableVector
 	 */
 	public static Vector3f cross( Vector3f left, Vector3f right, Vector3f dest )
 	{
-
 		if( dest == null )
 		{
 			dest = new Vector3f();
 		}
 
-		dest.set( left.y * right.z - left.z * right.y, right.x * left.z - right.z * left.x, left.x
-				* right.y - left.y * right.x );
+		dest.set( left.y * right.z - left.z * right.y, right.x * left.z - right.z * left.x,
+				left.x * right.y - left.y * right.x );
 
 		return dest;
 	}
