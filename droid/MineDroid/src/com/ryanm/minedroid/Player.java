@@ -7,9 +7,10 @@ import com.ryanm.droid.rugl.input.TapPad;
 import com.ryanm.droid.rugl.util.FPSCamera;
 import com.ryanm.droid.rugl.util.geom.BoundingCuboid;
 import com.ryanm.droid.rugl.util.geom.Vector3f;
+import com.ryanm.droid.rugl.util.math.Range;
 import com.ryanm.minedroid.BlockFactory.Block;
 import com.ryanm.minedroid.ItemFactory.Item;
-import com.ryanm.minedroid.gui.GUI;
+import com.ryanm.minedroid.ui.GUI;
 import com.ryanm.preflect.annote.Category;
 import com.ryanm.preflect.annote.Summary;
 import com.ryanm.preflect.annote.Variable;
@@ -17,6 +18,8 @@ import com.ryanm.preflect.annote.Variable;
 /**
  * @author ryanm
  */
+@Variable( "Player" )
+@Summary( "Motion controls" )
 public class Player
 {
 	private final World world;
@@ -249,6 +252,8 @@ public class Player
 				onGround = groundHit;
 			}
 		}
+
+		position.y = Range.limit( position.y, 1, 127 );
 	}
 
 	/**

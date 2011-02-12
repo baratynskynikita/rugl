@@ -286,7 +286,7 @@ public class BlockFactory
 		Oven( ( byte ) 61, true, 13, 2, 13, 2, 13, 2, 12, 2, 1, 0, 1, 0 ),
 		/***/
 		WorkBench( ( byte ) 58, true, 11, 3, 12, 3, 11, 3, 12, 3, 11, 2, 11, 2 ),
-		/***/
+		/** These buggers are a right ball-ache */
 		HalfBlock( ( byte ) 44, false, 5, 0, 6, 0 ),
 		/***/
 		DoubleHalfBlock( ( byte ) 43, true, 5, 0, 6, 0 );

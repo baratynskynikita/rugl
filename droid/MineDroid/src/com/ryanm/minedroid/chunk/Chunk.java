@@ -5,9 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import android.util.Log;
-
-import com.ryanm.droid.rugl.Game;
 import com.ryanm.minedroid.World;
 import com.ryanm.minedroid.nbt.Tag;
 
@@ -115,7 +112,8 @@ public class Chunk
 		return blockData[ by + bz * 128 + bx * 2048 ];
 	}
 
-	private void setBlockType( int bx, int by, int bz, byte blockType )
+	private void setBlockType( final int bx, final int by, final int bz,
+			final byte blockType )
 	{
 		if( bx < 0 )
 		{
@@ -153,11 +151,101 @@ public class Chunk
 		{
 			return;
 		}
+		else
+		{
+			final int index = by + bz * 128 + bx * 2048;
 
-		blockData[ by + bz * 128 + bx * 2048 ] = blockType;
+			blockData[ index ] = blockType;
 
-		chunklets[ by / 16 ].geomDirty();
-		chunklets[ by / 16 ].generateGeometry( true );
+			if( blockType == 0 )
+			{
+				// removed a block, lighting propagation needed
+				byte ol =
+						( byte ) Math.max( skyLight( bx, by, bz ), blockLight( bx, by, bz ) );
+
+				byte nl =
+						( byte ) Math.max( skyLight( bx + 1, by, bz ),
+								blockLight( bx + 1, by, bz ) );
+				nl =
+						( byte ) Math.max( nl, Math.max( skyLight( bx, by + 1, bz ),
+								blockLight( bx, by + 1, bz ) ) );
+				nl =
+						( byte ) Math.max( nl, Math.max( skyLight( bx, by, bz + 1 ),
+								blockLight( bx, by, bz + 1 ) ) );
+				nl =
+						( byte ) Math.max( nl, Math.max( skyLight( bx - 1, by, bz ),
+								blockLight( bx - 1, by, bz ) ) );
+				nl =
+						( byte ) Math.max( nl, Math.max( skyLight( bx, by - 1, bz ),
+								blockLight( bx, by - 1, bz ) ) );
+				nl =
+						( byte ) Math.max( nl, Math.max( skyLight( bx, by, bz - 1 ),
+								blockLight( bx, by, bz - 1 ) ) );
+
+				nl--;
+				if( nl > ol )
+				{
+					// set
+					int hi = index / 2;
+					boolean odd = ( index & 1 ) != 0;
+					if( odd )
+					{
+						blocklight[ hi ] &= 0xf;
+						blocklight[ hi ] |= nl << 4;
+					}
+					else
+					{
+						blocklight[ hi ] &= 0xf0;
+						blocklight[ hi ] |= nl;
+					}
+				}
+			}
+
+			int cyi = by / 16;
+			chunklets[ cyi ].geomDirty();
+			chunklets[ cyi ].generateGeometry( true );
+
+			// neighbours also dirty?
+			if( bx == 0 )
+			{
+				Chunk north = world.getChunk( chunkX - 1, chunkZ );
+				north.chunklets[ cyi ].geomDirty();
+				north.chunklets[ cyi ].generateGeometry( true );
+			}
+			else if( bx == 15 )
+			{
+				Chunk south = world.getChunk( chunkX + 1, chunkZ );
+				south.chunklets[ cyi ].geomDirty();
+				south.chunklets[ cyi ].generateGeometry( true );
+			}
+
+			if( bz == 0 )
+			{
+				Chunk east = world.getChunk( chunkX, chunkZ - 1 );
+				east.chunklets[ cyi ].geomDirty();
+				east.chunklets[ cyi ].generateGeometry( true );
+			}
+			else if( bz == 15 )
+			{
+				Chunk west = world.getChunk( chunkX, chunkZ + 1 );
+				west.chunklets[ cyi ].geomDirty();
+				west.chunklets[ cyi ].generateGeometry( true );
+			}
+
+			if( by % 16 == 0 && cyi >= 1 )
+			{
+				Chunklet below = chunklets[ cyi - 1 ];
+				below.geomDirty();
+				below.generateGeometry( true );
+			}
+
+			if( by % 16 == 15 && cyi < 6 )
+			{
+				Chunklet above = chunklets[ cyi + 1 ];
+				above.geomDirty();
+				above.generateGeometry( true );
+			}
+		}
 	}
 
 	/**
@@ -180,8 +268,6 @@ public class Chunk
 	 */
 	public void setBlockTypeForPosition( float x, float y, float z, byte blockType )
 	{
-		Log.i( Game.RUGL_TAG, "set block " + x + ", " + y + ", " + z );
-
 		setBlockType( ( int ) Math.floor( x - chunkX * 16 ), ( int ) Math.floor( y ),
 				( int ) Math.floor( z - chunkZ * 16 ), blockType );
 	}
@@ -195,6 +281,31 @@ public class Chunk
 	 */
 	public int blockLight( int bx, int by, int bz )
 	{
+		if( bx < 0 )
+		{
+			Chunk north = world.getChunk( chunkX - 1, chunkZ );
+			return north == null ? 0 : north.blockLight( bx + 16, by, bz );
+		}
+		else if( bx >= 16 )
+		{
+			Chunk south = world.getChunk( chunkX + 1, chunkZ );
+			return south == null ? 0 : south.blockLight( bx - 16, by, bz );
+		}
+		else if( bz < 0 )
+		{
+			Chunk east = world.getChunk( chunkX, chunkZ - 1 );
+			return east == null ? 0 : east.blockLight( bx, by, bz + 16 );
+		}
+		else if( bz >= 16 )
+		{
+			Chunk west = world.getChunk( chunkX, chunkZ + 1 );
+			return west == null ? 0 : west.blockLight( bx, by, bz - 16 );
+		}
+		else if( by < 0 || by >= 128 )
+		{
+			return 0;
+		}
+
 		int index = by + bz * 128 + bx * 2048;
 		int hi = index / 2;
 		boolean odd = ( index & 1 ) != 0;
@@ -216,6 +327,31 @@ public class Chunk
 	 */
 	public int skyLight( int bx, int by, int bz )
 	{
+		if( bx < 0 )
+		{
+			Chunk north = world.getChunk( chunkX - 1, chunkZ );
+			return north == null ? 0 : north.skyLight( bx + 16, by, bz );
+		}
+		else if( bx >= 16 )
+		{
+			Chunk south = world.getChunk( chunkX + 1, chunkZ );
+			return south == null ? 0 : south.skyLight( bx - 16, by, bz );
+		}
+		else if( bz < 0 )
+		{
+			Chunk east = world.getChunk( chunkX, chunkZ - 1 );
+			return east == null ? 0 : east.skyLight( bx, by, bz + 16 );
+		}
+		else if( bz >= 16 )
+		{
+			Chunk west = world.getChunk( chunkX, chunkZ + 1 );
+			return west == null ? 0 : west.skyLight( bx, by, bz - 16 );
+		}
+		else if( by < 0 || by >= 128 )
+		{
+			return 0;
+		}
+
 		int index = by + bz * 128 + bx * 2048;
 		int hi = index / 2;
 		boolean odd = ( index & 1 ) != 0;

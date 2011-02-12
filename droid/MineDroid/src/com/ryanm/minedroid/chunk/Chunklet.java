@@ -139,7 +139,11 @@ public class Chunklet
 		this.y = y * 16;
 		z = parent.chunkZ * 16;
 
-		// find sheets
+		findSheets();
+	}
+
+	private void findSheets()
+	{
 		for( int i = 0; i < 16; i++ )
 		{
 			for( int j = 0; j < 16; j++ )
@@ -210,6 +214,7 @@ public class Chunklet
 	 */
 	public void geomDirty()
 	{
+		findSheets();
 		geomDirty = true;
 		boundariesEmptyChecked = false;
 	}

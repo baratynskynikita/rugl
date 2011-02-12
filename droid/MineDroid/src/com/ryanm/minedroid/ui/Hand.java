@@ -1,11 +1,12 @@
 
-package com.ryanm.minedroid.gui;
+package com.ryanm.minedroid.ui;
 
 import com.ryanm.droid.rugl.gl.StackedRenderer;
 import com.ryanm.droid.rugl.util.Trig;
 import com.ryanm.droid.rugl.util.geom.Vector2f;
 import com.ryanm.droid.rugl.util.math.Range;
 import com.ryanm.minedroid.Player;
+import com.ryanm.preflect.annote.Summary;
 import com.ryanm.preflect.annote.Variable;
 
 /**
@@ -13,7 +14,8 @@ import com.ryanm.preflect.annote.Variable;
  * 
  * @author ryanm
  */
-@Variable
+@Variable( "Hand" )
+@Summary( "Hand motion options" )
 public class Hand
 {
 	private final Player player;

@@ -20,14 +20,24 @@ Installation:
 
 Controls:
 
-	Touch anywhere on the screen to create a touchstick - on the left half of 
-	the screen to control position, on the lower-right half to control direction.
+	The squares in the corners are thumbstick, left for movement, right for steering
+	Tap or swipe upwards on the rectangle above the right thumbstick to jump,
+	long-press or swipe downwards to crouch.
 	
-	Tap at the top-right half of the screen to jump, long-press in the same area to 
-	start crouching, tap again to stop. Note that crouching is only cosmetic for 
-	now- you will still fall off blocks and move at full speed.
+	Tap on the hot bar to select a tool.
+	Tap either thumbstick to use the held item at the center of the screen, tap 
+	on the screen to target elsewhere.
+	Appropriate tool use (e.g.: a shovel on dirt or a pick on stone) is made easy:
+	a single tap initiates the block-breaking, which will continue as long as the
+	player is in range of the target block. Inappropriate tool use is made difficult:
+	the touch must be held on target until it is broken.
+	
+	Blocks can be dragged from the hot bar and placed immediately, without
+	having to select it as a held item
 	
 	The menu button will give an extensive tree of configuration options.
+	Save a configuration with the name "default" (note all lower-case), and it'll
+	be applied automatically at startup
 	
 Glitchy controls?
 
@@ -39,9 +49,14 @@ Glitchy controls?
 	It seems that some phones have screens that are good enough for pinch-to-zoom
 	style multitouch gestures, but can't actually track two touches reliably.
 	This is a hardware limitation, and there's not a lot that can be done to
-	rectify it in software. I can only suggest you place your thumbs in opposite 
-	corners of the screen - this should minimise any opportunities for the touches
-	to cross axes and the resulting glitchyness to manifest.
+	rectify it in software. In the settings menus, to
+	
+	/BlockView/Interface/Left stick/Pad area
+	
+	The default setting is "0.0, 0.0, 150.0, 150.0" change the second number to
+	330, i.e.: so that it reads "0.0, 330.0, 150.0, 150.0". This'll put the left 
+	thumbstick in the upper-left corner. Remember to save the settings with the
+	name "default".
 	
 Getting the source:
 
@@ -72,30 +87,17 @@ Getting the source, step-by-step:
 		Right-click in the currently-blank "SVN Repositories" tab. "New" - 
 			"Repository Location..."
 		The URL is "http://rugl.googlecode.com/svn"
+	6) Similarly, check out the library at 
+			"http://preflect.googlecode.com/svn/trunk"
 	6) Check out the projects:
-		Click on the newly-added repository entry to open it
+		Click on the newly-added repository entries to open them
 		Click on "trunk" then "droid" when they appear
-		Right-click on "Configuration", choose "Checkout..."
+		Right-click on "DroidRUGL", choose "Checkout..."
 		You don't have to change anything in the dialog, just hit "Finish"
-		Do the same thing to check out "DroidRUGL" and "MineDroid"
+		Do the same thing to check out "Preflect" and "MineDroid"
 	7) You've now got local copies of the code - huzzah!
-		
-	If you want to work on the OpenGLES 1.0 version, switch the MineDroid project 
-	to the branch at
-	
-	http://code.google.com/p/rugl/source/browse/#svn/trunk/droid/gles10
-	
-	Right-click on the MineDroid project, "Team" - "Switch to another 
-	Branch/Tag/Revision...", enter the above URL
-
-What I plan to do next:
-
-	* Play around with interface options. Touch-screen stick emulations suck, how 
-		will you left/right click? How will the inventory and crafting work?
-	As a requirement of this:
-	* Placing and breaking blocks
-	
-Stuff that should be done that I can't do
+			
+Stuff that should be done that I can't do by myself
 
 	* Try this on loads of different phones, find and squash the inevitable bugs,
 		work around the performance oddities, get exasperated at broken library
@@ -104,7 +106,7 @@ Stuff that should be done that I can't do
 Stuff that should be done that I'm not in a huge rush to do:
 
 	* More block types
-	* Odd-shaped blocks - half block, steps, liquids
+	* Odd-shaped blocks - steps, liquids
 	* Play around with render distance and fog parameters - need to see as far as 
 		possible into generated chunklets while still hiding ungenerated. 
 		Maybe make it dynamic?
@@ -112,8 +114,7 @@ Stuff that should be done that I'm not in a huge rush to do:
 		greater rendering overhead
 	* Proper occlusion culling, block or chunklet-based - it'll be complex and 
 		I'm not sure it'll prove worthwhile.
-	* Store chunks in a proper spatial datastructure
- 	
+	
 Stuff that I'm not going to do, and that I don't think should be done:
 
 	* Minecraft game stuff, to whit:

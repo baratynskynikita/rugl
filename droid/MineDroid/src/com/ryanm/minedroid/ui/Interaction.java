@@ -1,5 +1,5 @@
 
-package com.ryanm.minedroid.gui;
+package com.ryanm.minedroid.ui;
 
 import android.util.FloatMath;
 
@@ -28,7 +28,7 @@ import com.ryanm.preflect.annote.Variable;
  * @author ryanm
  */
 @Variable( "Interaction" )
-@Summary( "" )
+@Summary( "Options for placing/breaking blocks" )
 public class Interaction implements TouchListener
 {
 	/***/
@@ -86,6 +86,13 @@ public class Interaction implements TouchListener
 
 	private boolean constantStriking = false;
 
+	private boolean justBroken = false;
+
+	/**
+	 * Indicates if one of the touchsticks is being tap-held
+	 */
+	public boolean touchSticksHeld = false;
+
 	/**
 	 * @param player
 	 * @param world
@@ -106,6 +113,8 @@ public class Interaction implements TouchListener
 	public void advance( float delta )
 	{
 		world.setBlockPlacePreview( false, 0, 0, 0 );
+
+		hand.stopStriking();
 
 		if( targettedBreaking != null )
 		{
@@ -140,18 +149,22 @@ public class Interaction implements TouchListener
 				}
 			}
 		}
-		else if( constantStriking )
+		else if( constantStriking || touchSticksHeld )
 		{
-
+			hand.repeatedStrike( false );
+			held( Game.width / 2, Game.height / 2, delta );
 		}
 		else if( touch != null && ( player.inHand != null || sweptItem != null ) )
 		{
 			targettedBreaking = null;
 			constantStriking = false;
 
-			updateTarget( touch.x, touch.y );
+			if( sweptItem == null )
+			{
+				hand.repeatedStrike( false );
+			}
 
-			// screen-hold breaking
+			held( touch.x, touch.y, delta );
 
 			world.setBlockPlacePreview( targetValid && activeItem().block != null,
 					placementTargetBlock.x, placementTargetBlock.y, placementTargetBlock.z );
@@ -198,10 +211,22 @@ public class Interaction implements TouchListener
 		{
 			touch = null;
 
-			action( activeItem(), p.x, p.y );
+			if( !justBroken )
+			{
+				action( activeItem(), p.x, p.y );
+			}
 
 			sweptItem = null;
+			justBroken = false;
 		}
+	}
+
+	@Override
+	public void reset()
+	{
+		touch = null;
+		sweptItem = null;
+		justBroken = false;
 	}
 
 	/**
@@ -222,6 +247,8 @@ public class Interaction implements TouchListener
 		}
 
 		Chunk chunk = updateTarget( x, y );
+
+		hand.strike( false );
 
 		if( targetValid )
 		{
@@ -254,6 +281,47 @@ public class Interaction implements TouchListener
 		}
 	}
 
+	private void held( float x, float y, float delta )
+	{
+		Chunk chunk = updateTarget( x, y );
+
+		if( sweptItem == null )
+		{
+			Block b =
+					BlockFactory.getBlock( chunk.blockTypeForPosition( targetBlock.x,
+							targetBlock.y, targetBlock.z ) );
+
+			// screen-hold breaking
+			if( breakingLocation.equals( targetBlock ) )
+			{
+				Item i = activeItem();
+
+				boolean approp = i != null && i.isAppropriateTool( b );
+				hand.repeatedStrike( approp );
+
+				float time = approp ? rightToolTime : wrongToolTime;
+
+				breakingProgress += delta / time;
+
+				if( breakingProgress > 1 )
+				{ // broken!
+					chunk.setBlockTypeForPosition( targetBlock.x, targetBlock.y,
+							targetBlock.z, ( byte ) 0 );
+
+					targettedBreaking = null;
+					hand.stopStriking();
+
+					justBroken = true;
+				}
+			}
+			else
+			{
+				breakingLocation.set( targetBlock );
+				breakingProgress = 0;
+			}
+		}
+	}
+
 	/**
 	 * @param x
 	 *           in pixels
@@ -265,9 +333,6 @@ public class Interaction implements TouchListener
 	{
 		x = 2 * Range.toRatio( x, 0, Game.width ) - 1;
 		y = 2 * Range.toRatio( y, 0, Game.height ) - 1;
-
-		// Log.i( Game.RUGL_TAG, "-" );
-		// Log.i( Game.RUGL_TAG, x + ", " + y );
 
 		// unproject
 		camera.unProject( x, y, actionDirection );
@@ -293,9 +358,11 @@ public class Interaction implements TouchListener
 					chunk.blockTypeForPosition( gridIterate.lastGridCoords.x,
 							gridIterate.lastGridCoords.y, gridIterate.lastGridCoords.z );
 
-			if( bt == 0 || bt == Block.Water.id || bt == Block.StillWater.id )
+			if( bt == 0 || bt == Block.Water.id || bt == Block.StillWater.id
+					|| BlockFactory.getBlock( bt ) == null )
 			{
 				placementTargetBlock.set( gridIterate.lastGridCoords );
+
 				gridIterate.next();
 			}
 			else
@@ -306,11 +373,6 @@ public class Interaction implements TouchListener
 			}
 		}
 		while( !targetValid && !gridIterate.isDone() );
-
-		// Log.i( Game.RUGL_TAG, "Result" );
-		// Log.i( Game.RUGL_TAG, "placement = " +
-		// placementTargetBlock.toString() );
-		// Log.i( Game.RUGL_TAG, "target = " + targetBlock.toString() );
 
 		return chunk;
 	}
