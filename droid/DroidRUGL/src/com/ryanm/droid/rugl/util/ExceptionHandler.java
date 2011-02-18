@@ -37,6 +37,8 @@ public class ExceptionHandler implements UncaughtExceptionHandler
 
 	private final static Map<String, String> extraInfo = new TreeMap<String, String>();
 
+	private static ExceptionHandler instance = null;
+
 	/**
 	 * Add some extra info that will be appended to exception logs
 	 * 
@@ -67,9 +69,12 @@ public class ExceptionHandler implements UncaughtExceptionHandler
 	 */
 	public static void register( Context context, String... address )
 	{
-		ExceptionHandler eh = new ExceptionHandler( context );
+		if( instance == null )
+		{
+			instance = new ExceptionHandler( context );
+		}
 
-		Thread.setDefaultUncaughtExceptionHandler( eh );
+		Thread.setDefaultUncaughtExceptionHandler( instance );
 
 		// look for saved exceptions
 		File ed = context.getDir( exceptionsDir, Context.MODE_PRIVATE );
@@ -110,6 +115,22 @@ public class ExceptionHandler implements UncaughtExceptionHandler
 			i.putExtra( Intent.EXTRA_TEXT, body.toString() );
 
 			context.startActivity( Intent.createChooser( i, "Send error report with:" ) );
+		}
+	}
+
+	/**
+	 * Handles an exception as if it were uncaught, i.e.: a report is
+	 * saved, and the user will be prompted to email it to you at the
+	 * next launch. This is handy if you've caught an exception and
+	 * can't really handle it, but want to avoid a force-close screen
+	 * 
+	 * @param e
+	 */
+	public static void handle( Throwable e )
+	{
+		if( instance != null )
+		{
+			instance.uncaughtException( Thread.currentThread(), e );
 		}
 	}
 

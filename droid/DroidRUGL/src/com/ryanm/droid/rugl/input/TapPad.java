@@ -48,7 +48,7 @@ public class TapPad implements Touch.TouchListener
 	@Category( "Appearance" )
 	public int boundsColour = Colour.packFloat( 1, 1, 1, 0.3f );
 
-	private BoundingRectangle pad = new BoundingRectangle();
+	private final BoundingRectangle pad = new BoundingRectangle();
 
 	private Pointer touch;
 

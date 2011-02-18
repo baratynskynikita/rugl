@@ -11,7 +11,6 @@ import com.ryanm.droid.rugl.config.ColourVarType;
 import com.ryanm.droid.rugl.config.RangeVarType;
 import com.ryanm.droid.rugl.config.Vector2fVarType;
 import com.ryanm.droid.rugl.config.Vector3fVarType;
-import com.ryanm.droid.rugl.input.Touch;
 import com.ryanm.droid.rugl.res.ResourceLoader;
 import com.ryanm.droid.rugl.util.ExceptionHandler;
 import com.ryanm.preflect.Preflect;
@@ -107,8 +106,7 @@ public abstract class GameActivity extends Activity
 		// application till we're on the OpenGL thread
 		Preflect.deferActivityResult( requestCode, resultCode, data );
 
-		// we have not been keeping track of touches, so...
-		Touch.reset();
+		game.resetTouches();
 	}
 
 	@Override

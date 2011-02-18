@@ -107,6 +107,12 @@ public class ResourceLoader
 		protected T resource;
 
 		/**
+		 * If an exception is encountered during loading, save it here
+		 * and you can deal with it later
+		 */
+		protected Throwable exception;
+
+		/**
 		 * Indicates if the loader should {@link #complete()} as soon as
 		 * possible, or if it should be deferred to whenever
 		 * {@link ResourceLoader#checkCompletion()} is called.

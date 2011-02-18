@@ -13,6 +13,7 @@ import android.util.Log;
 
 import com.ryanm.droid.rugl.gl.GLUtil;
 import com.ryanm.droid.rugl.gl.GLVersion;
+import com.ryanm.droid.rugl.input.Touch;
 import com.ryanm.droid.rugl.res.ResourceLoader;
 import com.ryanm.droid.rugl.util.CodeTimer;
 import com.ryanm.droid.rugl.util.CodeTimer.Output;
@@ -59,6 +60,8 @@ public class Game implements Renderer
 
 	private static ArrayList<SurfaceListener> surfaceListeners =
 			new ArrayList<Game.SurfaceListener>();
+
+	private boolean resetTouches = true;
 
 	/**
 	 * @param sl
@@ -113,6 +116,15 @@ public class Game implements Renderer
 	public void loadConfiguration( String name )
 	{
 		Persist.load( ga, name, confRoots );
+	}
+
+	/**
+	 * Call this when we may have lost track of touchscreen activity
+	 * e.g.: when we were in another activity, etc
+	 */
+	public void resetTouches()
+	{
+		resetTouches = true;
 	}
 
 	private final GameActivity ga;
@@ -201,7 +213,7 @@ public class Game implements Renderer
 
 		GLUtil.enableVertexArrays();
 
-		currentPhase.openGLinit();
+		phaseInited = false;
 
 		lastLogic = System.currentTimeMillis();
 
@@ -256,6 +268,12 @@ public class Game implements Renderer
 		if( confRoots != null )
 		{
 			Preflect.applyDeferredConfigurations( confRoots );
+		}
+
+		if( resetTouches )
+		{
+			Touch.reset();
+			resetTouches = false;
 		}
 
 		ResourceLoader.checkCompletion();
