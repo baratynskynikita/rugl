@@ -55,10 +55,10 @@ public class FPSCamera
 	private Vector4f v4f = new Vector4f();
 
 	/***/
-	public float elevation = 0;
+	private float elevation = 0;
 
 	/***/
-	public float heading = 0;
+	private float heading = 0;
 
 	/***/
 	@Variable( "Horizontal" )
@@ -131,6 +131,22 @@ public class FPSCamera
 		heading = Range.wrap( heading, 0, Trig.TWO_PI );
 		elevation = Range.limit( elevation, -Trig.HALF_PI * 0.99f, Trig.HALF_PI * 0.99f );
 
+		if( x != 0 || y != 0 )
+		{
+			frustumDirty = true;
+		}
+
+		updateVectors();
+	}
+
+	/**
+	 * Updates the {@link #forward}, {@link #up} and {@link #right}
+	 * vectors from the heading and elevation. This is called for you
+	 * by {@link #advance(float, float, float)}, but not by
+	 * {@link #setHeading(float)} or {@link #setElevation(float)}
+	 */
+	public void updateVectors()
+	{
 		m.setIdentity();
 		m.rotate( heading, 0, 1, 0 );
 		m.rotate( elevation, 1, 0, 0 );
@@ -145,11 +161,26 @@ public class FPSCamera
 
 		// up is target x right
 		Vector3f.cross( forward, right, up );
+	}
 
-		if( x != 0 || y != 0 )
-		{
-			frustumDirty = true;
-		}
+	/**
+	 * @param heading
+	 *           in radians
+	 */
+	public void setHeading( float heading )
+	{
+		this.heading = heading;
+		frustumDirty = true;
+	}
+
+	/**
+	 * @param elevation
+	 *           in radians
+	 */
+	public void setElevation( float elevation )
+	{
+		this.elevation = elevation;
+		frustumDirty = true;
 	}
 
 	/**
