@@ -25,7 +25,6 @@ import com.ryanm.preflect.annote.WidgetHint;
 @Variable( "Touchstick area" )
 public class TouchStickArea extends AbstractTouchStick
 {
-
 	/***/
 	@Variable( "Pad area" )
 	@Summary( "Position and size of sensitive area" )

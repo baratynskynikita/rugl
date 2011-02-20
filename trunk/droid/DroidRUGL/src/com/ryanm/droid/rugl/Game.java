@@ -7,6 +7,8 @@ import java.util.Date;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import android.content.Context;
+import android.hardware.SensorManager;
 import android.opengl.GLES10;
 import android.opengl.GLSurfaceView.Renderer;
 import android.util.Log;
@@ -125,6 +127,16 @@ public class Game implements Renderer
 	public void resetTouches()
 	{
 		resetTouches = true;
+	}
+
+	/**
+	 * Gets the sensor manager
+	 * 
+	 * @return the {@link SensorManager}
+	 */
+	public SensorManager getSensorManager()
+	{
+		return ( SensorManager ) ga.getSystemService( Context.SENSOR_SERVICE );
 	}
 
 	private final GameActivity ga;
