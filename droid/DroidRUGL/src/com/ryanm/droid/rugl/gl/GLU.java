@@ -9,7 +9,8 @@ import android.opengl.Matrix;
 /**
  * A copy of {@link android.opengl.GLU}, but not requiring a
  * {@link javax.microedition.khronos.opengles.GL} instance to be
- * passed in
+ * passed in. Also allows you to access the projection matrix
+ * directly, rather than having to read it back from OpenGL
  * 
  * @author ryanm
  */
