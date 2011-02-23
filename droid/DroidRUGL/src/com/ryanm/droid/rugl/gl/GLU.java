@@ -102,7 +102,7 @@ public class GLU
 	 *           specifies the field of view angle, in degrees, in the
 	 *           Y direction.
 	 * @param aspect
-	 *           specifies the aspect ration that determins the field
+	 *           specifies the aspect ration that determines the field
 	 *           of view in the x direction. The aspect ratio is the
 	 *           ratio of x (width) to y (height).
 	 * @param near
