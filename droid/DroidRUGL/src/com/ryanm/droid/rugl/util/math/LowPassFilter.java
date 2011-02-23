@@ -44,4 +44,12 @@ public class LowPassFilter
 
 		return out;
 	}
+
+	/**
+	 * @return The number of samples held in the filter
+	 */
+	public int getLength()
+	{
+		return input.length;
+	}
 }

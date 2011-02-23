@@ -41,6 +41,7 @@ public abstract class FontLoader extends Loader<Font>
 		}
 		catch( IOException e )
 		{
+			exception = e;
 			Log.e( Game.RUGL_TAG, "Problem loading font " + resourceID, e );
 		}
 	}
