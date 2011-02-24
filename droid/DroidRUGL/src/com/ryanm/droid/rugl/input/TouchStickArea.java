@@ -119,6 +119,7 @@ public class TouchStickArea extends AbstractTouchStick
 	public void reset()
 	{
 		touch = null;
+		stick.reset();
 	}
 
 	@Override

@@ -174,7 +174,6 @@ public class TouchStick extends AbstractTouchStick
 		if( p == touch )
 		{
 			touchLeft = true;
-			touch = null;
 		}
 	}
 
