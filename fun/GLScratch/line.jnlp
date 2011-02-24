@@ -1,0 +1,20 @@
+<jnlp 
+	spec="1.0+" 
+	codebase="http://homepages.inf.ed.ac.uk/rmcnally/line" 
+	href="line.jnlp"> 
+	<information> 
+		<title>Line geometry demo</title> 
+		<vendor>Ryan McNally</vendor>
+		<offline-allowed/> 
+	</information> 
+	<security>
+		<all-permissions/>
+	</security>
+	<resources> 
+		<j2se version="1.4+"/> 
+		<jar href="Line.jar"/>
+		<extension name="lwjgl" href="http://lwjgl.org/jnlp/extension.php" />
+	</resources>
+	<application-desc main-class="com.ryanm.glscratch.LineTest">
+	</application-desc>
+</jnlp>
