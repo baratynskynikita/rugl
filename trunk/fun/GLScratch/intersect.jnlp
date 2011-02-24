@@ -1,0 +1,17 @@
+<jnlp 
+	spec="1.0+" 
+	codebase="http://homepages.inf.ed.ac.uk/rmcnally/intersect" 
+	href="intersect.jnlp"> 
+	<information> 
+		<title>Volume/plane intersection demo</title> 
+		<vendor>Ryan McNally</vendor>
+		<offline-allowed/> 
+	</information> 
+	<resources> 
+		<j2se version="1.4+"/> 
+		<jar href="jars/Intersect.jar"/>
+		<extension name="lwjgl" href="http://lwjgl.org/jnlp/extension.php" />
+	</resources>
+	<application-desc main-class="com.ryanm.glscratch.IntersectionVolumeTest">
+	</application-desc>
+</jnlp>
