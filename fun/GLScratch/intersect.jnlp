@@ -1,6 +1,6 @@
 <jnlp 
 	spec="1.0+" 
-	codebase="http://homepages.inf.ed.ac.uk/rmcnally/intersect" 
+	codebase="http://rugl.googlecode.com/svn/trunk/fun/GLScratch/" 
 	href="intersect.jnlp"> 
 	<information> 
 		<title>Volume/plane intersection demo</title> 
