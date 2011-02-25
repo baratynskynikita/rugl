@@ -95,7 +95,7 @@ public class Touch
 
 		Pointer p = new Pointer( me.getPointerId( 0 ) );
 		p.x = me.getX() * xScale;
-		p.y = ( Game.height - me.getY() ) * yScale;
+		p.y = ( Game.screenHeight - me.getY() ) * yScale;
 		p.size = me.getSize();
 
 		pointerList.add( p );
@@ -118,7 +118,7 @@ public class Touch
 
 		Pointer p = new Pointer( me.getPointerId( pointerIndex ) );
 		p.x = me.getX( pointerIndex ) * xScale;
-		p.y = ( Game.height - me.getY( pointerIndex ) ) * yScale;
+		p.y = ( Game.screenHeight - me.getY( pointerIndex ) ) * yScale;
 		p.size = me.getSize( pointerIndex );
 
 		pointerList.add( pointerIndex, p );
@@ -187,7 +187,7 @@ public class Touch
 			assert p.id == me.getPointerId( i );
 
 			p.x = me.getX( i ) * xScale;
-			p.y = ( Game.height - me.getY( i ) ) * yScale;
+			p.y = ( Game.screenHeight - me.getY( i ) ) * yScale;
 			p.size = me.getSize( i );
 		}
 	}
@@ -197,7 +197,7 @@ public class Touch
 		Pointer p = pointerList.get( 0 );
 
 		p.x = me.getX() * xScale;
-		p.y = ( Game.height - me.getY() ) * yScale;
+		p.y = ( Game.screenHeight - me.getY() ) * yScale;
 		p.size = me.getSize();
 	}
 

@@ -199,7 +199,7 @@ public class FPSCamera
 
 		if( aspect == -1 )
 		{
-			aspect = ( float ) Game.width / Game.height;
+			aspect = ( float ) Game.screenWidth / Game.screenHeight;
 		}
 
 		GLES10.glMatrixMode( GLES10.GL_PROJECTION );

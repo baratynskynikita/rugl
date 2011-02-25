@@ -42,12 +42,12 @@ public class Game implements Renderer
 	/**
 	 * Screen width
 	 */
-	public static int width;
+	public static int screenWidth;
 
 	/**
 	 * Screen height
 	 */
-	public static int height;
+	public static int screenHeight;
 
 	/**
 	 * OpenGLES version
@@ -239,13 +239,13 @@ public class Game implements Renderer
 
 	/**
 	 * Default implementation is to set up a 1:1 orthographic
-	 * projection
+	 * projection. Touches are scaled onto a 800x480 virtual resolution
 	 */
 	@Override
 	public void onSurfaceChanged( GL10 gl, int width, int height )
 	{
-		Game.width = width;
-		Game.height = height;
+		Game.screenWidth = width;
+		Game.screenHeight = height;
 
 		GLUtil.scaledOrtho( width, height, width, height, -1, 1 );
 
@@ -257,6 +257,8 @@ public class Game implements Renderer
 		{
 			surfaceListeners.get( i ).onSurfaceChanged( width, height );
 		}
+
+		Touch.setScreenSize( 800, 480, Game.screenWidth, Game.screenHeight );
 	}
 
 	@Override
