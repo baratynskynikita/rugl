@@ -2,6 +2,8 @@
 package com.ryanm.droid.rugl.input;
 
 import java.util.ArrayList;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import android.os.Build;
 import android.util.Log;
@@ -32,43 +34,61 @@ public class Touch
 	 */
 	public static Pointer[] pointers = new Pointer[ 0 ];
 
+	private static final Queue<MotionEvent> touchEvents =
+			new ConcurrentLinkedQueue<MotionEvent>();
+
 	/**
 	 * @param me
 	 */
 	public static void onTouchEvent( MotionEvent me )
 	{
-		if( multitouch )
+		touchEvents.offer( me );
+	}
+
+	/**
+	 * Call this once per frame to process touch events on the main
+	 * thread
+	 */
+	public static void processTouches()
+	{
+
+		while( !touchEvents.isEmpty() )
 		{
-			switch( me.getAction() & MEWrap.ACTION_MASK )
+			MotionEvent me = touchEvents.poll();
+
+			if( multitouch )
 			{
-				case MotionEvent.ACTION_DOWN:
-					addPrimary( me );
-					break;
-				case MEWrap.ACTION_POINTER_DOWN:
-					addSecondary( me );
-					break;
-				case MotionEvent.ACTION_UP:
-					removePrimary( me );
-					break;
-				case MEWrap.ACTION_POINTER_UP:
-					removeSecondary( me );
-					break;
-				default:
-					updatePointers( me );
+				switch( me.getAction() & MEWrap.ACTION_MASK )
+				{
+					case MotionEvent.ACTION_DOWN:
+						addPrimary( me );
+						break;
+					case MEWrap.ACTION_POINTER_DOWN:
+						addSecondary( me );
+						break;
+					case MotionEvent.ACTION_UP:
+						removePrimary( me );
+						break;
+					case MEWrap.ACTION_POINTER_UP:
+						removeSecondary( me );
+						break;
+					default:
+						updatePointers( me );
+				}
 			}
-		}
-		else
-		{
-			switch( me.getAction() )
+			else
 			{
-				case MotionEvent.ACTION_DOWN:
-					addPrimary( me );
-					break;
-				case MotionEvent.ACTION_UP:
-					removePrimary( me );
-					break;
-				default:
-					updatePointer( me );
+				switch( me.getAction() )
+				{
+					case MotionEvent.ACTION_DOWN:
+						addPrimary( me );
+						break;
+					case MotionEvent.ACTION_UP:
+						removePrimary( me );
+						break;
+					default:
+						updatePointer( me );
+				}
 			}
 		}
 	}

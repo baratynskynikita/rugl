@@ -99,7 +99,7 @@ public class Game implements Renderer
 	 */
 	public void launchConfiguration()
 	{
-		Preflect.configure( ga, confRoots );
+		Preflect.configure( ga, true, true, confRoots );
 	}
 
 	/**
@@ -291,6 +291,10 @@ public class Game implements Renderer
 		}
 
 		ResourceLoader.checkCompletion();
+
+		timer.tick( "input" );
+
+		Touch.processTouches();
 
 		timer.tick( "logic" );
 
