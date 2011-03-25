@@ -105,8 +105,6 @@ public abstract class GameActivity extends Activity
 		// launched from Game.launchConfiguration(). We need to defer
 		// application till we're on the OpenGL thread
 		Preflect.deferActivityResult( requestCode, resultCode, data );
-
-		game.resetTouches();
 	}
 
 	@Override
@@ -116,6 +114,11 @@ public abstract class GameActivity extends Activity
 		if( gameView != null )
 		{
 			gameView.onResume();
+		}
+
+		if( game != null )
+		{
+			game.resetTouches();
 		}
 	}
 

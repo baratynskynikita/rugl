@@ -53,8 +53,6 @@ final class GameView extends GLSurfaceView
 		} );
 
 		setRenderer( game );
-
-		game.resetTouches();
 	}
 
 	@Override
