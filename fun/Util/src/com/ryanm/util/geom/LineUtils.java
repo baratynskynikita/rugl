@@ -120,7 +120,8 @@ public class LineUtils
 	 * @return An array of up to two elements, holding the points of
 	 *         intersection, if any
 	 */
-	public static Vector2f[] lineCircleIntersection( Vector2f l1, Vector2f l2, Vector2f p, float cr )
+	public static Vector2f[] lineCircleIntersection( Vector2f l1, Vector2f l2, Vector2f p,
+			float cr )
 	{
 		float dx = l2.x - l1.x;
 		float dy = l2.y - l1.y;
@@ -128,8 +129,8 @@ public class LineUtils
 		float a = dx * dx + dy * dy;
 		float b = 2 * ( dx * ( l1.x - p.x ) + dy * ( l1.y - p.y ) );
 		float c =
-				p.x * p.x + p.y * p.y + l1.x * l1.x + l1.y * l1.y - 2 * ( p.x * l1.x + p.y * l1.y )
-						- cr * cr;
+				p.x * p.x + p.y * p.y + l1.x * l1.x + l1.y * l1.y - 2
+						* ( p.x * l1.x + p.y * l1.y ) - cr * cr;
 
 		float det = b * b - 4 * a * c;
 
@@ -171,8 +172,8 @@ public class LineUtils
 	 * @return An array containing the zero, one or two points of
 	 *         intersection between the line segment and the circle
 	 */
-	public static Vector2f[] segmentCircleIntersection( Vector2f l1, Vector2f l2, Vector2f p,
-			float cr )
+	public static Vector2f[] segmentCircleIntersection( Vector2f l1, Vector2f l2,
+			Vector2f p, float cr )
 	{
 		float dx = l2.x - l1.x;
 		float dy = l2.y - l1.y;
@@ -180,8 +181,8 @@ public class LineUtils
 		float a = dx * dx + dy * dy;
 		float b = 2 * ( dx * ( l1.x - p.x ) + dy * ( l1.y - p.y ) );
 		float c =
-				p.x * p.x + p.y * p.y + l1.x * l1.x + l1.y * l1.y - 2 * ( p.x * l1.x + p.y * l1.y )
-						- cr * cr;
+				p.x * p.x + p.y * p.y + l1.x * l1.x + l1.y * l1.y - 2
+						* ( p.x * l1.x + p.y * l1.y ) - cr * cr;
 
 		float det = b * b - 4 * a * c;
 
@@ -242,7 +243,8 @@ public class LineUtils
 	 * @return The endpoints of the shortest segment that joins the two
 	 *         input lines
 	 */
-	public static Vector3f[] lineIntersection( Vector3f p1, Vector3f p2, Vector3f p3, Vector3f p4 )
+	public static Vector3f[] lineIntersection( Vector3f p1, Vector3f p2, Vector3f p3,
+			Vector3f p4 )
 	{
 		Vector3f u = Vector3f.sub( p2, p1, null );
 		Vector3f v = Vector3f.sub( p4, p3, null );
@@ -317,7 +319,8 @@ public class LineUtils
 	 * @return The two endpoints of the shortest segment that joins the
 	 *         two input segments
 	 */
-	public static Vector3f[] segmentIntersection( Vector3f p1, Vector3f p2, Vector3f p3, Vector3f p4 )
+	public static Vector3f[] segmentIntersection( Vector3f p1, Vector3f p2, Vector3f p3,
+			Vector3f p4 )
 	{
 		Vector3f u = Vector3f.sub( p2, p1, null );
 		Vector3f v = Vector3f.sub( p4, p3, null );
@@ -424,7 +427,8 @@ public class LineUtils
 	 * @return The point on the segment that is closer to point than
 	 *         any other
 	 */
-	public static Vector3f closestPointOnSegment( Vector3f point, Vector3f segStart, Vector3f segEnd )
+	public static Vector3f closestPointOnSegment( Vector3f point, Vector3f segStart,
+			Vector3f segEnd )
 	{
 		Vector3f v = Vector3f.sub( segEnd, segStart, null );
 		Vector3f w = Vector3f.sub( point, segStart, null );
@@ -447,6 +451,45 @@ public class LineUtils
 		Vector3f.add( Pb, v, Pb );
 
 		return Pb;
+	}
+
+	/**
+	 * @param ax
+	 * @param ay
+	 * @param bx
+	 * @param by
+	 * @param px
+	 * @param py
+	 * @return The distance from p to the line segment a-b
+	 */
+	public static float distanceToSegment( float ax, float ay, float bx, float by,
+			float px, float py )
+	{
+		float vx = bx - ax;
+		float vy = by - ay;
+		float wx = px - ax;
+		float wy = py - ay;
+
+		double c1 = wx * vx + wy * vy;
+		double c2 = vx * vx + vy * vy;
+
+		if( c1 <= 0 )
+		{
+			return ( float ) Math.hypot( ( ax - px ), ( ay - py ) );
+		}
+		if( c1 >= c2 )
+		{
+			return ( float ) Math.hypot( bx - px, ( by - py ) );
+		}
+
+		double b = c1 / c2;
+		vx *= b;
+		vy *= b;
+
+		vx += ax;
+		vy += ay;
+
+		return ( float ) Math.hypot( ( vx - px ), ( vy - py ) );
 	}
 
 	/**
@@ -507,7 +550,8 @@ public class LineUtils
 	 *         point is on the right of the line, 0 if the point lies
 	 *         on the line
 	 */
-	public static int relativeCCW( float ax, float ay, float bx, float by, float px, float py )
+	public static int relativeCCW( float ax, float ay, float bx, float by, float px,
+			float py )
 	{
 		bx -= ax;
 		by -= ay;

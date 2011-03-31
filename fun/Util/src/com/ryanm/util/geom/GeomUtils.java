@@ -6,7 +6,6 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -59,8 +58,8 @@ public class GeomUtils
 
 		g.setColor( Color.blue );
 		g.drawRect( ( int ) c[ 0 ] - 1, ( int ) c[ 1 ] - 1, 2, 2 );
-		g.drawOval( ( int ) ( c[ 0 ] - c[ 2 ] ), ( int ) ( c[ 1 ] - c[ 2 ] ), ( int ) ( 2 * c[ 2 ] ),
-				( int ) ( 2 * c[ 2 ] ) );
+		g.drawOval( ( int ) ( c[ 0 ] - c[ 2 ] ), ( int ) ( c[ 1 ] - c[ 2 ] ),
+				( int ) ( 2 * c[ 2 ] ), ( int ) ( 2 * c[ 2 ] ) );
 
 		try
 		{
@@ -166,8 +165,11 @@ public class GeomUtils
 		float cx = ( d * e - b * f ) / det;
 		float cy = ( -c * e + a * f ) / det;
 
-		return new float[] { cx, cy,
-				( float ) Math.sqrt( ( p1x - cx ) * ( p1x - cx ) + ( p1y - cy ) * ( p1y - cy ) ) };
+		return new float[] {
+				cx,
+				cy,
+				( float ) Math
+						.sqrt( ( p1x - cx ) * ( p1x - cx ) + ( p1y - cy ) * ( p1y - cy ) ) };
 	}
 
 	private static float[] calcCircle( Vector2f p1, Vector2f p2 )
@@ -180,97 +182,104 @@ public class GeomUtils
 		float cx = 0.5f * ( p1x + p2x );
 		float cy = 0.5f * ( p1y + p2y );
 
-		return new float[] { cx, cy,
-				( float ) Math.sqrt( ( p1x - cx ) * ( p1x - cx ) + ( p1y - cy ) * ( p1y - cy ) ) };
+		return new float[] {
+				cx,
+				cy,
+				( float ) Math
+						.sqrt( ( p1x - cx ) * ( p1x - cx ) + ( p1y - cy ) * ( p1y - cy ) ) };
 	}
 
 	/**
+	 * Removes unnecessary vertices from a line strip. Uses the
+	 * Ramer–Douglas–Peucker algorithm
+	 * 
 	 * @param input
-	 * @param minFeature
-	 * @return a decimated vertex array
+	 *           in x,y,x,y format
+	 * @param maxD
+	 *           The maximum distance a point from the input set will
+	 *           be from the output shape
+	 * @param loop
+	 *           <code>true</code> for a line loop rather than a strip
+	 * @return a decimated vertex array, in x,y,x,y... format
 	 */
-	public static float[] decimate( float[] input, float minFeature )
+	public static float[] decimate( final float[] input, final float maxD,
+			final boolean loop )
 	{
-		// build vertex list
-		ArrayList<Vector2f> verts = new ArrayList<Vector2f>();
-		for( int i = 0; i < input.length; i += 2 )
+		boolean[] marked = new boolean[ input.length / 2 ];
+		Arrays.fill( marked, false );
+
+		int end = loop ? marked.length : marked.length - 1;
+
+		rdp( input, marked, maxD, 0, end );
+
+		// build output list
+		int count = 0;
+		for( int i = 0; i < marked.length; i++ )
 		{
-			verts.add( new Vector2f( input[ i ], input[ i + 1 ] ) );
-		}
-
-		assert !selfIntersects( verts );
-
-		for( int i = 1; i < verts.size() - 1; i++ )
-		{
-			int base = i - 1;
-			int test = i;
-
-			// find a run of adjacent verts that can be approximated with
-			// a straight line
-			while( test < verts.size() && testPoints( verts, base, test, minFeature ) )
+			if( marked[ i ] )
 			{
-				test++;
+				count++;
 			}
-
-			// remove the unnecessary points
-			verts.subList( base + 1, test - 2 ).clear();
 		}
 
-		assert !selfIntersects( verts );
-
-		float[] output = new float[ 2 * verts.size() ];
-		int vi = 0;
-		for( int i = 0; i < verts.size(); i++ )
+		float[] output = new float[ count * 2 ];
+		int index = 0;
+		for( int i = 0; i < marked.length; i++ )
 		{
-			output[ vi++ ] = verts.get( i ).x;
-			output[ vi++ ] = verts.get( i ).y;
+			if( marked[ i ] )
+			{
+				output[ index++ ] = input[ 2 * i ];
+				output[ index++ ] = input[ 2 * i + 1 ];
+			}
 		}
-
 		return output;
 	}
 
-	private static boolean selfIntersects( ArrayList<Vector2f> verts )
+	/**
+	 * Recursive step. Finds the point furthest from the start-end
+	 * segment, divide and conquer on that vertex if it is outside the
+	 * tolerance value
+	 * 
+	 * @param verts
+	 * @param marked
+	 * @param maxD
+	 * @param start
+	 * @param end
+	 */
+	private static void rdp( final float[] verts, final boolean[] marked,
+			final float maxD, final int start, final int end )
 	{
-		for( int i = 0; i < verts.size(); i++ )
+		marked[ start % marked.length ] = true;
+		marked[ end % marked.length ] = true;
+
+		// find furthest from line
+		float maxDistance = -1;
+		int maxIndex = -1;
+
+		float ax = verts[ 2 * start % verts.length ];
+		float ay = verts[ ( 2 * start + 1 ) % verts.length ];
+		float bx = verts[ 2 * end % verts.length ];
+		float by = verts[ ( 2 * end + 1 ) % verts.length ];
+
+		for( int i = start + 1; i < end; i++ )
 		{
-			Vector2f a = verts.get( i );
-			Vector2f b = verts.get( ( i + 1 ) % verts.size() );
+			float px = verts[ 2 * i % verts.length ];
+			float py = verts[ ( 2 * i + 1 ) % verts.length ];
 
-			for( int j = i + 2; j < verts.size(); j++ )
+			float d = LineUtils.distanceToSegment( ax, ay, bx, by, px, py );
+
+			if( d > maxD && d > maxDistance )
 			{
-				Vector2f c = verts.get( j % verts.size() );
-				Vector2f d = verts.get( ( j + 1 ) % verts.size() );
-
-				if( LineUtils.segmentsIntersect( a, b, c, d ) )
-				{
-					return true;
-				}
+				maxDistance = d;
+				maxIndex = i;
 			}
 		}
 
-		return false;
-	}
-
-	private static boolean testPoints( ArrayList<Vector2f> verts, int base, int test, float limit )
-	{
-		Vector2f bp = verts.get( base % verts.size() );
-		Vector2f tp = verts.get( test % verts.size() );
-
-		// test all vertices between base and test to see if they lie
-		// outwith the threshold distance to the line between base and
-		// test
-		for( int i = base + 1; i < test - 1; i++ )
+		if( maxIndex != -1 )
 		{
-			Vector2f ip = verts.get( i );
-
-			float d = VectorUtils.distance( LineUtils.closestPointOnLine( ip, bp, tp ), ip );
-			if( d > limit )
-			{
-				return false;
-			}
+			// recurse
+			rdp( verts, marked, maxD, start, maxIndex );
+			rdp( verts, marked, maxD, maxIndex, end );
 		}
-
-		return true;
 	}
-
 }

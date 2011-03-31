@@ -1,61 +1,147 @@
-
 package com.ryanm.util.swing;
 
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.LinkedList;
 import java.util.List;
-
 import javax.swing.BoundedRangeModel;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultBoundedRangeModel;
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
 import javax.swing.Timer;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * The class makes it easy to select a numerical value, possibly from
- * a given range
+ * The class makes it easy to select a numerical value, possibly from a given
+ * range
  * 
  * @author ryanm
  */
-public class FloatChooser extends JPanel implements ChangeListener, MouseListener, ActionListener
+public class FloatChooser extends JPanel implements ChangeListener
 {
 	/**
-	 * The size of steps in the spinner to aim for. What you get will
-	 * depend on the range.
+	 * The size of steps in the spinner to aim for. What you get will depend on
+	 * the range.
 	 */
 	private float stepSize = 0.1f;
 
 	/**
-	 * The number of steps in the slider to aim for. What you get will
-	 * depend on the range.
+	 * The number of steps in the slider to aim for. What you get will depend on
+	 * the range.
 	 */
 	private static final int SCALE = 10000;
 
 	private static final float MAX_VELOCITY = 5;
 
-	private List<ChangeListener> listeners = new LinkedList<ChangeListener>();
+	private List<Listener> listeners = new LinkedList<Listener>();
 
 	private JSlider slider = new JSlider();
+
+	private SpinnerNumberModel snm;
 
 	private JSpinner spinner = new JSpinner();
 
 	private boolean absolute = false;
 
-	private Timer timer = new Timer( 50, this );
+	private Timer timer = new Timer( 50, new ActionListener() {
+		@Override
+		public void actionPerformed( ActionEvent e )
+		{
+			if( e.getSource() == timer )
+			{
+				// set the value
+				if( velocity != 0 )
+				{
+					setValue( getValue() + velocity );
+				}
+			}
+		}
+	} );
 
 	private float velocity = 0;
 
 	private float oldValue;
 
 	private boolean integer = false;
+
+	private RangeEditor rangeEditor = new RangeEditor();
+
+	private float[] range = new float[] { Float.NaN, Float.NaN };
+
+	/**
+	 * Controls the unbounded slider operation
+	 */
+	private MouseListener sliderListener = new MouseAdapter() {
+		@Override
+		public void mousePressed( MouseEvent e )
+		{
+			// start the Timertask
+			timer.start();
+		}
+
+		@Override
+		public void mouseReleased( MouseEvent e )
+		{
+			// end the timertask
+			timer.stop();
+
+			slider.getModel().setValue( SCALE / 2 );
+		}
+	};
+
+	private MouseListener rangeAdjustListener = new MouseAdapter() {
+		@Override
+		public void mouseReleased( MouseEvent e )
+		{
+			if( e.isPopupTrigger() && e.isShiftDown() )
+			{
+				showRangeAdjuster();
+			}
+		}
+
+		@Override
+		public void mouseClicked( MouseEvent e )
+		{
+			if( e.isPopupTrigger() && e.isShiftDown() )
+			{
+				showRangeAdjuster();
+			}
+		}
+
+		@Override
+		public void mousePressed( MouseEvent e )
+		{
+			if( e.isPopupTrigger() && e.isShiftDown() )
+			{
+				showRangeAdjuster();
+			}
+		}
+
+		private void showRangeAdjuster()
+		{
+			rangeEditor.lower.setText( snm.getMinimum() == null ? "None" : snm
+					.getMinimum().toString() );
+			rangeEditor.upper.setText( snm.getMaximum() == null ? "None" : snm
+					.getMaximum().toString() );
+
+			rangeEditor.setLocationRelativeTo( FloatChooser.this );
+			rangeEditor.setVisible( true );
+		}
+	};
 
 	/**
 	 * Constructs a new FloatChooser
@@ -82,9 +168,8 @@ public class FloatChooser extends JPanel implements ChangeListener, MouseListene
 	 * @param value
 	 *           The current value
 	 * @param integer
-	 *           If <code>true</code>, values will be rounded to the
-	 *           nearest integer, and the velocity slider will be
-	 *           scaled linearly
+	 *           If <code>true</code>, values will be rounded to the nearest
+	 *           integer, and the velocity slider will be scaled linearly
 	 */
 	public FloatChooser( Float min, Float max, float value, boolean integer )
 	{
@@ -99,41 +184,59 @@ public class FloatChooser extends JPanel implements ChangeListener, MouseListene
 		this.integer = integer;
 
 		setRange( min, max );
+
+		JSpinner.NumberEditor ne = new JSpinner.NumberEditor( spinner, "0.#####" );
+		spinner.setEditor( ne );
+
+		slider.setPreferredSize( new Dimension( 120,
+				slider.getPreferredSize().height ) );
+	}
+
+	/**
+	 * Gets the listener that will trigger the range adjust dialog. Apply it to
+	 * what you want sensitised
+	 * 
+	 * @return The range adjust dialog trigger
+	 */
+	public MouseListener getRangeAdjustListener()
+	{
+		return rangeAdjustListener;
 	}
 
 	/**
 	 * Sets the range of possible values
 	 * 
 	 * @param min
-	 *           The minimum possible value, or {@link Float}.NaN for
-	 *           no minimum limit
+	 *           The minimum possible value, or {@link Float}.NaN for no minimum
+	 *           limit
 	 * @param max
-	 *           The maximum possible value, or {@link Float}.NaN for
-	 *           no maximum limit
+	 *           The maximum possible value, or {@link Float}.NaN for no maximum
+	 *           limit
 	 */
 	public void setRange( float min, float max )
 	{
-		setRange( Float.isNaN( min ) ? null : new Float( min ), Float.isNaN( max ) ? null
-				: new Float( max ) );
+		setRange( Float.isNaN( min ) ? null : new Float( min ),
+				Float.isNaN( max ) ? null : new Float( max ) );
 	}
 
 	/**
 	 * Sets the range of possible values
 	 * 
 	 * @param min
-	 *           The minimum possible value, or null for no minimum
-	 *           limit
+	 *           The minimum possible value, or null for no minimum limit
 	 * @param max
-	 *           The maximum possible value, or null for no maximum
-	 *           limit
+	 *           The maximum possible value, or null for no maximum limit
 	 */
 	public void setRange( Float min, Float max )
 	{
+		range[ 0 ] = min != null ? min.floatValue() : Float.NaN;
+		range[ 1 ] = max != null ? max.floatValue() : Float.NaN;
+
 		slider.removeChangeListener( this );
 
 		// get the limits
 
-		SpinnerNumberModel snm = new SpinnerNumberModel();
+		snm = new SpinnerNumberModel();
 		snm.setMinimum( min );
 		snm.setMaximum( max );
 
@@ -153,7 +256,7 @@ public class FloatChooser extends JPanel implements ChangeListener, MouseListene
 			brm.setMaximum( ( int ) ( max.floatValue() * SCALE ) );
 			brm.setValue( ( int ) ( oldValue * SCALE ) );
 
-			slider.removeMouseListener( this );
+			slider.removeMouseListener( sliderListener );
 		}
 		else
 		{ // put the slider into velocity mode
@@ -163,20 +266,38 @@ public class FloatChooser extends JPanel implements ChangeListener, MouseListene
 			brm.setMaximum( SCALE );
 			brm.setValue( SCALE / 2 );
 
-			slider.addMouseListener( this );
+			slider.addMouseListener( sliderListener );
 		}
 
 		slider.setPaintTrack( absolute );
 		slider.setModel( brm );
 		slider.addChangeListener( this );
 		validate();
+
+		synchronized( listeners )
+		{
+			for( Listener l : listeners )
+			{
+				l.rangeChanged( min == null ? Float.NaN : min.floatValue(),
+						max == null ? Float.NaN : max.floatValue() );
+			}
+		}
+	}
+
+	/**
+	 * Gets the currently set range
+	 * 
+	 * @return an {min,max} array, where {@link Float#NaN} signifies no limit
+	 */
+	public float[] getRange()
+	{
+		return range;
 	}
 
 	/**
 	 * Gets the minimum value possible in this FloatChooser
 	 * 
-	 * @return the minimum value possible, or null if there is no lower
-	 *         limit
+	 * @return the minimum value possible, or null if there is no lower limit
 	 */
 	public Float getMinValue()
 	{
@@ -188,8 +309,7 @@ public class FloatChooser extends JPanel implements ChangeListener, MouseListene
 	/**
 	 * Gets the maximum value possible in this FloatChooser
 	 * 
-	 * @return the maximum value possible, or null if there is no upper
-	 *         limit
+	 * @return the maximum value possible, or null if there is no upper limit
 	 */
 	public Float getMaxValue()
 	{
@@ -209,8 +329,8 @@ public class FloatChooser extends JPanel implements ChangeListener, MouseListene
 	}
 
 	/**
-	 * Sets the current value. If the supplied value is outside of the
-	 * current range, the closest legal value will be set
+	 * Sets the current value. If the supplied value is outside of the current
+	 * range, the closest legal value will be set. Listeners will be notified
 	 * 
 	 * @param value
 	 *           The value to set.
@@ -243,11 +363,9 @@ public class FloatChooser extends JPanel implements ChangeListener, MouseListene
 
 			synchronized( listeners )
 			{
-				ChangeEvent ce = new ChangeEvent( this );
-				// notify listeners
-				for( ChangeListener listener : listeners )
+				for( Listener listener : listeners )
 				{
-					listener.stateChanged( ce );
+					listener.valueChanged( value );
 				}
 			}
 		}
@@ -263,7 +381,8 @@ public class FloatChooser extends JPanel implements ChangeListener, MouseListene
 	{
 		this.stepSize = stepSize;
 
-		( ( SpinnerNumberModel ) spinner.getModel() ).setStepSize( new Float( stepSize ) );
+		( ( SpinnerNumberModel ) spinner.getModel() ).setStepSize( new Float(
+				stepSize ) );
 	}
 
 	/**
@@ -293,13 +412,13 @@ public class FloatChooser extends JPanel implements ChangeListener, MouseListene
 	}
 
 	/**
-	 * Adds a change listener to this FloatChooser. The ChangeListener
-	 * will be appraised of any changes to the selected value
+	 * Adds a {@link Listener} to this FloatChooser. The {@link Listener} will be
+	 * appraised of any changes to the selected value
 	 * 
 	 * @param listener
-	 *           The listener to add
+	 *           The {@link Listener} to add
 	 */
-	public void addChangeListener( ChangeListener listener )
+	public void addListener( Listener listener )
 	{
 		synchronized( listeners )
 		{
@@ -308,14 +427,13 @@ public class FloatChooser extends JPanel implements ChangeListener, MouseListene
 	}
 
 	/**
-	 * Removes a ChangeListener from this FloatChooser. The
-	 * ChangeListener will no longer be appraised of changes to the
-	 * selected value
+	 * Removes a {@link Listener} from this FloatChooser. The {@link Listener}
+	 * will no longer be appraised of changes to the selected value
 	 * 
 	 * @param listener
-	 *           The listener to remove
+	 *           The {@link Listener} to remove
 	 */
-	public void removeChangeListener( ChangeListener listener )
+	public void removeListener( Listener listener )
 	{
 		synchronized( listeners )
 		{
@@ -340,7 +458,8 @@ public class FloatChooser extends JPanel implements ChangeListener, MouseListene
 			else
 			{
 				// change the velocity
-				float fraction = ( ( float ) slider.getValue() - SCALE / 2 ) / ( SCALE / 2 );
+				float fraction = ( ( float ) slider.getValue() - SCALE / 2 )
+						/ ( SCALE / 2 );
 
 				if( !integer )
 				{
@@ -366,47 +485,119 @@ public class FloatChooser extends JPanel implements ChangeListener, MouseListene
 		}
 	}
 
-	@Override
-	public void mouseClicked( MouseEvent e )
+	/**
+	 * Interface for keeping track of the state of this widget
+	 * 
+	 * @author ryanm
+	 */
+	public interface Listener
 	{
+		/**
+		 * Called when the value of the widget is changed, either by the user or
+		 * via code
+		 * 
+		 * @param value
+		 *           the new value
+		 */
+		public void valueChanged( float value );
+
+		/**
+		 * Called when the valid range is changed, either by the user or via code
+		 * 
+		 * @param low
+		 *           the new lower bound, or {@link Float#NaN} for no bound
+		 * @param high
+		 *           the new upper bound, or {@link Float#NaN} for no bound
+		 */
+		public void rangeChanged( float low, float high );
 	}
 
-	@Override
-	public void mouseEntered( MouseEvent e )
+	private class RangeEditor extends JDialog
 	{
-	}
+		private JTextField lower = new JTextField( 16 );
 
-	@Override
-	public void mouseExited( MouseEvent e )
-	{
-	}
+		private JTextField upper = new JTextField( 16 );
 
-	@Override
-	public void mousePressed( MouseEvent e )
-	{
-		// start the Timertask
-		timer.start();
-	}
+		private JButton yes = new JButton( "OK" );
 
-	@Override
-	public void mouseReleased( MouseEvent e )
-	{
-		// end the timertask
-		timer.stop();
+		private JButton no = new JButton( "Cancel" );
 
-		slider.getModel().setValue( SCALE / 2 );
-	}
-
-	@Override
-	public void actionPerformed( ActionEvent e )
-	{
-		if( e.getSource() == timer )
+		private RangeEditor()
 		{
-			// set the value
-			if( velocity != 0 )
-			{
-				setValue( getValue() + velocity );
-			}
+			setTitle( "Valid Range" );
+			setModal( true );
+
+			setResizable( false );
+
+			lower.setBorder( new TitledBorder( "Lower bound" ) );
+			lower.setHorizontalAlignment( SwingConstants.CENTER );
+			upper.setBorder( new TitledBorder( "Upper bound" ) );
+			upper.setHorizontalAlignment( SwingConstants.CENTER );
+
+			no.setMnemonic( 'C' );
+			getRootPane().setDefaultButton( yes );
+
+			JPanel bp = new JPanel();
+			bp.setLayout( new FlowLayout( FlowLayout.RIGHT ) );
+			bp.add( no );
+			bp.add( yes );
+
+			no.addActionListener( new ActionListener() {
+				@Override
+				public void actionPerformed( ActionEvent e )
+				{
+					setVisible( false );
+				}
+			} );
+
+			yes.addActionListener( new ActionListener() {
+
+				@Override
+				public void actionPerformed( ActionEvent e )
+				{
+					Float low = null;
+					try
+					{
+						low = new Float( lower.getText() );
+					}
+					catch( NumberFormatException nfe )
+					{
+					}
+					Float high = null;
+					try
+					{
+						high = new Float( upper.getText() );
+					}
+					catch( NumberFormatException nfe )
+					{
+					}
+
+					if( integer )
+					{
+						if( low != null )
+						{
+							low = new Float( low.intValue() );
+						}
+						if( high != null )
+						{
+							high = new Float( high.intValue() );
+						}
+					}
+
+					setRange( low, high );
+
+					setVisible( false );
+				}
+			} );
+
+			getContentPane().setLayout(
+					new BoxLayout( getContentPane(), BoxLayout.Y_AXIS ) );
+
+			add( lower );
+			add( upper );
+			add( bp );
+
+			pack();
 		}
 	}
 
