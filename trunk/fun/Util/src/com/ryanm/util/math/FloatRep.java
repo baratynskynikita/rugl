@@ -34,7 +34,8 @@ public class FloatRep
 		// work out how many bits are needed for the integer part
 		int intPart = ( int ) input;
 
-		int intBits = ( intPart == 0 ? -1 : ( int ) ( Math.log( intPart ) / Math.log( 2 ) ) ) + 1;
+		int intBits =
+				( intPart == 0 ? -1 : ( int ) ( Math.log( intPart ) / Math.log( 2 ) ) ) + 1;
 
 		if( intBits >= bits )
 		{
