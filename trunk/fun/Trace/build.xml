@@ -47,11 +47,11 @@
 			<library jar="${lib}/lwjgl/jar/lwjgl.jar" />
 			<library jar="${lib}/lwjgl/jar/lwjgl_util.jar" />
 
-			<!-- exclude useless stuff that is referenced by lwjgl.jar-->
+			<!-- exclude useless stuff that is referenced by lwjgl.jar
 			<classfilter>
 				<exclude name="com.apple." />
 				<exclude name="net.java.games." />
-			</classfilter>
+			</classfilter>-->
 
 			<classpath>
 				<pathelement location="build" />
