@@ -47,7 +47,7 @@
 
 
 	<target name="packerjar" description="generate PackerTest jar" depends="compile">
-		<genjar jarfile="../PackerTest.jar">
+		<genjar jarfile="PackerTest.jar">
 			<class name="com.rugl.util.PackerTest" />
 
 			<classpath>
@@ -64,7 +64,7 @@
 
 
 	<target name="soundgenjar" description="generate SoundGen jar" depends="compile">
-		<genjar jarfile="../SoundGenApp.jar">
+		<genjar jarfile="SoundGenApp.jar">
 			<class name="com.ryanm.soundgen.SoundGenApp" />
 
 			<classpath>
@@ -78,9 +78,27 @@
 			</manifest>
 		</genjar>
 	</target>
+	
+	<target name="shapefactoryjar" description="generate ShapeFactory jar" depends="compile">
+		<genjar jarfile="ShapeFactory.jar">
+			<class name="com.rugl.util.ShapeFactory" />
+
+			<library jar="${lwjgljardir}/lwjgl_util.jar" />
+
+			<classpath>
+				<pathelement location="build" />
+			</classpath>
+
+			<resource file="build/${DSTAMP}.txt" />
+
+			<manifest>
+				<attribute name="Main-Class" value="com.rugl.util.ShapeFactory" />
+			</manifest>
+		</genjar>
+	</target>
 
 	<target name="fontjar" description="generate FontFactory jar" depends="compile">
-		<genjar jarfile="../FontFactory.jar">
+		<genjar jarfile="FontFactory.jar">
 			<class name="com.rugl.util.FontFactory" />
 
 			<library jar="${lwjgljardir}/lwjgl.jar" />
@@ -105,7 +123,7 @@
 	</target>
 
 	<target name="imagejar" description="generate ImageFactory jar" depends="compile">
-		<genjar jarfile="../ImageFactory.jar">
+		<genjar jarfile="ImageFactory.jar">
 			<class name="com.rugl.util.ImageFactory" />
 
 			<library jar="${lwjgljardir}/lwjgl.jar" />
@@ -130,7 +148,7 @@
 	</target>
 
 	<target name="statejar" description="generate GL state managment jar" depends="compile">
-		<genjar jarfile="../GLState.jar">
+		<genjar jarfile="GLState.jar">
 			<class name="com.rugl.gl.State" />
 
 			<classfilter>
@@ -146,7 +164,7 @@
 	</target>
 	
 	<target name="fonttest" description="generate font test jar" depends="compile">
-		<genjar jarfile="../FontTest.jar">
+		<genjar jarfile="FontTest.jar">
 			<class name="com.rugl.test.FontTest" />
 
 			<!-- exclude useless stuff that is referenced by lwjgl.jar-->
@@ -169,7 +187,7 @@
 			</manifest>
 		</genjar>
 		
-		<signjar jar="../FontTest.jar" alias="ryanm" keystore="/home/ryanm/bin/myKeyStore" storepass="flooble"/>
+		<signjar jar="FontTest.jar" alias="ryanm" keystore="/home/ryanm/bin/myKeyStore" storepass="flooble"/>
 	</target>
 
 	<target name="clean" description="deletes build directory">

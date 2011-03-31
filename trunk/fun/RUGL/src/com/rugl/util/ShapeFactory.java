@@ -21,7 +21,7 @@ import com.ryanm.util.march.MarchingSquares;
 import com.ryanm.util.march.Path;
 
 /**
- * Extracts simple {@link Shape}s from images
+ * Extracts simple black {@link Shape}s from images
  * 
  * @author ryanm
  */
@@ -29,6 +29,7 @@ public class ShapeFactory
 {
 	/**
 	 * @param args
+	 *           minimum feature distance, then image filenames
 	 */
 	public static void main( String[] args )
 	{
@@ -106,14 +107,9 @@ public class ShapeFactory
 
 		System.out.println( "\t\tin  = " + verts.length / 2 + " verts" );
 
-		for( int i = 0; i < 3; i++ )
-		{
-			verts = GeomUtils.decimate( verts, featureLimit );
-		}
+		verts = GeomUtils.decimate( verts, featureLimit, true );
 
 		System.out.println( "\t\tout = " + verts.length / 2 + " verts" );
-
-		draw( verts, "verts" + n );
 
 		return Tesselator.tesselate( verts, 0 );
 	}
@@ -178,7 +174,8 @@ public class ShapeFactory
 	 * @param verts
 	 * @param name
 	 */
-	public static void draw( float[] verts, String name )
+	@SuppressWarnings( "unused" )
+	private static void draw( float[] verts, String name )
 	{
 		verts = verts.clone();
 
