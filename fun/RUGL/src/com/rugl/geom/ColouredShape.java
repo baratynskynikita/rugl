@@ -35,8 +35,7 @@ public class ColouredShape extends Shape
 	 * @param s
 	 *           The geometry to share
 	 * @param colour
-	 *           The colour for every vertex to share, or null for
-	 *           white
+	 *           The colour for every vertex to share
 	 * @param state
 	 *           The render state to share, or null for typical state.
 	 *           See {@link GLUtil#typicalState}
